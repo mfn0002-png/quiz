@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import { BookOpen, Trophy, Play, CheckCircle2, XCircle, RefreshCw, ChevronRight, X, Loader2, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BookOpen, Trophy, Play, CheckCircle2, XCircle, RefreshCw, ChevronRight, X, Loader2, MessageCircle, Clock } from 'lucide-react';
 import { Difficulty, Question } from './data/questions';
 import { generateQuestions } from './services/geminiService';
 import { Assistant } from './components/Assistant';
 import { KeywordText } from './components/KeywordText';
+import { playCorrect, playWrong, playTimeout } from './utils/sounds';
 import './App.css';
 
 type ActiveTab = 'quiz' | 'assistant';
+
+const CATEGORIES = ['Mélange', 'Prophètes', 'Coran', "Piliers de l'Islam", 'Histoire', 'Pratiques'];
 
 function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('quiz');
@@ -21,7 +24,12 @@ function App() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('Débutant');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Mélange');
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
+
+  // Nouvelles fonctionnalités
+  const [timeLeft, setTimeLeft] = useState(20);
+  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
 
   const startQuiz = async (difficulty: Difficulty) => {
     setSelectedDifficulty(difficulty);
@@ -30,13 +38,15 @@ function App() {
     setStarted(true);
 
     try {
-      const generatedQuestions = await generateQuestions(difficulty, 'Mélange', 5);
+      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, 5);
       setActiveQuestions(generatedQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
       setShowResults(false);
       setSelectedAnswer(null);
       setIsAnswerCorrect(null);
+      setUserAnswers(new Array(5).fill(null));
+      setTimeLeft(20);
     } catch (err: any) {
       console.error(err);
       setError("Erreur IA : " + (err.message || JSON.stringify(err)));
@@ -46,12 +56,40 @@ function App() {
     }
   };
 
+  // Chronomètre
+  useEffect(() => {
+    let timer: number;
+    if (started && !loading && !showResults && selectedAnswer === null && timeLeft > 0) {
+      timer = window.setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && selectedAnswer === null) {
+      playTimeout();
+      handleAnswerClick(-1);
+    }
+    return () => clearInterval(timer);
+  }, [started, loading, showResults, selectedAnswer, timeLeft]);
+
   const handleAnswerClick = (optionIndex: number) => {
     if (selectedAnswer !== null) return;
     const correct = optionIndex === activeQuestions[currentQuestionIndex].correctAnswerIndex;
     setSelectedAnswer(optionIndex);
     setIsAnswerCorrect(correct);
+
+    // Effets sonores
+    if (optionIndex !== -1) {
+      if (correct) playCorrect();
+      else playWrong();
+    }
+
     if (correct) setScore(prev => prev + 1);
+
+    // Sauvegarder la réponse
+    setUserAnswers(prev => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = optionIndex;
+      return newAnswers;
+    });
   };
 
   const goToNextQuestion = () => {
@@ -59,6 +97,7 @@ function App() {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setIsAnswerCorrect(null);
+      setTimeLeft(20);
     } else {
       setShowResults(true);
     }
@@ -74,8 +113,8 @@ function App() {
       {/* Tab Navigation */}
       <nav style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', backgroundColor: 'var(--surface-color)', borderRadius: 'var(--radius-full)', padding: '0.35rem', boxShadow: 'var(--shadow-sm)' }}>
         {[
-          { id: 'quiz', label: '🎯 Quiz', icon: null },
-          { id: 'assistant', label: '💬 Assistant', icon: null },
+          { id: 'quiz', label: '🎯 Quiz' },
+          { id: 'assistant', label: '💬 Assistant' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -111,10 +150,41 @@ function App() {
             </div>
             <Assistant />
           </div>
+
         ) : !started ? (
           <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center' }}>
             <BookOpen size={64} color="var(--primary-color)" style={{ margin: '0 auto 1.5rem' }} />
-            <h2 style={{ marginBottom: '1rem' }}>Prêt à commencer ?</h2>
+            <h2 style={{ marginBottom: '1.5rem' }}>Prêt à commencer ?</h2>
+
+            {/* Sélecteur de catégorie */}
+            <div style={{ marginBottom: '1.5rem', maxWidth: '300px', margin: '0 auto 1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Catégorie
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-full)',
+                  border: '2px solid var(--primary-color)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--primary-color)',
+                  fontFamily: 'inherit',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
+              >
+                {CATEGORIES.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
             <p style={{ marginBottom: '1rem' }}>Choisissez votre niveau de difficulté.</p>
             <p style={{ marginBottom: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
               Les questions seront générées instantanément par l'IA Gemini.
@@ -135,6 +205,7 @@ function App() {
               ))}
             </div>
           </div>
+
         ) : loading ? (
           <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Loader2 size={64} color="var(--primary-color)" style={{ animation: 'spin 2s linear infinite', marginBottom: '1.5rem' }} />
@@ -142,26 +213,68 @@ function App() {
             <p>L'IA prépare des questions uniques pour vous.</p>
             <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
           </div>
+
         ) : showResults ? (
-          <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center' }}>
+          /* Écran de résumé détaillé */
+          <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
             <Trophy size={64} color="var(--secondary-color)" style={{ margin: '0 auto 1.5rem' }} />
             <h2 style={{ marginBottom: '1rem' }}>Quiz Terminé !</h2>
             <p style={{ fontSize: '1.25rem', marginBottom: '2rem' }}>
               Votre score est de <strong>{score}</strong> sur {activeQuestions.length} au niveau <strong>{selectedDifficulty}</strong>.
             </p>
+
+            <div style={{ textAlign: 'left', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h3 style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                Détail de vos réponses :
+              </h3>
+              {activeQuestions.map((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correctAnswerIndex;
+                const answered = userAns !== -1 && userAns !== null;
+                return (
+                  <div key={q.id} style={{
+                    padding: '1.5rem',
+                    backgroundColor: isCorrect ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                    border: `1px solid ${isCorrect ? 'var(--success-color)' : 'var(--error-color)'}`,
+                    borderRadius: '8px',
+                  }}>
+                    <h4 style={{ margin: '0 0 1rem 0' }}>{idx + 1}. {q.text}</h4>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Votre réponse : </strong>
+                      <span style={{ color: isCorrect ? 'var(--success-color)' : 'var(--error-color)' }}>
+                        {answered ? q.options[userAns as number] : 'Temps écoulé (aucune réponse)'}
+                      </span>
+                    </div>
+                    {!isCorrect && (
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <strong>Bonne réponse : </strong>
+                        <span style={{ color: 'var(--success-color)' }}>{q.options[q.correctAnswerIndex]}</span>
+                      </div>
+                    )}
+                    <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '8px' }}>
+                      <strong>Explication : </strong>
+                      <KeywordText text={q.explanation} keywords={q.keywords || []} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <button className="btn btn-primary" onClick={() => startQuiz(selectedDifficulty)}>
                 <RefreshCw size={20} style={{ marginRight: '0.5rem' }} />
                 Nouveau Quiz
               </button>
               <button className="btn btn-outline" onClick={() => setStarted(false)}>
-                Changer de niveau
+                Changer de niveau ou catégorie
               </button>
             </div>
           </div>
+
         ) : (
+          /* Écran de jeu */
           <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Question {currentQuestionIndex + 1}/{activeQuestions.length}
               </span>
@@ -171,7 +284,8 @@ function App() {
               </div>
             </div>
 
-            <div style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '99px', height: '8px', marginBottom: '2rem' }}>
+            {/* Barre de progression des questions */}
+            <div style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '99px', height: '6px', marginBottom: '1rem' }}>
               <div style={{
                 height: '100%',
                 backgroundColor: 'var(--primary-color)',
@@ -181,11 +295,26 @@ function App() {
               }} />
             </div>
 
-            <div style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {/* Chronomètre */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: timeLeft <= 5 ? 'var(--error-color)' : 'var(--text-secondary)' }}>
+              <Clock size={18} />
+              <span style={{ fontWeight: 700, minWidth: '2.5rem' }}>{timeLeft}s</span>
+              <div style={{ flex: 1, height: '6px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '99px' }}>
+                <div style={{
+                  width: `${(timeLeft / 20) * 100}%`,
+                  height: '100%',
+                  backgroundColor: timeLeft <= 5 ? 'var(--error-color)' : 'var(--primary-color)',
+                  borderRadius: '99px',
+                  transition: 'width 1s linear, background-color 0.3s ease'
+                }} />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '0.75rem', color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Catégorie : {activeQuestions[currentQuestionIndex].category}
             </div>
 
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', textAlign: 'center' }}>
               {activeQuestions[currentQuestionIndex].text}
             </h3>
 
@@ -209,7 +338,7 @@ function App() {
                     style={{
                       padding: '1rem',
                       justifyContent: 'space-between',
-                      fontSize: '1.125rem',
+                      fontSize: '1.1rem',
                       ...buttonStyle,
                       cursor: selectedAnswer !== null ? 'default' : 'pointer',
                       opacity: selectedAnswer !== null && index !== activeQuestions[currentQuestionIndex].correctAnswerIndex && index !== selectedAnswer ? 0.6 : 1
@@ -245,7 +374,7 @@ function App() {
                   {isAnswerCorrect ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
                   {isAnswerCorrect ? 'Bonne réponse !' : 'Mauvaise réponse.'}
                 </h4>
-                <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-primary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-primary)', fontSize: '1.05rem', lineHeight: 1.6 }}>
                   <KeywordText
                     text={activeQuestions[currentQuestionIndex].explanation}
                     keywords={activeQuestions[currentQuestionIndex].keywords || []}
