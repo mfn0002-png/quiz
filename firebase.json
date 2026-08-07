@@ -3,9 +3,16 @@
     "rules": "firestore.rules",
     "indexes": "firestore.json"
   },
-    "hosting": {
+  "hosting": {
     "site": "quiz-8e88c-f3d9c",
-    "public": "dist"
+    "public": "dist",
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" }
+        ]
+      }
+    ]
   }
-  
 }
