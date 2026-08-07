@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Difficulty } from './data/questions';
 import { ActiveTab } from './constants';
 import { useAuthUser } from './hooks/useAuthUser';

@@ -63,7 +63,7 @@ export function Assistant() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '70vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
       {/* Message list */}
       <div style={{
         flex: 1,
