@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from '../firebase';
+import { handleRedirectResult, onAuthStateChanged, User } from '../firebase';
 import { upsertLeaderboardProfile } from '../services/firestoreService';
 
 export function useAuthUser() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-
   useEffect(() => {
+    handleRedirectResult().catch(err => {
+      console.error("Erreur au retour de redirection :", err);
+    });
     const unsubscribe = onAuthStateChanged((u) => {
       setUser(u);
       setAuthLoading(false);
