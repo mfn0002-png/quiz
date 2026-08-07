@@ -30,7 +30,7 @@ export function KeywordText({ text, keywords }: KeywordTextProps) {
       x: rect.left - (containerRect?.left || 0),
       y: rect.bottom - (containerRect?.top || 0) + 8,
     });
-    setActiveKeyword(prev => prev?.term === kw.term ? null : kw);
+    setActiveKeyword((prev: Keyword | null) => prev?.term === kw.term ? null : kw);
   };
 
   return (

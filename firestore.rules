@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Sessions personnelles : chaque utilisateur ne peut lire/écrire que les siennes
+    match /users/{userId}/sessions/{sessionId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Classement : lecture publique, écriture réservée au propriétaire de l'entrée
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Défis : lecture publique (nécessaire pour ouvrir un lien de défi),
+    // création par un utilisateur connecté, mise à jour uniquement pour
+    // ajouter le résultat de l'adversaire (le champ "opponent" doit être vide au départ).
+    match /challenges/{challengeId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.challenger.userId == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.opponent == null
+                    && request.resource.data.opponent.userId == request.auth.uid;
+    }
+  }
+}

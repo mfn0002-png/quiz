@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { Difficulty, Question, Keyword } from '../data/questions';
+export type { Keyword };
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 if (!apiKey) {
@@ -106,13 +107,13 @@ export const askQuestion = async (userQuestion: string): Promise<AssistantRespon
       }
     });
 
+    //Si la question n'a AUCUN rapport avec l'islam, la religion, la spiritualité, la morale ou l'application du quiz, refuse poliment d'y répondre en expliquant que tu es un assistant dédié uniquement aux sujets islamiques (dans la propriété "answer" et renvoie une liste vide pour "keywords").Sinon,
     const prompt = `Tu es un savant islamique francophone, bienveillant et pédagogue.
-                     Un utilisateur te pose la question suivante : "${userQuestion}".
-                     Si la question n'a AUCUN rapport avec l'islam, la religion, la spiritualité, la morale ou l'application du quiz, refuse poliment d'y répondre en expliquant que tu es un assistant dédié uniquement aux sujets islamiques (dans la propriété "answer" et renvoie une liste vide pour "keywords").Sinon,
-                     Réponds de manière claire, précise et respectueuse.
-                     Identifie également les termes islamiques clés (en arabe ou techniques) que tu as utilisés dans ta réponse,
-                     et fournis une définition brève pour chacun. Ne liste que les termes importants, pas les mots courants.
-                     IMPORTANT : Rédige TOUT le texte (réponse et définitions) en français correct avec des accents normaux (é, à, è, ô, ç, etc.). N'utilise JAMAIS d'entités HTML (comme &eacute;, &agrave;, &ocirc;) ou de caractères d'échappement Web étranges. Le texte doit être du texte brut UTF-8 propre.`;
+      Un utilisateur te pose la question suivante : "${userQuestion}".
+      Réponds de manière claire, précise et respectueuse.
+      Identifie également les termes islamiques clés (en arabe ou techniques) que tu as utilisés dans ta réponse,
+      et fournis une définition brève pour chacun. Ne liste que les termes importants, pas les mots courants.
+      IMPORTANT : Rédige TOUT le texte (réponse et définitions) en français correct avec des accents normaux (é, à, è, ô, ç, etc.). N'utilise JAMAIS d'entités HTML (comme &eacute;, &agrave;, &ocirc;) ou de caractères d'échappement Web étranges. Le texte doit être du texte brut UTF-8 propre.`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
