@@ -45,7 +45,7 @@ router.post('/chat', async (req, res) => {
       Un utilisateur te pose la question suivante : "${question}".
       Si la question n'a AUCUN rapport avec l'islam, la religion, la spiritualité, la morale ou l'application du quiz, refuse poliment d'y répondre en expliquant que tu es un assistant dédié uniquement aux sujets islamiques (dans la propriété "answer" et renvoie une liste vide pour "keywords").
       Sinon, réponds de manière claire, précise et respectueuse.
-      Identifie également les termes islamiques clés (en arabe ou techniques) que tu as utilisés dans ta réponse,
+      Identifie également les termes islamiques clés (en arabe ou techniques) d'un seul coup pas deux fois afin d'eviter la duplication que tu as utilisés dans ta réponse,
       et fournis une définition brève pour chacun. Ne liste que les termes importants, pas les mots courants.
       IMPORTANT : Rédige TOUT le texte (réponse et définitions) en français correct avec des accents normaux (é, à, è, ô, ç, etc.). N'utilise JAMAIS d'entités HTML (comme &eacute;, &agrave;, &ocirc;) ou de caractères d'échappement Web étranges. Le texte doit être du texte brut UTF-8 propre.`;
 
@@ -54,6 +54,7 @@ router.post('/chat', async (req, res) => {
       return JSON.parse(result.response.text());
     });
 
+    console.log("result", assistantData);
     res.json(assistantData);
   } catch (error) {
     console.error("Erreur lors de la réponse de l'assistant :", error);

@@ -69,7 +69,7 @@ router.post('/generate', async (req, res) => {
     const isQuota = error?.message && (error.message.includes('429') || error.message.toLowerCase().includes('quota'));
     if (isQuota) {
       return res.status(429).json({
-        error: "Le quota quotidien de l'IA est atteint. Réessayez dans quelques heures ou configurez une clé API avec un plan payant.",
+        error: "Le quota quotidien de l'IA est atteint. Réessayez dans quelques heures",
         retryAfter: 3600
       });
     }
