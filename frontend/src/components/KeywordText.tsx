@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Keyword } from '../services/geminiService';
+import { Keyword } from '../services/apiService';
 
 interface KeywordTextProps {
   text: string;

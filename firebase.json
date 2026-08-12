@@ -1,17 +1,15 @@
 {
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.json"
-  },
   "hosting": {
-    "site": "quiz-8e88c-f3d9c",
     "public": "dist",
-    "headers": [
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
       {
         "source": "**",
-        "headers": [
-          { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" }
-        ]
+        "destination": "/index.html"
       }
     ]
   }

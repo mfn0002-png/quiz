@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Difficulty, Question } from '../data/questions';
-import { generateQuestions } from '../services/geminiService';
+import { generateQuestions } from '../services/apiService';
 import { playCorrect, playWrong, playTimeout } from '../utils/sounds';
 import { saveSession } from '../services/firestoreService';
 import { User } from '../firebase';
@@ -101,7 +101,12 @@ export function useQuiz(user: User | null) {
       setIsAnswerCorrect(null);
       setTimeLeft(QUESTION_TIME);
     } else {
-      finishQuiz(score);
+      // ⚠️ Fix : isAnswerCorrect peut être null si on appelle goToNextQuestion
+      // via le bouton "Continuer" après une réponse correcte. On recalcule le
+      // score final à partir de l'état actuel pour éviter la stale closure.
+      const lastAnswerCorrect = isAnswerCorrect === true;
+      const finalScore = lastAnswerCorrect ? score + 1 : score;
+      finishQuiz(finalScore);
     }
   };
 

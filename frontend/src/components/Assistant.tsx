@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Send, Loader2, Bot, User } from 'lucide-react';
-import { askQuestion, AssistantResponse } from '../services/geminiService';
+import { askQuestion, AssistantResponse } from '../services/apiService';
 import { KeywordText } from './KeywordText';
 
 interface Message {

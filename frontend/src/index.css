@@ -116,12 +116,19 @@ body {
 }
 
 .glass-panel {
-  background: rgba(var(--surface-color), 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--surface-color);
+  border: 1px solid rgba(0, 0, 0, 0.07);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1.2s linear infinite;
 }
 
 h1, h2, h3, h4, h5, h6 {

@@ -6,7 +6,6 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   User,
-  getRedirectResult,
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -32,7 +31,8 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
-export const handleRedirectResult = () => getRedirectResult(auth);
+// Force l'affichage du sélecteur de compte Google à chaque connexion
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export const signInWithGoogle = async (): Promise<User> => {
   const result = await signInWithPopup(auth, googleProvider);
