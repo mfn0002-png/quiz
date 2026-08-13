@@ -25,9 +25,18 @@ export function resetClientSessionId(): string {
   return newAnonId;
 }
 
+export interface ChatQuizData {
+  questionText: string;
+  options: string[];
+  correctAnswerIndex: number;
+  explanation: string;
+  keywords: Keyword[];
+}
+
 export interface AssistantResponse {
   answer: string;
   keywords: Keyword[];
+  quizData?: ChatQuizData;
 }
 
 /**

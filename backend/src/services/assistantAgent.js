@@ -11,6 +11,7 @@
 import { SchemaType } from '@google/generative-ai';
 import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getHistory, saveHistory } from './sessionService.js';
+import { runQuizAgent } from './quizAgent.js';
 
 // ─────────────────────────────────────────────
 // Instruction système
@@ -20,8 +21,13 @@ const SYSTEM_INSTRUCTION = `Tu es un savant islamique francophone, bienveillant 
 Tu te souviens de toute la conversation en cours et peux faire référence aux échanges précédents.
 Tu réponds UNIQUEMENT aux questions liées à l'islam, la spiritualité, la morale islamique, ou à l'application Quiz Islamique.
 Si une question est hors sujet, refuses poliment en restant courtois.
-Quand l'utilisateur veut être interrogé ou testé, utilise l'outil generate_quiz_question.
-Quand il demande un calcul de Zakat, utilise l'outil calculate_zakat.
+
+RÈGLES DÉCLENCHEMENT DES OUTILS :
+1. N'utilise l'outil 'generate_quiz_question' QUE SI le tout dernier message de l'utilisateur demande EXPLICITEMENT à jouer à un quiz ou à être testé (ex: "quiz", "teste-moi", "pose-moi un quiz", "interroge-moi"). Pour toutes les demandes d'explication, traductions ou questions générales, RÉPONDS DIRECTEMENT EN TEXTE de manière naturelle et claire sans déclencher de quiz.
+2. Pour l'argument 'topic' de 'generate_quiz_question' :
+   - Si le dernier message spécifie un thème précis (ex: "sur la Zakat", "sur la Sourate Fatiha"), utilise CE THÈME.
+   - Si le dernier message demande juste "un quiz" ou "le quiz" sans préciser de thème, utilise le thème du dernier message de l'utilisateur comme 'topic'.
+
 Réponds toujours en français correct avec des accents (é, à, è, ô, ç). JAMAIS d'entités HTML.`;
 
 // ─────────────────────────────────────────────
@@ -39,7 +45,7 @@ const TOOLS = [
           properties: {
             topic: {
               type: SchemaType.STRING,
-              description: "Le sujet de la question (ex: Zakat, Prophètes, Piliers de l'Islam, Coran, Histoire)",
+              description: "Le sujet spécifié dans le DERNIER message (ex: Sourate Fatiha, Zakat). Si aucun sujet n'est précisé dans le dernier message, utilise 'Mélange'.",
             },
             difficulty: {
               type: SchemaType.STRING,
@@ -70,24 +76,30 @@ const TOOLS = [
 // Exécution des outils
 // ─────────────────────────────────────────────
 
-async function executeTool(name, args) {
+async function executeTool(name, args, sessionId = null) {
   console.log(`🔧 [Assistant Agent] Appel de l'outil "${name}" avec args :`, JSON.stringify(args));
 
   if (name === 'generate_quiz_question') {
     const { topic, difficulty } = args;
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-    const result = await model.generateContent(
-      `Génère UNE question de quiz islamique de niveau "${difficulty}" sur le sujet "${topic}".
-Présente-la ainsi :
-📝 **Question :** [ta question]
-A) [option 1]  B) [option 2]  C) [option 3]  D) [option 4]
-✅ **Bonne réponse :** [lettre) texte]
-💡 **Explication :** [explication pédagogique en 2-3 phrases]
-Réponds en français correct.`
-    );
-    const output = result.response.text();
-    console.log(`📤 [Assistant Agent] Outil "${name}" a produit :`, output.slice(0, 100) + '...');
-    return output;
+    console.log(`📞 [Assistant Agent] Délégation au Quiz Agent (runQuizAgent) pour "${topic}" (${difficulty})...`);
+    
+    // Appel direct au Quiz Agent avec son pipeline complet (Knowledge + Anti-doublon Redis + Auto-vérification)
+    const questions = await runQuizAgent(difficulty || 'Débutant', topic || 'Mélange', 1, sessionId);
+    const quizObj = questions[0];
+
+    console.log(`📤 [Quiz Agent -> Assistant] Question générée par le Quiz Agent : "${quizObj.text}"`);
+
+    return {
+      isQuiz: true,
+      quizData: {
+        questionText: quizObj.text,
+        options: quizObj.options,
+        correctAnswerIndex: quizObj.correctAnswerIndex,
+        explanation: quizObj.explanation,
+        keywords: quizObj.keywords || [],
+      },
+      text: quizObj.text,
+    };
   }
 
   if (name === 'calculate_zakat') {
@@ -222,31 +234,42 @@ export async function runAssistantAgent(sessionId, userMessage) {
   let response = await withRetry(() => chat.sendMessage(userMessage));
 
   let answer = '';
+  let quizData = null;
+
   const calls = response.response.functionCalls();
   if (calls && calls.length > 0) {
     const call = calls[0];
     console.log(`🔧 [Assistant Agent] Exécution de l'outil : "${call.name}" avec args :`, JSON.stringify(call.args));
-    answer = await executeTool(call.name, call.args);
+    const toolRes = await executeTool(call.name, call.args, sessionId);
+
+    if (typeof toolRes === 'object' && toolRes.isQuiz) {
+      answer = toolRes.text;
+      quizData = toolRes.quizData;
+    } else {
+      answer = toolRes;
+    }
   } else {
     answer = response.response.text();
   }
+
   console.log(`✨ Réponse finale générée (${answer.length} caractères) :`);
   console.log(`   "${answer.slice(0, 150)}${answer.length > 150 ? '...' : ''}"`);
 
-  // 5. Extraire les mots-clés de la réponse
-  const keywords = await extractKeywords(answer);
+  // 5. Extraire les mots-clés si pas de quizData (sinon ils sont déjà dans quizData)
+  const keywords = quizData ? (quizData.keywords || []) : await extractKeywords(answer);
 
-  // 6. Sauvegarder l'historique mis à jour en Redis (avec mots-clés conservés)
+  // 6. Sauvegarder l'historique mis à jour en Redis
   const fullHistory = await chat.getHistory();
   const updatedSimple = toSimpleHistory(fullHistory, simpleHistory);
   const lastMsg = updatedSimple[updatedSimple.length - 1];
   if (lastMsg && lastMsg.role === 'assistant') {
     lastMsg.keywords = keywords;
+    if (quizData) lastMsg.quizData = quizData;
   }
   await saveHistory(sessionId, updatedSimple);
   console.log(`💾 Historique mis à jour dans Redis : ${updatedSimple.length} messages stockés avec mots-clés`);
 
   console.log('===========================================================\n');
 
-  return { answer, keywords };
+  return { answer, keywords, ...(quizData ? { quizData } : {}) };
 }
