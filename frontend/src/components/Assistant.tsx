@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 import { Send, Loader2, Bot, User } from 'lucide-react';
-import { askQuestion, AssistantResponse } from '../services/apiService';
+import { useEffect } from 'react';
+import { askQuestion, AssistantResponse, getClientSessionId, resetAssistantSession, getAssistantHistory } from '../services/apiService';
+import { parseApiError } from '../utils/errorUtils';
+import { RotateCcw, Cpu } from 'lucide-react';
 import { KeywordText } from './KeywordText';
 
 interface Message {
@@ -23,6 +26,37 @@ export function Assistant() {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const sessionId = getClientSessionId();
+
+  useEffect(() => {
+    getAssistantHistory(sessionId).then(history => {
+      if (history && history.length > 0) {
+        const loadedMsgs = history.map((msg, index) => ({
+          id: index,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          assistantData: { answer: msg.content, keywords: msg.keywords || [] }
+        }));
+        setMessages(loadedMsgs);
+      }
+    }).catch(err => console.error("Erreur chargement historique :", err));
+  }, [sessionId]);
+
+  const handleResetConversation = async () => {
+    if (loading) return;
+    setLoading(true);
+    await resetAssistantSession(sessionId);
+    setMessages([
+      {
+        id: Date.now(),
+        role: 'assistant',
+        content: 'Nouvelle conversation démarrée ! Comment puis-je vous aider ?',
+        assistantData: { answer: '', keywords: [] }
+      }
+    ]);
+    setLoading(false);
+  };
+
   const sendMessage = async () => {
     const question = input.trim();
     if (!question || loading) return;
@@ -33,7 +67,7 @@ export function Assistant() {
     setLoading(true);
 
     try {
-      const response = await askQuestion(question);
+      const response = await askQuestion(question, sessionId);
       const assistantMsg: Message = {
         id: Date.now() + 1,
         role: 'assistant',
@@ -46,7 +80,7 @@ export function Assistant() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'assistant',
-        content: `Erreur IA : ${err.message || JSON.stringify(err)}`,
+        content: (() => { const p = parseApiError(err); return `${p.icon} ${p.title} : ${p.detail}${p.hint ? ` (${p.hint})` : ''}`; })(),
         assistantData: { answer: '', keywords: [] }
       }]);
     } finally {
@@ -64,6 +98,16 @@ export function Assistant() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
+      <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <Cpu size={14} color="var(--primary-color)" />
+          <span>Mémoire Redis active</span>
+        </div>
+        <button onClick={handleResetConversation} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: '1px solid rgba(0,0,0,0.15)', borderRadius: '6px', padding: '0.25rem 0.6rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <RotateCcw size={13} />
+          Nouvelle conversation
+        </button>
+      </div>
       {/* Message list */}
       <div style={{
         flex: 1,

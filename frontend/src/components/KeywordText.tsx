@@ -35,9 +35,13 @@ export function KeywordText({ text, keywords }: KeywordTextProps) {
 
   return (
     <div ref={containerRef} style={{ position: 'relative', lineHeight: 1.8 }} onClick={() => setActiveKeyword(null)}>
-      {parts.map((part, index) => {
-        const match = keywords.find(k => k.term.toLowerCase() === part.toLowerCase());
-        if (match) {
+      {(() => {
+        const highlightedTerms = new Set<string>();
+        return parts.map((part, index) => {
+          const match = keywords.find(k => k.term.toLowerCase() === part.toLowerCase());
+          const termKey = match?.term.toLowerCase();
+          if (match && termKey && !highlightedTerms.has(termKey)) {
+            highlightedTerms.add(termKey);
           return (
             <span
               key={index}
@@ -57,9 +61,10 @@ export function KeywordText({ text, keywords }: KeywordTextProps) {
               {part}
             </span>
           );
-        }
-        return <span key={index}>{part}</span>;
-      })}
+          }
+          return <span key={index}>{part}</span>;
+        });
+      })()}
 
       {/* Floating Popup */}
       {activeKeyword && (

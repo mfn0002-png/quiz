@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Difficulty, Question } from '../data/questions';
-import { generateQuestions } from '../services/apiService';
+import { generateQuestions, getClientSessionId } from '../services/apiService';
 import { playCorrect, playWrong, playTimeout } from '../utils/sounds';
 import { saveSession } from '../services/firestoreService';
 import { User } from '../firebase';
 import { QUESTION_TIME } from '../constants';
+import { parseApiError } from '../utils/errorUtils';
 
 export function useQuiz(user: User | null) {
   const [started, setStarted] = useState(false);
@@ -29,7 +30,8 @@ export function useQuiz(user: User | null) {
     setStarted(true);
 
     try {
-      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, 5);
+      const sessionId = getClientSessionId(user?.uid);
+      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, 5, sessionId);
       setActiveQuestions(generatedQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
@@ -40,7 +42,8 @@ export function useQuiz(user: User | null) {
       setTimeLeft(QUESTION_TIME);
     } catch (err: any) {
       console.error(err);
-      setError("Erreur IA : " + (err.message || JSON.stringify(err)));
+      const { icon, title, detail, hint } = parseApiError(err);
+      setError(`${icon} ${title} : ${detail}${hint ? ` (${hint})` : ''}`);
       setStarted(false);
     } finally {
       setLoading(false);
@@ -50,11 +53,25 @@ export function useQuiz(user: User | null) {
   const finishQuiz = useCallback((finalScore: number) => {
     setShowResults(true);
     if (user) {
-      saveSession(user.uid, selectedDifficulty, selectedCategory, finalScore, activeQuestions.length)
+      saveSession(user.uid, selectedDifficulty, selectedCategory, finalScore, activeQuestions.length, activeQuestions, userAnswers)
         .then(() => setStatsRefreshKey(k => k + 1))
         .catch(err => console.error("Erreur sauvegarde session :", err));
     }
-  }, [user, selectedDifficulty, selectedCategory, activeQuestions.length]);
+  }, [user, selectedDifficulty, selectedCategory, activeQuestions, userAnswers]);
+
+  const replayQuiz = (replayQuestions: Question[], difficulty: Difficulty, category: string) => {
+    setSelectedDifficulty(difficulty);
+    setSelectedCategory(category);
+    setActiveQuestions(replayQuestions);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setShowResults(false);
+    setSelectedAnswer(null);
+    setIsAnswerCorrect(null);
+    setUserAnswers(new Array(replayQuestions.length).fill(null));
+    setTimeLeft(QUESTION_TIME);
+    setStarted(true);
+  };
 
   // Minuteur de la question en cours
   useEffect(() => {
@@ -126,6 +143,7 @@ export function useQuiz(user: User | null) {
     userAnswers,
     statsRefreshKey,
     startQuiz,
+    replayQuiz,
     handleAnswerClick,
     goToNextQuestion,
   };

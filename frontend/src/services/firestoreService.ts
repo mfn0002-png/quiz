@@ -12,17 +12,20 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db, User } from '../firebase';
-import { Difficulty } from '../data/questions';
+import { Difficulty, Question } from '../data/questions';
 
 // ──────────────────────────────────────
 // Sessions (users/{userId}/sessions/{sessionId})
 // ──────────────────────────────────────
 export interface SessionRecord {
+  id?: string;
   difficulty: Difficulty;
   category: string;
   score: number;
   total: number;
   date: Timestamp;
+  questions?: Question[];
+  userAnswers?: (number | null)[];
 }
 
 export const saveSession = async (
@@ -30,7 +33,9 @@ export const saveSession = async (
   difficulty: Difficulty,
   category: string,
   score: number,
-  total: number
+  total: number,
+  questions?: Question[],
+  userAnswers?: (number | null)[]
 ): Promise<void> => {
   const sessionsRef = collection(db, 'users', userId, 'sessions');
   await addDoc(sessionsRef, {
@@ -39,10 +44,23 @@ export const saveSession = async (
     score,
     total,
     date: Timestamp.now(),
+    ...(questions ? { questions } : {}),
+    ...(userAnswers ? { userAnswers } : {}),
   });
 
   // Met aussi à jour l'entrée du classement en une seule écriture cohérente
   await updateLeaderboardAfterSession(userId, score, total);
+};
+
+
+
+export const getUserSessions = async (userId: string, maxLimit: number = 20): Promise<SessionRecord[]> => {
+  const sessionsRef = collection(db, 'users', userId, 'sessions');
+  const snapshot = await getDocs(sessionsRef);
+  return snapshot.docs
+    .map(d => ({ id: d.id, ...(d.data() as SessionRecord) }))
+    .sort((a, b) => b.date.toMillis() - a.date.toMillis())
+    .slice(0, maxLimit);
 };
 
 export interface UserStats {

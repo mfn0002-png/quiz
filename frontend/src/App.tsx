@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Difficulty } from './data/questions';
-import { ActiveTab } from './constants';
 import { useAuthUser } from './hooks/useAuthUser';
 import { useQuiz } from './hooks/useQuiz';
 import { useChallenge } from './hooks/useChallenge';
@@ -14,8 +13,6 @@ import { ChallengePage } from './components/challenge/ChallengePage';
 import './App.css';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('quiz');
-
   const { user, authLoading } = useAuthUser();
   const quiz = useQuiz(user);
   const challenge = useChallenge({ user, onError: quiz.setError });
@@ -37,29 +34,33 @@ function App() {
   return (
     <div className="app-container">
       <Header user={user} authLoading={authLoading} />
-      <TabNav activeTab={activeTab} onChange={setActiveTab} />
+      <TabNav />
 
       <main className="main-content">
-        {activeTab === 'assistant' && <AssistantTab />}
-
-        {activeTab === 'stats' && (
-          <StatsTab user={user} authLoading={authLoading} refreshKey={quiz.statsRefreshKey} />
-        )}
-
-        {activeTab === 'leaderboard' && <LeaderboardTab currentUser={user} />}
-
-        {activeTab === 'quiz' && (
-          <QuizTab
-            user={user}
-            quiz={quiz}
-            challengeLink={challenge.challengeLink}
-            creatingChallenge={challenge.creatingChallenge}
-            linkCopied={challenge.linkCopied}
-            onStartQuiz={handleStartQuiz}
-            onCreateChallenge={handleCreateChallenge}
-            onCopyLink={challenge.copyLink}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <QuizTab
+                user={user}
+                quiz={quiz}
+                challengeLink={challenge.challengeLink}
+                creatingChallenge={challenge.creatingChallenge}
+                linkCopied={challenge.linkCopied}
+                onStartQuiz={handleStartQuiz}
+                onCreateChallenge={handleCreateChallenge}
+                onCopyLink={challenge.copyLink}
+              />
+            }
           />
-        )}
+          <Route path="/assistant" element={<AssistantTab />} />
+          <Route
+            path="/stats"
+            element={<StatsTab user={user} authLoading={authLoading} refreshKey={quiz.statsRefreshKey} onReplayQuiz={quiz.replayQuiz} />}
+          />
+          <Route path="/leaderboard" element={<LeaderboardTab currentUser={user} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );
