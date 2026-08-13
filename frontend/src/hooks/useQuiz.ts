@@ -121,9 +121,7 @@ export function useQuiz(user: User | null) {
       // ⚠️ Fix : isAnswerCorrect peut être null si on appelle goToNextQuestion
       // via le bouton "Continuer" après une réponse correcte. On recalcule le
       // score final à partir de l'état actuel pour éviter la stale closure.
-      const lastAnswerCorrect = isAnswerCorrect === true;
-      const finalScore = lastAnswerCorrect ? score + 1 : score;
-      finishQuiz(finalScore);
+      finishQuiz(score);
     }
   };
 

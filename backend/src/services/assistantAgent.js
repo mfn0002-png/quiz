@@ -217,29 +217,19 @@ export async function runAssistantAgent(sessionId, userMessage) {
   // 3. Démarrer le chat avec l'historique existant
   const chat = model.startChat({ history: geminiHistory });
 
-  // 4. Boucle agentique : envoyer le message et traiter les function calls
+  // 4. Envoi de la requête à Gemini et traitement direct des outils
   console.log('🤖 Envoi de la requête à Gemini...');
   let response = await withRetry(() => chat.sendMessage(userMessage));
 
-  let iterations = 0;
-  while (response.response.functionCalls()?.length > 0 && iterations < 5) {
-    iterations++;
-    const calls = response.response.functionCalls();
-    console.log(`🔄 [Boucle Agent ${iterations}] Gemini demande l'exécution d'outils :`, calls.map(c => c.name));
-
-    const toolResults = await Promise.all(
-      calls.map(async (call) => ({
-        functionResponse: {
-          name: call.name,
-          response: { result: await executeTool(call.name, call.args) },
-        },
-      }))
-    );
-
-    response = await withRetry(() => chat.sendMessage(toolResults));
+  let answer = '';
+  const calls = response.response.functionCalls();
+  if (calls && calls.length > 0) {
+    const call = calls[0];
+    console.log(`🔧 [Assistant Agent] Exécution de l'outil : "${call.name}" avec args :`, JSON.stringify(call.args));
+    answer = await executeTool(call.name, call.args);
+  } else {
+    answer = response.response.text();
   }
-
-  const answer = response.response.text();
   console.log(`✨ Réponse finale générée (${answer.length} caractères) :`);
   console.log(`   "${answer.slice(0, 150)}${answer.length > 150 ? '...' : ''}"`);
 

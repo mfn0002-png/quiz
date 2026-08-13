@@ -81,14 +81,14 @@ export const getUserStats = async (userId: string): Promise<UserStats> => {
   }
 
   const totalGames = sessions.length;
-  const bestScore = Math.max(...sessions.map(s => s.score));
-  const overallPercentages = sessions.map(s => (s.total > 0 ? (s.score / s.total) * 100 : 0));
+  const bestScore = Math.min(5, Math.max(...sessions.map(s => Math.min(s.score, s.total > 0 ? s.total : 5))));
+  const overallPercentages = sessions.map(s => (s.total > 0 ? Math.min(100, (s.score / s.total) * 100) : 0));
   const averageScore = overallPercentages.reduce((a, b) => a + b, 0) / totalGames;
 
   const byCategory: Record<string, { games: number; averageScore: number }> = {};
   const grouped: Record<string, number[]> = {};
   sessions.forEach(s => {
-    const pct = s.total > 0 ? (s.score / s.total) * 100 : 0;
+    const pct = s.total > 0 ? Math.min(100, (s.score / s.total) * 100) : 0;
     if (!grouped[s.category]) grouped[s.category] = [];
     grouped[s.category].push(pct);
   });
