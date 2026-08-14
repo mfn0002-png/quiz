@@ -23,7 +23,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
     setActiveKeyword((prev: Keyword | null) => prev?.term === kw.term ? null : kw);
   };
 
-  // Nettoyer les astérisques Markdown (** et *) pour éviter les étoiles brutes sur l'écran
+  // Nettoyer les astérisques Markdown (** et *) pour la comparaison et le rendu
   const cleanMarkdownStars = (str: string) => {
     if (!str) return '';
     return str
@@ -32,8 +32,8 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
       .replace(/\*/g, '');
   };
 
-  // Rendu du texte avec surlignement interactif des mots-clés
-  const renderTextWithKeywords = (inputText: string) => {
+  // Rendu du texte avec surlignement interactif des mots-clés (INDEXÉ UNE SEULE FOIS PAR MESSAGE)
+  const renderTextWithKeywords = (inputText: string, sharedSet: Set<string>) => {
     const sanitizedText = cleanMarkdownStars(inputText);
 
     if (!keywords || !keywords.length) return <span>{sanitizedText}</span>;
@@ -42,14 +42,13 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
     const pattern = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
     const parts = sanitizedText.split(pattern);
 
-    const highlightedTerms = new Set<string>();
     return (
       <>
         {parts.map((part, index) => {
           const match = keywords.find(k => k.term.toLowerCase() === part.toLowerCase());
           const termKey = match?.term.toLowerCase();
-          if (match && termKey && !highlightedTerms.has(termKey)) {
-            highlightedTerms.add(termKey);
+          if (match && termKey && !sharedSet.has(termKey)) {
+            sharedSet.add(termKey);
             return (
               <span
                 key={index}
@@ -77,7 +76,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
   };
 
   // Rendu ligne par ligne des blocs Markdown (###, ---, puces)
-  const renderFullMarkdownText = (rawText: string) => {
+  const renderFullMarkdownText = (rawText: string, sharedSet: Set<string>) => {
     const lines = rawText.split('\n');
 
     return (
@@ -117,7 +116,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
                   color: 'var(--text-primary)',
                 }}
               >
-                {renderTextWithKeywords(titleContent)}
+                {renderTextWithKeywords(titleContent, sharedSet)}
               </div>
             );
           }
@@ -129,7 +128,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
             return (
               <div key={lIdx} style={{ display: 'flex', gap: '0.5rem', marginLeft: '0.4rem' }}>
                 <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>•</span>
-                <div style={{ flex: 1 }}>{renderTextWithKeywords(itemContent)}</div>
+                <div style={{ flex: 1 }}>{renderTextWithKeywords(itemContent, sharedSet)}</div>
               </div>
             );
           }
@@ -139,40 +138,45 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
             return <div key={lIdx} style={{ height: '0.25rem' }} />;
           }
 
-          return <div key={lIdx}>{renderTextWithKeywords(line)}</div>;
+          return <div key={lIdx}>{renderTextWithKeywords(line, sharedSet)}</div>;
         })}
       </div>
     );
   };
 
-  // Passage surligné si highlightPassage est actif
-  if (highlightPassage && highlightPassage.trim().length > 0 && text.toLowerCase().includes(highlightPassage.trim().toLowerCase())) {
-    const trimmedPassage = highlightPassage.trim();
-    const passageRegex = new RegExp(`(${trimmedPassage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const segments = text.split(passageRegex);
+  const sharedSet = new Set<string>();
+  const cleanText = cleanMarkdownStars(text);
+  const cleanPassage = highlightPassage ? cleanMarkdownStars(highlightPassage.trim()) : '';
+
+  // Passage surligné si highlightPassage est présent dans le texte nettoyé
+  if (cleanPassage && cleanPassage.length > 0 && cleanText.toLowerCase().includes(cleanPassage.toLowerCase())) {
+    const passageRegex = new RegExp(`(${cleanPassage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const segments = cleanText.split(passageRegex);
 
     return (
       <div ref={containerRef} style={{ position: 'relative', lineHeight: 1.8 }} onClick={() => setActiveKeyword(null)}>
         {segments.map((seg, idx) => {
-          if (seg.toLowerCase() === trimmedPassage.toLowerCase()) {
+          if (seg.toLowerCase() === cleanPassage.toLowerCase()) {
             return (
               <mark
                 key={idx}
                 style={{
-                  backgroundColor: 'rgba(16, 185, 129, 0.35)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.25)',
                   color: 'inherit',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  border: '1.5px solid var(--primary-color, #059669)',
-                  boxShadow: '0 0 12px rgba(5, 150, 105, 0.4)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  borderLeft: '4px solid var(--primary-color, #059669)',
+                  boxShadow: '0 0 16px rgba(5, 150, 105, 0.35)',
+                  display: 'inline-block',
+                  margin: '0.2rem 0',
                   transition: 'all 300ms ease-in-out',
                 }}
               >
-                {renderFullMarkdownText(seg)}
+                {renderFullMarkdownText(seg, sharedSet)}
               </mark>
             );
           }
-          return <span key={idx}>{renderFullMarkdownText(seg)}</span>;
+          return <span key={idx}>{renderFullMarkdownText(seg, sharedSet)}</span>;
         })}
 
         {/* Popup de définition */}
@@ -205,7 +209,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
 
   return (
     <div ref={containerRef} style={{ position: 'relative', lineHeight: 1.8 }} onClick={() => setActiveKeyword(null)}>
-      {renderFullMarkdownText(text)}
+      {renderFullMarkdownText(text, sharedSet)}
 
       {/* Popup de définition */}
       {activeKeyword && (

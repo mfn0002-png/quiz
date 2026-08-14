@@ -26,6 +26,8 @@ export function resetClientSessionId(): string {
 }
 
 export interface ChatQuizData {
+  topic?: string;
+  difficulty?: string;
   questionText: string;
   options: string[];
   correctAnswerIndex: number;

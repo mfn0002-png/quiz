@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Bot, User, RotateCcw, Cpu, Quote, X, MessageSquareQuote } from 'lucide-react';
+import { Send, Loader2, Bot, User, RotateCcw, Quote, X, MessageSquareQuote } from 'lucide-react';
 import { askQuestion, AssistantResponse, ChatQuizData, getClientSessionId, resetAssistantSession, getAssistantHistory } from '../services/apiService';
 import { parseApiError } from '../utils/errorUtils';
 import { KeywordText } from './KeywordText';
@@ -141,13 +141,40 @@ export function Assistant() {
   const scrollToMessage = (targetMsgId: number, passageText?: string | null) => {
     const el = document.getElementById(`msg-${targetMsgId}`);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const rect = el.getBoundingClientRect();
+      const containerRect = chatContainerRef.current?.getBoundingClientRect();
+
+      if (containerRect) {
+        const scrollToY = rect.top - containerRect.top - 100; // 100px de marge en haut
+        chatContainerRef.current?.scrollTo({
+          top: chatContainerRef.current.scrollTop + scrollToY,
+          behavior: 'smooth'
+        });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
       setHighlightedMsgId(targetMsgId);
       if (passageText) setHighlightedPassage(passageText);
       setTimeout(() => {
         setHighlightedMsgId(null);
         setHighlightedPassage(null);
       }, 1800);
+    }
+  };
+
+  const navigateToQuote = (quoteText: string, quoteMsgId?: number | null) => {
+    if (!quoteText) return;
+    let targetId = quoteMsgId;
+
+    if (targetId === null || targetId === undefined) {
+      const cleanQ = quoteText.trim().toLowerCase();
+      const found = messages.find(m => m.role === 'assistant' && m.content.toLowerCase().includes(cleanQ));
+      if (found) targetId = found.id;
+    }
+
+    if (targetId !== null && targetId !== undefined) {
+      scrollToMessage(targetId, quoteText);
     }
   };
 
@@ -229,7 +256,7 @@ export function Assistant() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '60vh', position: 'relative' }}>
       {/* Header bar */}
       <div style={{
-        padding: '0.5rem 1rem',
+        padding: '0.6rem 1.25rem',
         borderBottom: '1px solid rgba(0,0,0,0.06)',
         display: 'flex',
         justifyContent: 'space-between',
@@ -237,29 +264,43 @@ export function Assistant() {
         fontSize: '0.825rem',
         color: 'var(--text-secondary)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Cpu size={14} color="var(--primary-color)" />
-          <span>Mémoire Redis active</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <span style={{
+            display: 'inline-block',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: '#10b981',
+            boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)'
+          }} />
+          <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Assistant en ligne</span>
         </div>
-        <button
-          onClick={handleResetConversation}
-          disabled={loading}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            background: 'none',
-            border: '1px solid rgba(0,0,0,0.15)',
-            borderRadius: '6px',
-            padding: '0.25rem 0.6rem',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            color: 'var(--text-secondary)'
-          }}
-        >
-          <RotateCcw size={13} />
-          Nouvelle conversation
-        </button>
+
+        {messages.length > 1 && (
+          <button
+            onClick={handleResetConversation}
+            disabled={loading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              borderRadius: '20px',
+              padding: '0.35rem 0.85rem',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: 'var(--error-color, #ef4444)',
+              transition: 'all 200ms ease-in-out',
+              fontFamily: 'inherit'
+            }}
+            title="Effacer la discussion et démarrer une nouvelle conversation"
+          >
+            <RotateCcw size={13} />
+            Nouvelle conversation
+          </button>
+        )}
       </div>
 
       {/* Message list */}
@@ -282,7 +323,7 @@ export function Assistant() {
               {/* Ligne de citation au-dessus de la bulle utilisateur (cliquable pour rediriger vers le texte d'origine) */}
               {msg.role === 'user' && msg.quote && (
                 <div
-                  onClick={() => msg.quoteMsgId !== null && msg.quoteMsgId !== undefined && scrollToMessage(msg.quoteMsgId, msg.quote)}
+                  onClick={() => navigateToQuote(msg.quote!, msg.quoteMsgId)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -293,10 +334,10 @@ export function Assistant() {
                     maxWidth: '80%',
                     marginLeft: 'auto',
                     justifyContent: 'flex-end',
-                    cursor: msg.quoteMsgId !== null && msg.quoteMsgId !== undefined ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     transition: 'opacity 150ms',
                   }}
-                  title={msg.quoteMsgId !== null && msg.quoteMsgId !== undefined ? "Cliquer pour voir le passage d'origine dans la conversation" : undefined}
+                  title="Cliquer pour voir le passage d'origine dans la conversation"
                 >
                   <span style={{ fontSize: '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
                   <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '350px' }}>
@@ -340,7 +381,7 @@ export function Assistant() {
                   transition: 'all 300ms ease-in-out',
                 }}>
                   {msg.role === 'assistant' && msg.assistantData?.quizData ? (
-                    <ChatQuizCard quizData={msg.assistantData.quizData} />
+                    <ChatQuizCard quizData={msg.assistantData.quizData} sessionId={sessionId} msgId={msg.id} />
                   ) : msg.role === 'assistant' && msg.assistantData && msg.id !== 0 ? (
                     <>
                       <KeywordText
@@ -433,7 +474,7 @@ export function Assistant() {
       }}>
         {quotedText && (
           <div
-            onClick={() => quotedMsgId !== null && quotedMsgId !== undefined && scrollToMessage(quotedMsgId, quotedText)}
+            onClick={() => navigateToQuote(quotedText, quotedMsgId)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -444,7 +485,7 @@ export function Assistant() {
               borderRadius: '6px',
               fontSize: '0.85rem',
               color: 'var(--text-primary)',
-              cursor: quotedMsgId !== null && quotedMsgId !== undefined ? 'pointer' : 'default',
+              cursor: 'pointer',
               transition: 'background-color 150ms',
             }}
             title={quotedMsgId !== null && quotedMsgId !== undefined ? "Cliquer pour voir le passage d'origine dans la conversation" : undefined}
@@ -513,11 +554,30 @@ export function Assistant() {
   );
 }
 
-function ChatQuizCard({ quizData }: { quizData: ChatQuizData }) {
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+function ChatQuizCard({ quizData, sessionId, msgId }: { quizData: ChatQuizData; sessionId: string; msgId: number }) {
+  const storageKey = `chat_quiz_${sessionId}_${msgId}_${quizData.questionText.slice(0, 20)}`;
+
+  const [selectedOption, setSelectedOption] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved !== null ? Number(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const isAnswered = selectedOption !== null;
   const isCorrect = selectedOption === quizData.correctAnswerIndex;
+
+  const handleSelectOption = (idx: number) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(idx);
+    try {
+      localStorage.setItem(storageKey, idx.toString());
+    } catch (err) {
+      console.error("Erreur de sauvegarde de l'option sélectionnée :", err);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -564,7 +624,7 @@ function ChatQuizCard({ quizData }: { quizData: ChatQuizData }) {
             <button
               key={idx}
               disabled={isAnswered}
-              onClick={() => setSelectedOption(idx)}
+              onClick={() => handleSelectOption(idx)}
               style={btnStyle}
             >
               <span style={{

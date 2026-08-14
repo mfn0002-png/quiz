@@ -35,7 +35,7 @@ export function parseApiError(err: unknown): UserFacingError {
       icon: '🤖',
       title: 'Modèle IA indisponible',
       detail: "Le modèle d'IA configuré n'est pas accessible.",
-      hint: "Vérifiez la variable GEMINI_MODEL dans backend/.env",
+      hint: "Veuillez réessayer ultérieurement, nous travaillons à résoudre ce problème.",
     };
   }
 
