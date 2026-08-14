@@ -10,9 +10,10 @@ import { StatsTab } from './components/StatsTab';
 import { LeaderboardTab } from './components/LeaderboardTab';
 import { QuizTab } from './components/quiz/QuizTab';
 import { ChallengePage } from './components/challenge/ChallengePage';
+import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
 
-function App() {
+function AppContent() {
   const { user, authLoading } = useAuthUser();
   const quiz = useQuiz(user);
   const challenge = useChallenge({ user, onError: quiz.setError });
@@ -63,6 +64,14 @@ function App() {
         </Routes>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

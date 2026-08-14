@@ -1,4 +1,5 @@
 import { AuthButton } from './AuthButton';
+import { ThemeToggle } from './ThemeToggle';
 import { User } from '../firebase';
 
 interface HeaderProps {
@@ -9,7 +10,8 @@ interface HeaderProps {
 export function Header({ user, authLoading }: HeaderProps) {
   return (
     <header className="header">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+        <ThemeToggle />
         <AuthButton user={user} authLoading={authLoading} />
       </div>
       <h1>Quiz Islamique</h1>

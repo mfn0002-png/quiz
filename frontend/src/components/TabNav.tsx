@@ -9,26 +9,37 @@ const TABS = [
 
 export function TabNav() {
   return (
-    <nav style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem', backgroundColor: 'var(--surface-color)', borderRadius: 'var(--radius-full)', padding: '0.35rem', boxShadow: 'var(--shadow-sm)' }}>
+    <nav style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '0.6rem',
+      marginBottom: '2.5rem',
+      backgroundColor: 'var(--surface-color)',
+      border: '1px solid var(--border-color)',
+      borderRadius: 'var(--radius-xl)',
+      padding: '0.55rem',
+      boxShadow: 'var(--shadow-md)',
+      transition: 'all var(--transition-normal)',
+    }}>
       {TABS.map(tab => (
         <NavLink
           key={tab.path}
           to={tab.path}
           style={({ isActive }) => ({
-            flex: 1,
-            minWidth: '120px',
-            padding: '0.6rem 1rem',
-            borderRadius: 'var(--radius-full)',
+            flex: '1 1 140px',
+            padding: '0.75rem 1.25rem',
+            borderRadius: 'var(--radius-lg)',
             border: 'none',
             cursor: 'pointer',
             fontFamily: 'var(--font-family)',
             fontWeight: 600,
-            fontSize: '0.95rem',
+            fontSize: '1rem',
             textAlign: 'center',
             textDecoration: 'none',
             transition: 'all var(--transition-fast)',
             backgroundColor: isActive ? 'var(--primary-color)' : 'transparent',
             color: isActive ? 'white' : 'var(--text-secondary)',
+            boxShadow: isActive ? '0 4px 14px rgba(5, 150, 105, 0.35)' : 'none',
           })}
         >
           {tab.label}
