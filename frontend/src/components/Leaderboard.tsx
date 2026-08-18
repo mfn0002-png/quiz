@@ -50,9 +50,14 @@ export function Leaderboard({ currentUser }: LeaderboardProps) {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Trophy color="var(--secondary-color)" /> Classement Mondial
-      </h2>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+          <Trophy color="var(--secondary-color)" /> Classement Général
+        </h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
+          ✨ Basé sur le meilleur score individuel (Personal Best). Rejouer une même question permet d'améliorer votre record sans gonfler artificiellement votre rang.
+        </p>
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {entries.map((entry, idx) => {
           const isMe = currentUser && entry.userId === currentUser.uid;

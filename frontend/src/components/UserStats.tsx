@@ -153,6 +153,11 @@ export function UserStats({ user, refreshKey, onReplayQuiz }: UserStatsProps) {
 
                       const isReviewOpen = expandedReviewId === sess.id;
                       const hasQuestions = sess.questions && sess.questions.length > 0;
+                      const isReplaySession = (sess as any).isReplay || categorySessions.some((other) => (
+                        other.id !== sess.id &&
+                        other.difficulty === sess.difficulty &&
+                        ((other.date?.toMillis ? other.date.toMillis() : 0) < (sess.date?.toMillis ? sess.date.toMillis() : 0))
+                      ));
 
                       return (
                         <div
@@ -166,8 +171,27 @@ export function UserStats({ user, refreshKey, onReplayQuiz }: UserStatsProps) {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.2rem' }}>
-                                Niveau : <span style={{ color: 'var(--primary-color)' }}>{sess.difficulty}</span>
+                              <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                <span>Niveau : <span style={{ color: 'var(--primary-color)' }}>{sess.difficulty}</span></span>
+                                {isReplaySession && (
+                                  <span
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.2rem',
+                                      fontSize: '0.72rem',
+                                      fontWeight: 600,
+                                      padding: '0.12rem 0.5rem',
+                                      borderRadius: '9999px',
+                                      backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                                      color: 'var(--secondary-color, #d97706)',
+                                      border: '1px solid rgba(217, 119, 6, 0.25)',
+                                    }}
+                                    title="Session rejouée / révisée"
+                                  >
+                                    <RotateCcw size={10} /> Rejoué
+                                  </span>
+                                )}
                               </div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                 🗓️ {dateStr}
