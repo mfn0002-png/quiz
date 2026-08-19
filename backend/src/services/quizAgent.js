@@ -1,18 +1,21 @@
 /**
  * quizAgent.js
  *
- * Agent de génération de questions avec pipeline multi-étapes :
- *   ① Analyse + contexte islamique optionnel (Knowledge Tool)
- *   ② Génération du draft de questions
- *   ③ Déduplication Redis (anti-doublon inter-sessions)
- *   ④ Réflexion / auto-vérification (Reflection Agent)
- *   ⑤ Sauvegarde Redis pour les futures sessions
- *   - Logging structuré complet
+ * Agent de génération de questions avec pipeline multi-étapes agentique :
+ *   ① Contexte RAG authentique (Coran / Hadiths) via ragService
+ *   ② Résolution adaptative de la difficulté (playerProfileService)
+ *   ③ Génération du draft de questions (Gemini) avec consigne anti-doublon renforcée
+ *   ④ Déduplication intelligente sémantique & par réponse (Session Redis)
+ *   ⑤ Réflexion / auto-vérification (Reflection Agent)
+ *   ⑥ Sauvegarde Redis (anti-doublon + pool de secours quizCacheService)
  */
 
 import { SchemaType } from '@google/generative-ai';
 import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getSeenQuestions, addSeenQuestions } from './sessionService.js';
+import { fetchIslamicRAGContext } from './ragService.js';
+import { resolveDifficulty } from './playerProfileService.js';
+import { saveQuestionsToPool, getQuestionsFromPool } from './quizCacheService.js';
 
 // ─────────────────────────────────────────────
 // Schema de réponse
@@ -53,30 +56,78 @@ const DIFFICULTY_GUIDE = {
 };
 
 // ─────────────────────────────────────────────
-// Étape ① : Knowledge Tool (contexte islamique)
+// Helpers de Déduplication Sémantique & Conceptuelle
 // ─────────────────────────────────────────────
 
-async function getIslamicContext(topic) {
-  if (topic === 'Mélange') return null;
+function extractSignificantWords(str) {
+  if (!str) return new Set();
+  const stopWords = new Set([
+    'quel', 'quelle', 'quels', 'quelles', 'est', 'le', 'la', 'les', 'un', 'une', 'des',
+    'du', 'de', 'd', 'dans', 'en', 'pour', 'par', 'sur', 'avec', 'et', 'ou', 'qui', 'que',
+    'quoi', 'dont', 'combien', 'nom', 'nomme', 'nommes', 'nommer', 'premiere', 'premier',
+    'fois', 'jour', 'musulmans', 'musulman', 'islam', 'islamique', 'religion', 'dieu', 'allah'
+  ]);
 
-  console.log(`📚 [Quiz Agent - Step 1] Recherche de connaissances pour le thème : "${topic}"`);
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-  const result = await model.generateContent(
-    `En 4-5 phrases précises, résume les connaissances islamiques fondamentales sur "${topic}".
-Inclus des faits vérifiables : dates, nombres, noms, références coraniques si pertinent.
-Ce résumé servira de base pour créer des questions de quiz islamique.
-Réponds en français correct.`
-  );
-  const context = result.response.text();
-  console.log(`   💡 Contexte extrait (${context.length} car.) : "${context.slice(0, 120)}..."`);
-  return context;
+  const clean = str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ');
+
+  const words = clean
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !stopWords.has(w));
+
+  return new Set(words);
+}
+
+function isDuplicateQuestion(newQ, seenItem) {
+  const newText = newQ.text.trim().toLowerCase();
+  const seenText = (seenItem.text || '').trim().toLowerCase();
+
+  // 1. Égalité exacte de la question
+  if (newText === seenText) return true;
+
+  // 2. Égalité exacte de la réponse correcte (ex: si la bonne réponse est "La Shahada" ou "5 fois", c'est le même concept !)
+  if (seenItem.answer && newQ.options && newQ.correctAnswerIndex !== undefined) {
+    const newAnswer = (newQ.options[newQ.correctAnswerIndex] || '').trim().toLowerCase();
+    const seenAnswer = seenItem.answer.trim().toLowerCase();
+    if (newAnswer && seenAnswer && newAnswer === seenAnswer) {
+      return true;
+    }
+  }
+
+  // 3. Chevauchement sémantique des mots clés (> 50% de mots identiques)
+  const words1 = extractSignificantWords(newText);
+  const words2 = extractSignificantWords(seenText);
+  if (words1.size > 0 && words2.size > 0) {
+    let common = 0;
+    for (const w of words1) {
+      if (words2.has(w)) common++;
+    }
+    const minSize = Math.min(words1.size, words2.size);
+    if (minSize > 0 && (common / minSize) >= 0.5) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function deduplicateQuestions(questions, seenItems) {
+  const filtered = questions.filter(q => {
+    const isDup = seenItems.some(seen => isDuplicateQuestion(q, seen));
+    return !isDup;
+  });
+  console.log(`🔍 [Quiz Agent - Step 3] Déduplication intelligente : ${questions.length} → ${filtered.length} questions inédites`);
+  return filtered;
 }
 
 // ─────────────────────────────────────────────
 // Étape ② : Génération du draft
 // ─────────────────────────────────────────────
 
-async function generateDraft(difficulty, topic, count, context, seenKeys) {
+async function generateDraft(difficulty, topic, count, context, seenItems) {
   console.log(`📝 [Quiz Agent - Step 2] Génération draft Gemini (${count} Q | ${difficulty} | ${topic})`);
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
@@ -87,11 +138,12 @@ async function generateDraft(difficulty, topic, count, context, seenKeys) {
   });
 
   const contextBlock = context
-    ? `\n📚 Contexte de référence :\n${context}\n`
+    ? `\n📚 Contexte RAG de référence authentique :\n${context}\n`
     : '';
 
-  const seenBlock = seenKeys.length > 0
-    ? `\n⛔ ÉVITE ABSOLUMENT ces sujets déjà posés : ${seenKeys.slice(-30).join(' | ')}\n`
+  const seenBlock = seenItems.length > 0
+    ? `\n⛔ INTERDICTION STRICTE : Évite ABSOLUMENT de reposer des questions sur ces sujets ou d'utiliser ces réponses déjà vues par le joueur :\n` +
+      seenItems.slice(-25).map(s => `- Question vue : "${s.text}" ${s.answer ? `(Réponse: "${s.answer}")` : ''}`).join('\n') + '\n'
     : '';
 
   const categoryInstruction = topic === 'Mélange'
@@ -99,15 +151,16 @@ async function generateDraft(difficulty, topic, count, context, seenKeys) {
     : `Toutes les questions portent spécifiquement sur : "${topic}".`;
 
   const prompt = `Tu es un expert de l'Islam et un excellent pédagogue.
-Génère EXACTEMENT ${count} questions QCM sur la religion islamique.
+Génère EXACTEMENT ${count} questions QCM NOUVELLES ET INÉDITES sur la religion islamique.
 Niveau : "${difficulty}" — ${DIFFICULTY_GUIDE[difficulty] || ''}
 ${categoryInstruction}
 ${contextBlock}${seenBlock}
 RÈGLES STRICTES :
+- Propose des sujets diversifiés et inédits ! Ne réutilise PAS les mêmes concepts de base que dans la liste d'interdiction.
 - Exactement 4 options par question
 - La bonne réponse (correctAnswerIndex) doit être INDISCUTABLEMENT correcte
 - Les distracteurs doivent être plausibles mais clairement faux
-- Explications claires, pédagogiques, en 2-3 phrases
+- Explications claires, pédagogiques, en 2-3 phrases citant la référence si possible
 - Identifie les mots-clés islamiques dans chaque explication
 - Rédige TOUT en français correct avec accents (é, à, è, ô, ç). JAMAIS d'entités HTML.`;
 
@@ -118,20 +171,7 @@ RÈGLES STRICTES :
 }
 
 // ─────────────────────────────────────────────
-// Étape ③ : Déduplication Redis
-// ─────────────────────────────────────────────
-
-function deduplicateQuestions(questions, seenKeys) {
-  const filtered = questions.filter(q => {
-    const key = q.text.trim().toLowerCase();
-    return !seenKeys.some(seen => seen.toLowerCase() === key);
-  });
-  console.log(`🔍 [Quiz Agent - Step 3] Déduplication Redis : ${questions.length} → ${filtered.length} questions uniques`);
-  return filtered;
-}
-
-// ─────────────────────────────────────────────
-// Étape ④ : Réflexion / auto-vérification
+// Étape ④ : Réflexion / Auto-Vérification
 // ─────────────────────────────────────────────
 
 async function reflectAndVerify(questions, difficulty) {
@@ -171,52 +211,95 @@ IMPORTANT : UTF-8 propre avec accents normaux. JAMAIS d'entités HTML.`;
 // ─────────────────────────────────────────────
 
 /**
- * Pipeline complet de génération de questions avec auto-vérification.
- *
- * @param {string} difficulty - Niveau de difficulté
- * @param {string} topic      - Catégorie / thème
- * @param {number} count      - Nombre de questions
- * @param {string} sessionId  - Session Redis (anti-doublon)
+ * Pipeline complet de génération de questions avec auto-vérification et déduplication sémantique.
  */
 export async function runQuizAgent(difficulty, topic, count, sessionId) {
   console.log('\n🧩 ==================== QUIZ AGENT ====================');
   console.log(`🆔 Session ID : ${sessionId}`);
-  console.log(`🎯 Demande    : ${count} questions | Niveau: ${difficulty} | Thème: ${topic}`);
 
-  // ① Contexte islamique (Knowledge Tool)
-  const context = await getIslamicContext(topic);
+  // ① Détermination adaptative de la difficulté si 'Auto'
+  const finalDifficulty = await resolveDifficulty(sessionId, difficulty);
+  console.log(`🎯 Demande    : ${count} questions | Niveau demandé: ${difficulty} → Niveau retenu: ${finalDifficulty} | Thème: ${topic}`);
 
-  // ② Questions déjà vues (anti-doublon)
-  const seenKeys = await getSeenQuestions(sessionId);
-  console.log(`📜 Questions déjà en mémoire Redis pour ce joueur : ${seenKeys.length}`);
+  try {
+    // ② Contexte RAG Islamique
+    const ragContext = await fetchIslamicRAGContext(topic);
 
-  // ③ Génération du draft
-  let questions = await generateDraft(difficulty, topic, count, context, seenKeys);
+    // ③ Questions & Réponses déjà vues (anti-doublon intelligent)
+    const seenItems = await getSeenQuestions(sessionId);
+    console.log(`📜 Questions déjà en mémoire Redis pour ce joueur : ${seenItems.length}`);
 
-  // ④ Déduplication
-  let unique = deduplicateQuestions(questions, seenKeys);
+    // ④ Génération du draft
+    let questions = await generateDraft(finalDifficulty, topic, count, ragContext, seenItems);
 
-  // Si pas assez de questions uniques, regénérer les manquantes
-  if (unique.length < count) {
-    const missing = count - unique.length;
-    console.log(`🔄 Regénération de ${missing} questions manquantes pour compléter le lot...`);
-    const allSeenWithNew = [...seenKeys, ...questions.map(q => q.text.trim().toLowerCase().slice(0, 60))];
-    const extra = await generateDraft(difficulty, topic, missing, context, allSeenWithNew);
-    unique = [...unique, ...deduplicateQuestions(extra, allSeenWithNew)].slice(0, count);
+    // ⑤ Déduplication sémantique & conceptuelle
+    let unique = deduplicateQuestions(questions, seenItems);
+
+    // Si pas assez de questions uniques, boucler pour compléter le lot jusqu'à obtenir le nombre exact 'count'
+    let retryAttempt = 0;
+    while (unique.length < count && retryAttempt < 3) {
+      retryAttempt++;
+      const missing = count - unique.length;
+      console.log(`🔄 [Tentative ${retryAttempt}/3] Regénération de ${missing} question(s) inédite(s) pour compléter le lot...`);
+
+      const currentSeen = [
+        ...seenItems,
+        ...unique.map(q => ({
+          text: q.text.trim(),
+          answer: q.options && q.correctAnswerIndex !== undefined ? q.options[q.correctAnswerIndex].trim() : ''
+        }))
+      ];
+
+      // Demander 1 ou 2 questions de plus pour donner de la marge à la déduplication
+      const requestCount = Math.min(missing + 1, 5);
+      const extraDraft = await generateDraft(finalDifficulty, topic, requestCount, ragContext, currentSeen);
+      const newUnique = deduplicateQuestions(extraDraft, currentSeen);
+
+      unique = [...unique, ...newUnique];
+    }
+
+    // Si après 3 tentatives il manque encore des questions, piocher dans le pool de secours pour garantir exactement 'count' questions
+    if (unique.length < count) {
+      const needed = count - unique.length;
+      console.warn(`⚠️ [Quiz Agent] Complétion de ${needed} question(s) via le pool de secours Redis...`);
+      const fallbackPool = await getQuestionsFromPool(finalDifficulty, topic, needed * 2);
+
+      const seenTexts = new Set(unique.map(q => q.text.trim().toLowerCase()));
+      const poolAdditions = fallbackPool.filter(q => !seenTexts.has(q.text.trim().toLowerCase()));
+
+      unique = [...unique, ...poolAdditions].slice(0, count);
+    }
+
+    // ⑥ Réflexion / auto-vérification
+    const verified = await reflectAndVerify(unique.slice(0, count), finalDifficulty);
+
+    // ⑦ Enregistrements Redis (Historique joueur + Banque de secours de questions complètes)
+    await addSeenQuestions(sessionId, verified);
+    saveQuestionsToPool(verified, finalDifficulty, topic).catch(err => console.warn('Échec saveQuestionsToPool :', err.message));
+
+    console.log('📋 Aperçu des questions finales générées :');
+    verified.forEach((q, i) => {
+      console.log(`   ${i + 1}. [${q.category}] ${q.text} (Rep: ${q.options[q.correctAnswerIndex]})`);
+    });
+    console.log('=======================================================\n');
+
+    return verified;
+
+  } catch (error) {
+    const is429 = error?.status === 429 ||
+      (error?.message && error.message.includes('429')) ||
+      (error?.message && error.message.toLowerCase().includes('quota'));
+
+    if (is429) {
+      console.warn('⚠️ Quota Gemini (429) atteint ! Basculement automatique vers la banque de secours Redis...');
+      const fallbackQuestions = await getQuestionsFromPool(finalDifficulty, topic, count);
+
+      if (fallbackQuestions.length > 0) {
+        console.log(`✅ Succès Fallback : ${fallbackQuestions.length} questions complètes restituées depuis le cache Redis !`);
+        return fallbackQuestions;
+      }
+    }
+
+    throw error;
   }
-
-  // ⑤ Réflexion / auto-vérification
-  const verified = await reflectAndVerify(unique.slice(0, count), difficulty);
-
-  // ⑥ Sauvegarder dans Redis (anti-doublon pour les prochaines sessions)
-  await addSeenQuestions(sessionId, verified);
-  console.log(`💾 ${verified.length} nouvelles questions enregistrées dans Redis (anti-doublon 7 jours)`);
-
-  console.log('📋 Aperçu des questions finales générées :');
-  verified.forEach((q, i) => {
-    console.log(`   ${i + 1}. [${q.category}] ${q.text} (Rep: ${q.options[q.correctAnswerIndex]})`);
-  });
-  console.log('=======================================================\n');
-
-  return verified;
 }

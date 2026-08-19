@@ -1,4 +1,4 @@
-export type Difficulty = 'Débutant' | 'Intermédiaire' | 'Avancé';
+export type Difficulty = 'Auto' | 'Débutant' | 'Intermédiaire' | 'Avancé' | 'Expert';
 
 export interface Keyword {
   term: string;

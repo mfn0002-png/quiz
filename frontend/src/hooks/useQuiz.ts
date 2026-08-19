@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Difficulty, Question } from '../data/questions';
-import { generateQuestions, getClientSessionId } from '../services/apiService';
+import { generateQuestions, getClientSessionId, sendQuizResults } from '../services/apiService';
 import { playCorrect, playWrong, playTimeout } from '../utils/sounds';
 import { saveSession } from '../services/firestoreService';
 import { User } from '../firebase';
@@ -16,7 +16,7 @@ export function useQuiz(user: User | null) {
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('Débutant');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('Auto');
   const [selectedCategory, setSelectedCategory] = useState<string>('Mélange');
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
@@ -52,6 +52,14 @@ export function useQuiz(user: User | null) {
 
   const finishQuiz = useCallback((finalScore: number) => {
     setShowResults(true);
+    const sessionId = getClientSessionId(user?.uid);
+    const results = activeQuestions.map((q, idx) => ({
+      questionId: q.id,
+      isCorrect: userAnswers[idx] === q.correctAnswerIndex,
+      category: q.category || selectedCategory,
+    }));
+    sendQuizResults(sessionId, results);
+
     if (user) {
       saveSession(user.uid, selectedDifficulty, selectedCategory, finalScore, activeQuestions.length, activeQuestions, userAnswers)
         .then(() => setStatsRefreshKey(k => k + 1))
@@ -118,9 +126,6 @@ export function useQuiz(user: User | null) {
       setIsAnswerCorrect(null);
       setTimeLeft(QUESTION_TIME);
     } else {
-      // ⚠️ Fix : isAnswerCorrect peut être null si on appelle goToNextQuestion
-      // via le bouton "Continuer" après une réponse correcte. On recalcule le
-      // score final à partir de l'état actuel pour éviter la stale closure.
       finishQuiz(score);
     }
   };

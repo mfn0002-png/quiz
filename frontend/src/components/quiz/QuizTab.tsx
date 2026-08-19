@@ -71,6 +71,7 @@ export function QuizTab({
       timeLeft={quiz.timeLeft}
       selectedAnswer={quiz.selectedAnswer}
       isAnswerCorrect={quiz.isAnswerCorrect}
+      selectedDifficulty={quiz.selectedDifficulty}
       onAnswer={quiz.handleAnswerClick}
       onNext={quiz.goToNextQuestion}
       onQuit={() => quiz.setStarted(false)}

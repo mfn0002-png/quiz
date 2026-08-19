@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Trophy, Clock, CheckCircle2, XCircle, ChevronRight, X, AlertTriangle, LogOut } from 'lucide-react';
-import { Question } from '../../data/questions';
+import { Trophy, Clock, CheckCircle2, XCircle, ChevronRight, X, AlertTriangle, LogOut, Sparkles } from 'lucide-react';
+import { Question, Difficulty } from '../../data/questions';
 import { KeywordText } from '../KeywordText';
 import { QUESTION_TIME } from '../../constants';
 
@@ -12,6 +12,7 @@ interface QuizQuestionScreenProps {
   timeLeft: number;
   selectedAnswer: number | null;
   isAnswerCorrect: boolean | null;
+  selectedDifficulty?: Difficulty;
   onAnswer: (optionIndex: number) => void;
   onNext: () => void;
   onQuit: () => void;
@@ -25,11 +26,13 @@ export function QuizQuestionScreen({
   timeLeft,
   selectedAnswer,
   isAnswerCorrect,
+  selectedDifficulty,
   onAnswer,
   onNext,
   onQuit,
 }: QuizQuestionScreenProps) {
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const isAuto = selectedDifficulty === 'Auto';
 
   return (
     <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
@@ -57,7 +60,7 @@ export function QuizQuestionScreen({
         </div>
       </div>
 
-      <div style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '99px', height: '8px', marginBottom: '2rem' }}>
+      <div style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '99px', height: '8px', marginBottom: '1.5rem' }}>
         <div style={{
           height: '100%',
           backgroundColor: 'var(--primary-color)',
@@ -67,8 +70,32 @@ export function QuizQuestionScreen({
         }} />
       </div>
 
-      <div style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        Catégorie : {question.category}
+      {/* En-tête Catégorie & Badge Niveau Adaptatif */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Catégorie : {question.category}
+        </div>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          padding: '0.35rem 0.85rem',
+          borderRadius: '99px',
+          backgroundColor: isAuto ? 'rgba(5, 150, 105, 0.12)' : 'rgba(0, 0, 0, 0.05)',
+          color: isAuto ? 'var(--primary-color)' : 'var(--text-secondary)',
+          fontSize: '0.825rem',
+          fontWeight: 700,
+          border: isAuto ? '1px solid rgba(5, 150, 105, 0.3)' : '1px solid transparent'
+        }}>
+          {isAuto ? (
+            <>
+              <Sparkles size={14} />
+              <span>Niveau Auto (IA) : {question.difficulty}</span>
+            </>
+          ) : (
+            <span>Niveau : {question.difficulty}</span>
+          )}
+        </div>
       </div>
 
       <h3 style={{ fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center' }}>

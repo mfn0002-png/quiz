@@ -66,6 +66,20 @@ export const generateQuestions = async (
 };
 
 /**
+ * Envoie les résultats d'un quiz au backend pour alimenter le profil adaptatif du joueur.
+ */
+export const sendQuizResults = async (
+  sessionId: string,
+  results: { questionId: number; isCorrect: boolean; category: string }[]
+): Promise<void> => {
+  await fetch(`${API_BASE_URL}/quiz/results`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, results }),
+  }).catch(err => console.warn("Erreur envoi résultats adaptatifs :", err));
+};
+
+/**
  * Appelle l'API Backend Express pour la conversation avec l'Assistant IA Gemini Agent.
  */
 export const askQuestion = async (userQuestion: string, sessionId?: string): Promise<AssistantResponse> => {
@@ -104,5 +118,3 @@ export const getAssistantHistory = async (sessionId?: string): Promise<{ role: '
   const data = await response.json().catch(() => ({ history: [] }));
   return data.history || [];
 };
-
-
