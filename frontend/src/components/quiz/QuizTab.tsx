@@ -34,6 +34,7 @@ export function QuizTab({
         selectedCategory={quiz.selectedCategory}
         onCategoryChange={quiz.setSelectedCategory}
         error={quiz.error}
+        livesState={quiz.livesState}
         onStart={onStartQuiz}
       />
     );
@@ -48,6 +49,8 @@ export function QuizTab({
       <QuizResultsScreen
         user={user}
         score={quiz.score}
+        lives={quiz.lives}
+        isGameOver={quiz.isGameOver}
         activeQuestions={quiz.activeQuestions}
         userAnswers={quiz.userAnswers}
         selectedDifficulty={quiz.selectedDifficulty}
@@ -68,6 +71,8 @@ export function QuizTab({
       questionIndex={quiz.currentQuestionIndex}
       totalQuestions={quiz.activeQuestions.length}
       score={quiz.score}
+      lives={quiz.lives}
+      livesState={quiz.livesState}
       timeLeft={quiz.timeLeft}
       selectedAnswer={quiz.selectedAnswer}
       isAnswerCorrect={quiz.isAnswerCorrect}
@@ -75,6 +80,7 @@ export function QuizTab({
       onAnswer={quiz.handleAnswerClick}
       onNext={quiz.goToNextQuestion}
       onQuit={() => quiz.setStarted(false)}
+      onQuitToResults={quiz.quitQuiz}
     />
   );
 }

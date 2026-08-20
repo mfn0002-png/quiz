@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Difficulty, Question } from '../data/questions';
 import { generateQuestions, getClientSessionId, sendQuizResults } from '../services/apiService';
+import { getGlobalLivesState, consumeGlobalLife, LivesState } from '../services/livesService';
 import { playCorrect, playWrong, playTimeout } from '../utils/sounds';
 import { saveSession } from '../services/firestoreService';
 import { User } from '../firebase';
-import { QUESTION_TIME } from '../constants';
+import { QUESTION_TIME, DEFAULT_QUESTION_COUNT } from '../constants';
 import { parseApiError } from '../utils/errorUtils';
 
 export function useQuiz(user: User | null) {
@@ -13,6 +14,8 @@ export function useQuiz(user: User | null) {
   const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [livesState, setLivesState] = useState<LivesState>(() => getGlobalLivesState());
+  const [isGameOver, setIsGameOver] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
@@ -23,22 +26,37 @@ export function useQuiz(user: User | null) {
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
+  // Minuteur de rafraîchissement continu des Vies (1 vie / X sec)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLivesState(getGlobalLivesState());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const startQuiz = async (difficulty: Difficulty) => {
+    const currentLives = getGlobalLivesState();
+    if (currentLives.lives <= 0) {
+      setError("Vous n'avez plus de vie disponible. Veuillez attendre la recharge automatique.");
+      return;
+    }
+
     setSelectedDifficulty(difficulty);
     setLoading(true);
     setError(null);
     setStarted(true);
+    setIsGameOver(false);
 
     try {
       const sessionId = getClientSessionId(user?.uid);
-      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, 5, sessionId);
+      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, DEFAULT_QUESTION_COUNT, sessionId);
       setActiveQuestions(generatedQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
       setShowResults(false);
       setSelectedAnswer(null);
       setIsAnswerCorrect(null);
-      setUserAnswers(new Array(5).fill(null));
+      setUserAnswers(new Array(generatedQuestions.length || DEFAULT_QUESTION_COUNT).fill(null));
       setTimeLeft(QUESTION_TIME);
     } catch (err: any) {
       console.error(err);
@@ -50,8 +68,10 @@ export function useQuiz(user: User | null) {
     }
   };
 
-  const finishQuiz = useCallback((finalScore: number) => {
+  const finishQuiz = useCallback((finalScore: number, gameOver: boolean = false) => {
     setShowResults(true);
+    if (gameOver) setIsGameOver(true);
+
     const sessionId = getClientSessionId(user?.uid);
     const results = activeQuestions.map((q, idx) => ({
       questionId: q.id,
@@ -68,11 +88,19 @@ export function useQuiz(user: User | null) {
   }, [user, selectedDifficulty, selectedCategory, activeQuestions, userAnswers]);
 
   const replayQuiz = (replayQuestions: Question[], difficulty: Difficulty, category: string) => {
+    const currentLives = getGlobalLivesState();
+    if (currentLives.lives <= 0) {
+      setError("Vous n'avez plus de vie disponible. Veuillez attendre la recharge.");
+      setStarted(false);
+      return;
+    }
+
     setSelectedDifficulty(difficulty);
     setSelectedCategory(category);
     setActiveQuestions(replayQuestions);
     setCurrentQuestionIndex(0);
     setScore(0);
+    setIsGameOver(false);
     setShowResults(false);
     setSelectedAnswer(null);
     setIsAnswerCorrect(null);
@@ -81,20 +109,21 @@ export function useQuiz(user: User | null) {
     setStarted(true);
   };
 
-  // Minuteur de la question en cours
+  // Minuteur de la question en cours (suspendu si 0 vie en attente)
   useEffect(() => {
     let timer: number;
-    if (started && !loading && !showResults && selectedAnswer === null && timeLeft > 0) {
+    const hasLives = livesState.lives > 0;
+    if (started && !loading && !showResults && selectedAnswer === null && timeLeft > 0 && hasLives) {
       timer = window.setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0 && selectedAnswer === null) {
+    } else if (timeLeft === 0 && selectedAnswer === null && hasLives) {
       playTimeout();
       handleAnswerClick(-1);
     }
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, loading, showResults, selectedAnswer, timeLeft]);
+  }, [started, loading, showResults, selectedAnswer, timeLeft, livesState.lives]);
 
   const handleAnswerClick = (optionIndex: number) => {
     if (selectedAnswer !== null) return;
@@ -102,15 +131,18 @@ export function useQuiz(user: User | null) {
     setSelectedAnswer(optionIndex);
     setIsAnswerCorrect(correct);
 
-    if (optionIndex === -1) {
-      // Déjà géré par playTimeout() dans le useEffect
-    } else if (correct) {
+    if (correct) {
       playCorrect();
+      setScore(prev => prev + 1);
     } else {
       playWrong();
+      // Consommer 1 Vie Globale de la réserve
+      const updatedLivesState = consumeGlobalLife();
+      setLivesState(updatedLivesState);
+      if (updatedLivesState.lives <= 0) {
+        setIsGameOver(true);
+      }
     }
-
-    if (correct) setScore(prev => prev + 1);
 
     setUserAnswers(prev => {
       const newAnswers = [...prev];
@@ -126,8 +158,12 @@ export function useQuiz(user: User | null) {
       setIsAnswerCorrect(null);
       setTimeLeft(QUESTION_TIME);
     } else {
-      finishQuiz(score);
+      finishQuiz(score, livesState.lives <= 0 || isGameOver);
     }
+  };
+
+  const quitQuiz = () => {
+    finishQuiz(score, livesState.lives <= 0 || isGameOver);
   };
 
   return {
@@ -136,6 +172,9 @@ export function useQuiz(user: User | null) {
     error, setError,
     currentQuestionIndex,
     score,
+    lives: livesState.lives,
+    livesState,
+    isGameOver,
     showResults,
     selectedAnswer,
     isAnswerCorrect,
@@ -149,5 +188,6 @@ export function useQuiz(user: User | null) {
     replayQuiz,
     handleAnswerClick,
     goToNextQuestion,
+    quitQuiz,
   };
 }

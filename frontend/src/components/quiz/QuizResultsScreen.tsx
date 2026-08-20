@@ -1,4 +1,4 @@
-import { Trophy, RefreshCw, Swords, Copy, Check, Loader2 } from 'lucide-react';
+import { Trophy, RefreshCw, Swords, Copy, Check, Loader2, Skull, Sparkles } from 'lucide-react';
 import { Difficulty, Question } from '../../data/questions';
 import { KeywordText } from '../KeywordText';
 import { User } from '../../firebase';
@@ -6,6 +6,8 @@ import { User } from '../../firebase';
 interface QuizResultsScreenProps {
   user: User | null;
   score: number;
+  lives?: number;
+  isGameOver?: boolean;
   activeQuestions: Question[];
   userAnswers: (number | null)[];
   selectedDifficulty: Difficulty;
@@ -21,6 +23,8 @@ interface QuizResultsScreenProps {
 export function QuizResultsScreen({
   user,
   score,
+  lives = 0,
+  isGameOver = false,
   activeQuestions,
   userAnswers,
   selectedDifficulty,
@@ -32,12 +36,42 @@ export function QuizResultsScreen({
   onRestart,
   onChangeSetup,
 }: QuizResultsScreenProps) {
+  // Déterminer le niveau réel sous-jacent issu du backend agent
+  const resolvedLevel = activeQuestions[0]?.difficulty || (selectedDifficulty === 'Auto' ? 'Débutant' : selectedDifficulty);
+  const displayDifficulty = selectedDifficulty === 'Auto' ? `Auto (${resolvedLevel})` : selectedDifficulty;
+
   return (
     <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-      <Trophy size={64} color="var(--secondary-color)" style={{ margin: '0 auto 1.5rem' }} />
-      <h2 style={{ marginBottom: '1rem' }}>Quiz Terminé !</h2>
-      <p style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
-        Votre score est de <strong>{score}</strong> sur {activeQuestions.length} au niveau <strong>{selectedDifficulty}</strong>.
+      {isGameOver ? (
+        <div style={{
+          width: '72px',
+          height: '72px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          color: 'var(--error-color)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 1.5rem auto'
+        }}>
+          <Skull size={40} />
+        </div>
+      ) : (
+        <Trophy size={64} color="var(--secondary-color)" style={{ margin: '0 auto 1.5rem' }} />
+      )}
+
+      <h2 style={{ marginBottom: '1rem', color: isGameOver ? 'var(--error-color)' : 'var(--text-primary)' }}>
+        {isGameOver ? 'Game Over !' : 'Quiz Terminé !'}
+      </h2>
+
+      <p style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
+        {isGameOver ? (
+          <>Vous n'avez plus de vie disponible. Veuillez quitter ou attendre que vos vies se rechargent.</>
+        ) : (
+          <>
+            Félicitations ! Votre score est de <strong>{score} sur {activeQuestions.length}</strong> au niveau <strong>{displayDifficulty}</strong>.
+          </>
+        )}
       </p>
 
       {/* Mode Défi */}
@@ -66,16 +100,31 @@ export function QuizResultsScreen({
 
       <div style={{ textAlign: 'left', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <h3 style={{ borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Détail de vos réponses :</h3>
-        {activeQuestions.map((q, idx) => {
+        {activeQuestions.slice(0, userAnswers.filter(a => a !== null).length).map((q, idx) => {
           const isCorrect = userAnswers[idx] === q.correctAnswerIndex;
           const answered = userAnswers[idx] !== -1 && userAnswers[idx] !== null;
           return (
-            <div key={q.id} style={{
+            <div key={q.id || idx} style={{
               padding: '1.5rem',
               backgroundColor: isCorrect ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
               border: `1px solid ${isCorrect ? 'var(--success-color)' : 'var(--error-color)'}`,
               borderRadius: '8px',
             }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-color)', textTransform: 'uppercase' }}>
+                  {q.category}
+                </span>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '99px',
+                  backgroundColor: 'rgba(0,0,0,0.06)',
+                  color: 'var(--text-secondary)'
+                }}>
+                  Niveau : {q.difficulty || resolvedLevel}
+                </span>
+              </div>
               <h4 style={{ margin: '0 0 1rem 0' }}>{idx + 1}. {q.text}</h4>
               <div style={{ marginBottom: '0.5rem' }}>
                 <strong>Votre réponse : </strong>
@@ -99,9 +148,9 @@ export function QuizResultsScreen({
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-        <button className="btn btn-primary" onClick={onRestart}>
+        <button className="btn btn-primary" onClick={onRestart} disabled={lives <= 0} style={{ opacity: lives <= 0 ? 0.5 : 1 }}>
           <RefreshCw size={20} style={{ marginRight: '0.5rem' }} />
-          Nouveau Quiz
+          {isGameOver ? 'Recommencer une partie' : 'Nouveau Quiz'}
         </button>
         <button className="btn btn-outline" onClick={onChangeSetup}>
           Changer de niveau ou catégorie
