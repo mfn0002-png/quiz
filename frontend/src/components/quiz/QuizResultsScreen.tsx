@@ -40,9 +40,15 @@ export function QuizResultsScreen({
   const resolvedLevel = activeQuestions[0]?.difficulty || (selectedDifficulty === 'Auto' ? 'Débutant' : selectedDifficulty);
   const displayDifficulty = selectedDifficulty === 'Auto' ? `Auto (${resolvedLevel})` : selectedDifficulty;
 
+  const answeredCount = userAnswers.filter(a => a !== null).length;
+  const isQuizCompleted = answeredCount === activeQuestions.length;
+  const isZeroLives = (lives ?? 0) <= 0;
+
   return (
     <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-      {isGameOver ? (
+      {isQuizCompleted ? (
+        <Trophy size={64} color="var(--secondary-color)" style={{ margin: '0 auto 1.5rem' }} />
+      ) : (
         <div style={{
           width: '72px',
           height: '72px',
@@ -56,23 +62,30 @@ export function QuizResultsScreen({
         }}>
           <Skull size={40} />
         </div>
-      ) : (
-        <Trophy size={64} color="var(--secondary-color)" style={{ margin: '0 auto 1.5rem' }} />
       )}
 
-      <h2 style={{ marginBottom: '1rem', color: isGameOver ? 'var(--error-color)' : 'var(--text-primary)' }}>
-        {isGameOver ? 'Game Over !' : 'Quiz Terminé !'}
+      <h2 style={{ marginBottom: '1rem', color: isQuizCompleted ? 'var(--text-primary)' : 'var(--error-color)' }}>
+        {isQuizCompleted ? 'Quiz Terminé !' : 'Partie Interrompue !'}
       </h2>
 
-      <p style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
-        {isGameOver ? (
-          <>Vous n'avez plus de vie disponible. Veuillez quitter ou attendre que vos vies se rechargent.</>
-        ) : (
-          <>
-            Félicitations ! Votre score est de <strong>{score} sur {activeQuestions.length}</strong> au niveau <strong>{displayDifficulty}</strong>.
-          </>
-        )}
+      <p style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+        {isQuizCompleted ? 'Félicitations !' : 'Bravo pour votre parcours !'} Votre score est de <strong>{score} sur {activeQuestions.length}</strong> au niveau <strong>{displayDifficulty}</strong>.
       </p>
+
+      {isZeroLives && (
+        <div style={{
+          margin: '0.5rem auto 1.5rem auto',
+          padding: '0.65rem 1rem',
+          maxWidth: '520px',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          color: '#f87171',
+          fontSize: '0.875rem'
+        }}>
+          🌙 <strong>Vies épuisées (0/5) :</strong> Vous n'avez plus de vie disponible. Vos 5 vies se rechargeront progressivement avec le temps.
+        </div>
+      )}
 
       {/* Mode Défi */}
       <div style={{ marginBottom: '2rem' }}>
