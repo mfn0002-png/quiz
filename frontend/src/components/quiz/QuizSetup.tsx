@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Play, ChevronDown, LogIn, Sparkles, Moon, Clock, AlertTriangle } from 'lucide-react';
+import { BookOpen, Play, ChevronDown, LogIn, Sparkles, Moon, Clock } from 'lucide-react';
 import { Difficulty } from '../../data/questions';
 import { CATEGORIES, DIFFICULTIES, MAX_GLOBAL_LIVES } from '../../constants';
 import { User } from '../../firebase';

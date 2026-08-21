@@ -1,4 +1,4 @@
-import { Trophy, RefreshCw, Swords, Copy, Check, Loader2, Skull, Sparkles } from 'lucide-react';
+import { Trophy, RefreshCw, Swords, Copy, Check, Loader2, Skull } from 'lucide-react';
 import { Difficulty, Question } from '../../data/questions';
 import { KeywordText } from '../KeywordText';
 import { User } from '../../firebase';
