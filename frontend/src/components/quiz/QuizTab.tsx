@@ -34,6 +34,7 @@ export function QuizTab({
         selectedCategory={quiz.selectedCategory}
         onCategoryChange={quiz.setSelectedCategory}
         error={quiz.error}
+        onClearError={() => quiz.setError(null)}
         livesState={quiz.livesState}
         onStart={onStartQuiz}
       />

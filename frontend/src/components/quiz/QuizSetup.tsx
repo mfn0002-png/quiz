@@ -4,17 +4,19 @@ import { Difficulty } from '../../data/questions';
 import { CATEGORIES, DIFFICULTIES, MAX_GLOBAL_LIVES } from '../../constants';
 import { User } from '../../firebase';
 import { LivesState } from '../../services/livesService';
+import { ErrorBanner } from '../ErrorBanner';
 
 interface QuizSetupProps {
   user: User | null;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
   error: string | null;
+  onClearError?: () => void;
   livesState?: LivesState;
   onStart: (difficulty: Difficulty) => void;
 }
 
-export function QuizSetup({ user, selectedCategory, onCategoryChange, error, livesState, onStart }: QuizSetupProps) {
+export function QuizSetup({ user, selectedCategory, onCategoryChange, error, onClearError, livesState, onStart }: QuizSetupProps) {
   const [showZeroLivesModal, setShowZeroLivesModal] = useState(false);
   const currentLives = livesState?.lives ?? MAX_GLOBAL_LIVES;
   const isZeroLives = currentLives <= 0;
@@ -127,9 +129,7 @@ export function QuizSetup({ user, selectedCategory, onCategoryChange, error, liv
       )}
 
       {error && !isZeroLives && (
-        <div style={{ padding: '1rem', marginBottom: '2rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--error-color)', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center' }}>
-          {error}
-        </div>
+        <ErrorBanner error={error} onDismiss={onClearError} />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '320px', margin: '0 auto' }}>
