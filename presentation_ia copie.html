@@ -339,6 +339,7 @@
     .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
     .badge-emerald { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
     .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .badge-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
 
     .card-title {
       font-family: 'Outfit', sans-serif;
@@ -527,20 +528,39 @@
       line-height: 1;
     }
 
-    /* Highlight Focus Box */
-    .focus-box {
-      background: rgba(139, 92, 246, 0.08);
-      border-left: 4px solid var(--accent-purple);
-      padding: 1.25rem 1.5rem;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      margin-top: 1.5rem;
+    /* Oral Script Box */
+    .oral-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem;
+      margin-top: 2rem;
     }
 
-    .focus-box h4 {
+    .oral-tag {
       color: #c4b5fd;
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .oral-script p {
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+      color: #f1f5f9;
+      line-height: 1.8;
+    }
+
+    /* Links */
+    a.ref-link {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    a.ref-link:hover {
+      text-decoration: underline;
     }
 
     /* Responsive */
@@ -577,6 +597,7 @@
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+      <a href="#detection-ia" class="btn btn-secondary">🔍 Détections IA</a>
       <a href="#slides" class="btn btn-primary">🎯 Support de Présentation</a>
     </div>
   </header>
@@ -597,11 +618,12 @@
         <li><a href="#agents" class="nav-link"><span>🤖</span> Agents IA & Autonomie</a></li>
       </ul>
 
-      <div class="nav-group-title">Mise en Pratique</div>
+      <div class="nav-group-title">Mise en Pratique & Détections</div>
       <ul class="nav-links">
         <li><a href="#cas-pratique" class="nav-link"><span>🛠️</span> Étude de Cas : Quiz Agent</a></li>
-        <li><a href="#json-schema" class="nav-link"><span>🎯</span> JSON Schema Strict</a></li>
-        <li><a href="#slides" class="nav-link"><span>🎯</span> Support de Slides</a></li>
+        <li><a href="#detection-ia" class="nav-link"><span>🕵️‍♂️</span> Détecter un Texte IA</a></li>
+        <li><a href="#slides" class="nav-link"><span>🎯</span> Slides de Présentation</a></li>
+        <li><a href="#pitch-oral" class="nav-link"><span>🎙️</span> Script Oral Standup</a></li>
       </ul>
     </aside>
 
@@ -768,7 +790,7 @@
         </div>
       </section>
 
-      <!-- SECTION 4 : ÉTUDE DE CAS & CODE -->
+      <!-- SECTION 4 : ÉTUDE DE CAS -->
       <section id="cas-pratique" class="section-block">
         <div class="section-header">
           <div class="section-icon">🛠️</div>
@@ -800,24 +822,87 @@
   <span class="code-keyword">return</span> finalQuiz;
 }
         </div>
+      </section>
 
-        <!-- Focus sur JSON Schema Strict -->
-        <div id="json-schema" class="focus-box">
-          <h4>🎯 Focus Technique : Pourquoi Imposer un JSON Schema Strict ?</h4>
-          <p class="card-text">
-            Par défaut, un LLM produit du texte conversationnel libre (avec parfois du texte explicatif autour du JSON ou du markdown mal fermé). Si le backend essaie de faire un <code>JSON.parse()</code> sur ce type de réponse, le serveur va planter immédiatement avec une <code>SyntaxError</code>.
-          </p>
-          <p class="card-text" style="margin-top: 0.75rem;">
-            En passant la configuration <code>responseMimeType: 'application/json'</code> et le schéma <code>QUESTION_SCHEMA</code> (définissant les types <code>ARRAY</code>, <code>OBJECT</code>, <code>INTEGER</code>, <code>STRING</code>) à l'API Gemini, <strong>le moteur de l'IA est contraint physiquement lors du décodage de ses tokens</strong> de ne produire QUE du JSON pur, valide et directement exploitable par le Frontend React.
-          </p>
+      <!-- SECTION 5 : DÉTECTION TEXTE IA vs HUMAIN -->
+      <section id="detection-ia" class="section-block">
+        <div class="section-header">
+          <div class="section-icon">🕵️‍♂️</div>
+          <h2 class="section-title">5. Analyse & Détection : Reconnaître un Texte IA</h2>
+        </div>
+
+        <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
+          Voici les critères clés utilisés pour analyser et détecter si un texte a été produit par un modèle de langage (IA) ou rédigé par un être humain :
+        </p>
+
+        <div class="grid-2">
+          
+          <!-- Carte Style et Structure -->
+          <div class="card" style="border-top: 4px solid var(--accent-pink);">
+            <span class="card-badge badge-pink">Pilier 1</span>
+            <h3 class="card-title">Structure & Style du texte</h3>
+            
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: #f472b6;">• Perfection grammaticale :</strong>
+              <p class="card-text">Absence totale de fautes d'orthographe, de coquilles ou d'hésitations de frappe naturelles.</p>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: #f472b6;">• Formulations lisses :</strong>
+              <p class="card-text">Style neutre, très poliment formulé, parfois répétitif et manquant d'aspérités.</p>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: #f472b6;">• Transitions prévisibles :</strong>
+              <p class="card-text">Utilisation fréquente et mécanique de mots de liaison classiques (<em>en outre, néanmoins, en conclusion, par conséquent</em>).</p>
+            </div>
+
+            <div>
+              <strong style="color: #f472b6;">• Organisation rigide :</strong>
+              <p class="card-text">Structure souvent identique avec introduction passe-partout, listes à puces symétriques et conclusion résumée.</p>
+            </div>
+
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-subtle);">
+              Réf : <a class="ref-link" href="https://www.sortlist.fr/blog/comment-savoir-si-un-texte-a-ete-ecrit-par-une-ia/" target="_blank">Sortlist [1]</a>, 
+              <a class="ref-link" href="https://www.oscar-referencement.com/detection-chatgpt-vos-textes-ia-sont-ils-tracables/" target="_blank">Oscar Ref [2]</a>, 
+              <a class="ref-link" href="https://www.squid-impact.fr/reconnaitre-texte-genere-ia-authenticite-2025/" target="_blank">Squid Impact [3]</a>
+            </div>
+          </div>
+
+          <!-- Carte Contenu et Logique -->
+          <div class="card" style="border-top: 4px solid var(--accent-cyan);">
+            <span class="card-badge badge-cyan">Pilier 2</span>
+            <h3 class="card-title">Contenu & Logique</h3>
+            
+            <div style="margin-bottom: 1.2rem;">
+              <strong style="color: #67e8f9;">• Manque de vécu :</strong>
+              <p class="card-text">Absence d'anecdotes personnelles authentiques, d'émotions vécues ou d'opinions subjectives tranchées.</p>
+            </div>
+
+            <div style="margin-bottom: 1.2rem;">
+              <strong style="color: #67e8f9;">• Généralités :</strong>
+              <p class="card-text">Réponses globales qui survolent le sujet sans engagement profond ni expérience du terrain.</p>
+            </div>
+
+            <div style="margin-bottom: 1.2rem;">
+              <strong style="color: #67e8f9;">• Hallucinations factuelles :</strong>
+              <p class="card-text">Affirmations fausses présentées avec une assurance parfaite et une syntaxe irréprochable.</p>
+            </div>
+
+            <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-subtle);">
+              Réf : <a class="ref-link" href="https://www.leblogdudirigeant.com/ia-et-hallucination-fiabiliser-avec-rag/" target="_blank">Blog du Dirigeant (Fiabiliser avec RAG) [1]</a>, 
+              <a class="ref-link" href="https://omri-learning.com/ia-generative-definition-et-usages-professionnels/" target="_blank">OMRI Learning [2]</a>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      <!-- SECTION 5 : SLIDES DE PRESENTATION -->
+      <!-- SECTION 6 : SLIDES DE PRESENTATION -->
       <section id="slides" class="section-block">
         <div class="section-header">
           <div class="section-icon">🎯</div>
-          <h2 class="section-title">5. Support de Présentation Oral (Slide-par-Slide)</h2>
+          <h2 class="section-title">6. Support de Présentation Oral (Slide-par-Slide)</h2>
         </div>
 
         <p class="card-text" style="margin-bottom: 1.5rem;">
@@ -873,10 +958,10 @@
           <div class="slide-card">
             <div>
               <div class="slide-num">Slide 5</div>
-              <h3 class="slide-title">Étude de Cas & JSON Schema</h3>
+              <h3 class="slide-title">Analyse & Détection IA</h3>
               <ul class="slide-bullets">
-                <li>Pipeline complet RAG + Gemini + Redis.</li>
-                <li>Garantie de format par JSON Schema strict.</li>
+                <li>Structure lissée, transitions prévisibles vs vécu réel.</li>
+                <li>Résolution des hallucinations par le RAG.</li>
               </ul>
             </div>
           </div>
@@ -892,6 +977,27 @@
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <!-- SECTION 7 : SCRIPT ORAL STANDUP -->
+      <section id="pitch-oral" class="oral-box">
+        <div class="oral-tag">🎙️ Mon discours pour le point d'équipe (Standup / Tour de table)</div>
+        <div class="oral-script">
+          <p>
+            "Bonjour à tous. Ces deux dernières semaines, comme je n'avais pas de projet actif en cours, j'ai voulu en profiter pour me remettre à fond dans le dev et découvrir la création d'<strong>agents IA</strong> et l'intégration de <strong>RAG</strong>."
+          </p>
+          <p>
+            "J'ai développé une application de quiz sous <strong>Node.js, Express et React (Vite)</strong>. L'idée ce n'était pas juste de faire une bête requête à l'API Gemini, mais de créer une vraie chaîne agentique :"
+          </p>
+          <p>
+            "1. D'abord, un <strong>service RAG</strong> va chercher les textes et versets authentiques (en local ou via API REST) pour éviter que l'IA n'invente des trucs de mémoire."<br>
+            "2. Ensuite, l'agent génère le quiz en format JSON strict, tout en vérifiant dans <strong>Redis</strong> que le joueur n'a pas déjà vu ces questions pour éviter les doublons."<br>
+            "3. Et enfin, j'ai ajouté un <strong>Agent de Réflexion</strong> qui repasse une seconde fois sur le travail généré pour auto-vérifier l'exactitude de la réponse avant de l'envoyer au front."
+          </p>
+          <p>
+            "Aujourd'hui l'app tourne bien en local avec le front et le back connectés. Ça m'a permis de toucher du doigt les vraies problématiques de l'IA (mémoire de session, anti-doublons, structuration de prompts et auto-correction)."
+          </p>
         </div>
       </section>
 
