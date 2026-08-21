@@ -108,7 +108,10 @@ function cleanSearchKeyword(topic) {
  * @returns {Promise<string>} Résumé du contexte enrichi de sources
  */
 export async function fetchIslamicRAGContext(topic) {
+  console.log(`📖 [Quiz Agent - Step 1] Recherche RAG pour le thème : "${topic}"`);
+
   if (!topic || topic === 'Mélange') {
+    console.log(` ℹ️ [RAG Service] Thème "Mélange" → Utilisation du contexte général multi-catégories.`);
     return 'Contexte général : Le quiz couvre l\'ensemble des sciences islamiques (Foi, Coran, Prophètes, Histoire, Jurisprudence et Pratiques).';
   }
 
@@ -118,13 +121,13 @@ export async function fetchIslamicRAGContext(topic) {
     const formatted = localRefs
       .map(r => `• [${r.source}] (${r.topic}) : "${r.text}"`)
       .join('\n');
-    console.log(`📖 [RAG Service] ${localRefs.length} références locales trouvées pour "${topic}"`);
+    console.log(` 📚 [RAG Service - Base Locale] ${localRefs.length} référence(s) locale(s) authentique(s) trouvée(s) pour "${topic}"`);
     return `Références authentiques pour "${topic}" :\n${formatted}`;
   }
 
   // 2. Nettoyage du terme de recherche pour l'API REST
   const searchKeyword = cleanSearchKeyword(topic);
-  console.log(`🌐 [RAG Service] Interrogation de l'API alquran.cloud pour : "${topic}" (mot-clé: "${searchKeyword}")...`);
+  console.log(` 🌐 [RAG Service - API Externe] Interrogation de l'API alquran.cloud pour : "${topic}" (mot-clé: "${searchKeyword}")...`);
 
   // 3. Fallback API REST (api.alquran.cloud) si thème spécifique
   try {
@@ -139,14 +142,19 @@ export async function fetchIslamicRAGContext(topic) {
         const apiFormatted = matches
           .map(m => `• [Sourate ${m.surah.englishName} (${m.surah.number}):${m.numberInSurah}] : "${m.text.trim()}"`)
           .join('\n');
-        console.log(`🌐 [RAG Service] ${matches.length} versets récupérés via API alquran.cloud pour "${topic}"`);
+        console.log(` ✅ [RAG Service - API Externe] ${matches.length} verset(s) récupéré(s) via API alquran.cloud pour "${topic}"`);
         return `Versets de référence pour "${topic}" :\n${apiFormatted}`;
+      } else {
+        console.log(` ⚠️ [RAG Service - API Externe] Aucun verset trouvé via l'API pour "${topic}". Fallback sur contexte générique.`);
       }
+    } else {
+      console.log(` ⚠️ [RAG Service - API Externe] Erreur statut HTTP ${response.status} de l'API alquran.cloud.`);
     }
   } catch (err) {
-    console.warn(`⚠️ [RAG Service] Échec API externe (${err.message}), fallback sur contexte générique.`);
+    console.warn(` ⚠️ [RAG Service - API Externe] Échec API externe (${err.message}), fallback sur contexte générique.`);
   }
 
   // 4. Contexte par défaut
+  console.log(` ℹ️ [RAG Service] Fallback final sur contexte générique pour "${topic}".`);
   return `Contexte pour "${topic}" : Utiliser les notions authentiques reconnues du Coran et de la Sunnah authentique.`;
 }

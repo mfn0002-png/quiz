@@ -15,7 +15,7 @@ import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getSeenQuestions, addSeenQuestions } from './sessionService.js';
 import { fetchIslamicRAGContext } from './ragService.js';
 import { resolveDifficulty } from './playerProfileService.js';
-import { saveQuestionsToPool, getQuestionsFromPool } from './quizCacheService.js';
+import { saveQuestionsToPool, getQuestionsFromPool, getStaticFallbackQuestions } from './quizCacheService.js';
 
 // ─────────────────────────────────────────────
 // Schema de réponse
@@ -224,6 +224,7 @@ export async function runQuizAgent(difficulty, topic, count, sessionId) {
   try {
     // ② Contexte RAG Islamique
     const ragContext = await fetchIslamicRAGContext(topic);
+    console.log(`✓ [Quiz Agent - Step 1] Contexte RAG initialisé avec succès.`);
 
     // ③ Questions & Réponses déjà vues (anti-doublon intelligent)
     const seenItems = await getSeenQuestions(sessionId);
@@ -286,18 +287,23 @@ export async function runQuizAgent(difficulty, topic, count, sessionId) {
     return verified;
 
   } catch (error) {
-    const is429 = error?.status === 429 ||
-      (error?.message && error.message.includes('429')) ||
-      (error?.message && error.message.toLowerCase().includes('quota'));
+    console.warn(`⚠️ Indisponibilité IA Gemini (${error?.status || error?.message || 'Erreur'}). Basculement vers le secours Redis/Local...`);
 
-    if (is429) {
-      console.warn('⚠️ Quota Gemini (429) atteint ! Basculement automatique vers la banque de secours Redis...');
+    try {
       const fallbackQuestions = await getQuestionsFromPool(finalDifficulty, topic, count);
-
-      if (fallbackQuestions.length > 0) {
-        console.log(`✅ Succès Fallback : ${fallbackQuestions.length} questions complètes restituées depuis le cache Redis !`);
+      if (fallbackQuestions && fallbackQuestions.length > 0) {
+        console.log(`✅ Succès Fallback Redis : ${fallbackQuestions.length} questions restituées depuis le cache !`);
         return fallbackQuestions;
       }
+    } catch (cacheErr) {
+      console.warn('⚠️ Échec de la lecture du cache Redis :', cacheErr.message);
+    }
+
+    // Ultime secours : banque de questions statiques locales si Redis est vide
+    const staticFallback = getStaticFallbackQuestions(finalDifficulty, count);
+    if (staticFallback && staticFallback.length > 0) {
+      console.log(`✅ Succès Fallback Statique : ${staticFallback.length} questions de secours locales restituées !`);
+      return staticFallback;
     }
 
     throw error;

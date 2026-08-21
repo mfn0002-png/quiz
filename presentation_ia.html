@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retour d'expérience : Les Agents IA, le RAG et les LLM en Pratique</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-alt: #131b2e;
+      
+      --accent-violet: #7c3aed;
+      --accent-pink: #f43f5e;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      
+      --text-white: #f8fafc;
+      --text-body: #cbd5e1;
+      --text-muted: #94a3b8;
+      
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glow: 0 10px 30px rgba(124, 58, 237, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      line-height: 1.7;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 70%, rgba(6, 182, 212, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Navbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(10, 14, 23, 0.85);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-pink));
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+
+    .brand-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-white);
+    }
+
+    .btn {
+      padding: 0.55rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+      color: white;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    /* Hero Section */
+    .story-hero {
+      background: rgba(18, 24, 38, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 3rem;
+      margin-bottom: 3rem;
+      backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    .story-tag {
+      display: inline-block;
+      background: rgba(124, 58, 237, 0.2);
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      color: #c4b5fd;
+      padding: 0.3rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+
+    .story-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--text-white);
+      line-height: 1.25;
+      margin-bottom: 1.25rem;
+    }
+
+    .story-intro {
+      font-size: 1.15rem;
+      color: var(--text-body);
+      line-height: 1.8;
+    }
+
+    .quote-box {
+      margin-top: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      background: rgba(244, 63, 94, 0.08);
+      border-left: 4px solid var(--accent-pink);
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      color: #fecdd3;
+    }
+
+    /* Story Sections */
+    .story-block {
+      margin-bottom: 3.5rem;
+    }
+
+    .block-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .block-num {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-soft);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--accent-cyan);
+    }
+
+    .block-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+    }
+
+    .card:hover {
+      border-color: var(--glass-border);
+      box-shadow: var(--glow);
+    }
+
+    .card-h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      color: var(--text-white);
+    }
+
+    /* Comparison Table / Boxes */
+    .real-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .compare-card {
+      padding: 1.5rem;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .compare-card.before {
+      background: rgba(239, 68, 68, 0.06);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .compare-card.after {
+      background: rgba(16, 185, 129, 0.06);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .compare-head {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .compare-card.before .compare-head { color: #fca5a5; }
+    .compare-card.after .compare-head { color: #6ee7b7; }
+
+    /* Interactive Pipeline Steps */
+    .pipeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .pipeline-item {
+      display: flex;
+      gap: 1.25rem;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-soft);
+      padding: 1.5rem;
+      border-radius: 14px;
+    }
+
+    .pipeline-badge {
+      background: var(--accent-violet);
+      color: white;
+      font-weight: 800;
+      font-size: 0.9rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Oral Pitch Box */
+    .oral-box {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(244, 63, 94, 0.15));
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      border-radius: 20px;
+      padding: 2.25rem;
+      margin-top: 2rem;
+    }
+
+    .oral-tag {
+      color: #c4b5fd;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .oral-script {
+      font-size: 1.05rem;
+      color: #f1f5f9;
+      line-height: 1.8;
+      font-style: normal;
+    }
+
+    .oral-script p {
+      margin-bottom: 1.2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 1.5rem 1rem; }
+      .story-title { font-size: 2rem; }
+      .real-compare { grid-template-columns: 1fr; }
+      .pipeline-item { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">💡</div>
+      <div class="brand-text">Retour d'Expérience Dev : RAG & Agents IA</div>
+    </div>
+    <a href="#pitch-oral" class="btn btn-gradient">🎙️ Script Oral de Standup</a>
+  </header>
+
+  <div class="container">
+
+    <!-- Hero / Contexte Humain -->
+    <section class="story-hero">
+      <span class="story-tag">🌱 Parcours & Motivation Personnelle</span>
+      <h1 class="story-title">Relancer la machine : Découvrir l'IA Agentique et le RAG par le Code</h1>
+      <p class="story-intro">
+        Après une période sans projet actif, j'ai voulu sortir des tutoriels passifs et me retrousser les manches. L'objectif ? Comprendre <strong>vraiment</strong> comment fonctionnent les LLM, le RAG et les Agents autonomes en construisant une application complète de A à Z.
+      </p>
+      <div class="quote-box">
+        "Au lieu de faire un énième Wrapper d'API ChatGPT, je voulais comprendre comment maîtriser les hallucinations, donner de la mémoire à l'IA et créer un agent capable d'auto-vérifier son propre travail."
+      </div>
+    </section>
+
+    <!-- Block 1: Les LLM sans filtre -->
+    <section class="story-block">
+      <div class="block-header">
+        <div class="block-num">01</div>
+        <h2 class="block-title">Ce que j'ai compris sur les LLM (sans le jargon marketing)</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-h3">🧠 Les LLM sont des calculateurs de probabilités, pas des moteurs de vérité</h3>
+        <p>
+          En travaillant avec l'API Gemini, la première prise de conscience a été évidente : un LLM ne "sait" rien au sens humain. Il prédit statistiquement la suite d'un texte. Si la question est trop précise ou s'il manque de contexte, il génère des réponses très convaincantes... mais parfois complètement fausses.
+        </p>
+      </div>
+
+      <div class="real-compare">
+        <div class="compare-card before">
+          <div class="compare-head">❌ Le problème sans garde-fou</div>
+          <p>Quand je demandais directement au modèle d'inventer des questions sur un sujet précis, il lui arrivait d'inventer des références, de mélanger des versets ou d'inverser des vérités historiques.</p>
+        </div>
+        <div class="compare-card after">
+          <div class="compare-head">✅ La solution concrète</div>
+          <p>Imposer un <strong>JSON Schema strict</strong> pour la structure des données et intégrer un <strong>RAG</strong> en amont pour forcer le modèle à ne travailler que sur des sources réelles.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Block 2: Le RAG expliqué avec du vécu -->
+    <section class="story-block">
+      <div class="block-header">
+        <div class="block-num">02</div>
+        <h2 class="block-title">Le RAG : L'analogie du "Livre Ouvert"</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-h3">📖 Comment j'ai résolu les hallucinations avec `ragService`</h3>
+        <p>
+          Pour éviter que l'IA ne devine les réponses, j'ai mis en place le service RAG. L'idée est enfantine : <strong>au lieu de demander à l'IA de répondre de mémoire, on lui donne la bonne page du livre avant qu'elle ne rédige.</strong>
+        </p>
+        <p>Dans l'application, le RAG fonctionne en 2 temps :</p>
+        <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-body);">
+          <li><strong>Base locale rapide (< 1ms)</strong> : Pour les thèmes majeurs (Piliers, Coran, Prophètes), les textes exacts sont prêts en mémoire.</li>
+          <li><strong>Fallback API REST</strong> : Si le thème est très spécifique (ex: *"La patience"*), le service interroge l'API `alquran.cloud` pour récupérer les versets précis en direct.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Block 3: La logique Agentique -->
+    <section class="story-block">
+      <div class="block-header">
+        <div class="block-num">03</div>
+        <h2 class="block-title">De l'API passive au Système Multi-Agents</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-h3">🤖 Pourquoi un seul prompt ne suffisons pas</h3>
+        <p>
+          Au lieu de faire une grosse requête désordonnée, j'ai découpé la logique en **plusieurs agents spécialisés** qui collaborent :
+        </p>
+
+        <div class="pipeline-list">
+          <div class="pipeline-item">
+            <div class="pipeline-badge">1</div>
+            <div>
+              <strong>Player Profile Agent (Adaptativité)</strong>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Il analyse l'historique du joueur dans Redis et décide si le niveau doit monter (Intermédiaire/Expert) ou baisser.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-item">
+            <div class="pipeline-badge">2</div>
+            <div>
+              <strong>RAG Service (Injection du savoir)</strong>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Il va chercher les versets et sources exactes liés au thème demandé.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-item">
+            <div class="pipeline-badge">3</div>
+            <div>
+              <strong>Redis Session (Anti-Doublons)</strong>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Il compare le brouillon de l'IA avec les 25 dernières questions posées pour éviter d'ennuyer le joueur.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-item">
+            <div class="pipeline-badge">4</div>
+            <div>
+              <strong>Reflection Agent (Auto-Vérification)</strong>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Une seconde passe où l'IA relit son propre travail comme un expert pour valider que la réponse est indiscutable.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pitch Oral Standup -->
+    <section id="pitch-oral" class="oral-box">
+      <div class="oral-tag">🎙️ Mon discours pour le point d'équipe (Standup / Tour de table)</div>
+      <div class="oral-script">
+        <p>
+          "Salut tout le monde ! Ces deux dernières semaines, comme je n'avais pas de projet actif en cours, j'ai voulu en profiter pour me remettre à fond dans le dev et tester concrètement la création d'<strong>agents IA</strong> et l'intégration de <strong>RAG</strong>.
+        </p>
+        <p>
+          J'ai développé une application de quiz intelligent sous <strong>Node.js, Express et React (Vite)</strong>. L'idée ce n'était pas juste de faire un appel classique à l'API Gemini, mais de créer une vraie chaîne agentique :
+        </p>
+        <p>
+          D'abord, un <strong>service RAG</strong> va chercher les textes et versets authentiques (en local ou via API) pour que l'IA ne brode pas de mémoire. Ensuite, l'agent génère le quiz en format JSON strict, tout en vérifiant dans <strong>Redis</strong> que le joueur n'a pas déjà vu ces questions. Et enfin, j'ai ajouté un <strong>Agent de Réflexion</strong> qui repasse sur le travail généré pour auto-vérifier l'exactitude de la réponse avant de l'envoyer au front.
+        </p>
+        <p>
+          Aujourd'hui l'app tourne bien en local avec les dev servers. Ça m'a permis de toucher du doigt les vraies problématiques de l'IA (gestion de la mémoire, anti-doublons, structuration de prompts et auto-correction)."
+        </p>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
