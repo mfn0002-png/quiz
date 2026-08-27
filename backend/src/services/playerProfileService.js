@@ -78,8 +78,11 @@ export async function updatePlayerProfile(sessionId, results) {
   let consecutiveErrors = profile.consecutiveErrors || 0;
 
   for (const item of results) {
+    const isCorrect = item?.isCorrect === true;
+    const category = typeof item?.category === 'string' && item.category.length > 0 ? item.category : 'Général';
+
     profile.totalAnswered += 1;
-    if (item.isCorrect) {
+    if (isCorrect) {
       profile.totalCorrect += 1;
       consecutiveErrors = 0; // Réinitialise la série d'erreurs
     } else {
@@ -87,12 +90,12 @@ export async function updatePlayerProfile(sessionId, results) {
     }
 
     // Statistiques par catégorie
-    const cat = item.category || 'Général';
+    const cat = category;
     if (!profile.categoryStats[cat]) {
       profile.categoryStats[cat] = { answered: 0, correct: 0 };
     }
     profile.categoryStats[cat].answered += 1;
-    if (item.isCorrect) profile.categoryStats[cat].correct += 1;
+    if (isCorrect) profile.categoryStats[cat].correct += 1;
   }
 
   profile.consecutiveErrors = consecutiveErrors;

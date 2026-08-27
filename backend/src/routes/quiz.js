@@ -1,20 +1,17 @@
 import { Router } from 'express';
 import { runQuizAgent } from '../services/quizAgent.js';
 import { getPlayerProfile, updatePlayerProfile } from '../services/playerProfileService.js';
+import { validate, validateParams } from '../middleware/validate.js';
+import { generateQuizSchema, resultsSchema, sessionIdParamsSchema } from '../validation/schemas.js';
 
 const router = Router();
 
 // POST /api/quiz/generate
-router.post('/generate', async (req, res) => {
-  const {
-    difficulty = 'Débutant',
-    topic      = 'Mélange',
-    count      = 5,
-    sessionId  = 'anonymous',
-  } = req.body;
+router.post('/generate', validate(generateQuizSchema), async (req, res) => {
+  const { difficulty, topic, count, sessionId } = req.body;
 
   try {
-    const questions = await runQuizAgent(difficulty, topic, Number(count), sessionId);
+    const questions = await runQuizAgent(difficulty, topic, count, sessionId);
     res.json(questions);
   } catch (error) {
     console.error('❌ Erreur Quiz Agent :', error.message);
@@ -29,18 +26,14 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    res.status(500).json({ error: msg || 'Erreur serveur lors de la génération du quiz.' });
+    res.status(500).json({ error: 'Erreur serveur lors de la génération du quiz.' });
   }
 });
 
 // POST /api/quiz/results
 // Enregistre les résultats d'un quiz terminé pour mettre à jour le profil d'apprentissage adaptatif du joueur
-router.post('/results', async (req, res) => {
+router.post('/results', validate(resultsSchema), async (req, res) => {
   const { sessionId, results } = req.body;
-
-  if (!sessionId || !Array.isArray(results)) {
-    return res.status(400).json({ error: 'sessionId et tableau de résultats requis.' });
-  }
 
   try {
     const updatedProfile = await updatePlayerProfile(sessionId, results);
@@ -53,9 +46,8 @@ router.post('/results', async (req, res) => {
 
 // GET /api/quiz/profile/:sessionId
 // Récupère le profil adaptatif d'un joueur
-router.get('/profile/:sessionId', async (req, res) => {
+router.get('/profile/:sessionId', validateParams(sessionIdParamsSchema), async (req, res) => {
   const { sessionId } = req.params;
-  if (!sessionId) return res.status(400).json({ error: 'sessionId requis.' });
 
   try {
     const profile = await getPlayerProfile(sessionId);

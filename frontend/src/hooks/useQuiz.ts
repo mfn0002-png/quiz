@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Difficulty, Question } from '../data/questions';
 import { generateQuestions, getClientSessionId, sendQuizResults } from '../services/apiService';
 import { getGlobalLivesState, consumeGlobalLife, LivesState } from '../services/livesService';
@@ -17,6 +17,8 @@ export function useQuiz(user: User | null) {
   const [livesState, setLivesState] = useState<LivesState>(() => getGlobalLivesState());
   const [isGameOver, setIsGameOver] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  // Index de la réponse choisie. Valeur sentinelle -1 = "temps écoulé" (timeout),
+  // utilisée pour distinguer un timeout d'une réponse non encore donnée (null).
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('Auto');
@@ -26,13 +28,16 @@ export function useQuiz(user: User | null) {
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
-  // Minuteur de rafraîchissement continu des Vies (1 vie / X sec)
+  // Minuteur de rafraîchissement continu des Vies (1 vie / X sec).
+  // Actif uniquement pendant le quiz (démarré) : sur les autres écrans, aucune
+  // interface n'affiche les vies, donc on évite un timer global permanent.
   useEffect(() => {
+    if (!started) return;
     const timer = setInterval(() => {
       setLivesState(getGlobalLivesState());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [started]);
 
   const startQuiz = async (difficulty: Difficulty) => {
     const currentLives = getGlobalLivesState();
@@ -50,6 +55,11 @@ export function useQuiz(user: User | null) {
     try {
       const sessionId = getClientSessionId(user?.uid);
       const generatedQuestions = await generateQuestions(difficulty, selectedCategory, DEFAULT_QUESTION_COUNT, sessionId);
+
+      if (!generatedQuestions || generatedQuestions.length === 0) {
+        throw new Error("Aucune question n'a pu être générée. Réessayez.");
+      }
+
       setActiveQuestions(generatedQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
@@ -58,7 +68,7 @@ export function useQuiz(user: User | null) {
       setIsAnswerCorrect(null);
       setUserAnswers(new Array(generatedQuestions.length || DEFAULT_QUESTION_COUNT).fill(null));
       setTimeLeft(QUESTION_TIME);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       const { icon, title, detail, hint } = parseApiError(err);
       setError(`${icon} ${title} : ${detail}${hint ? ` (${hint})` : ''}`);
@@ -109,25 +119,14 @@ export function useQuiz(user: User | null) {
     setStarted(true);
   };
 
-  // Minuteur de la question en cours (suspendu si 0 vie en attente)
-  useEffect(() => {
-    let timer: number;
-    const hasLives = livesState.lives > 0;
-    if (started && !loading && !showResults && selectedAnswer === null && timeLeft > 0 && hasLives) {
-      timer = window.setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && selectedAnswer === null && hasLives) {
-      playTimeout();
-      handleAnswerClick(-1);
-    }
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, loading, showResults, selectedAnswer, timeLeft, livesState.lives]);
+  const handleAnswerClickRef = useRef<((optionIndex: number) => void) | null>(null);
 
-  const handleAnswerClick = (optionIndex: number) => {
+  const handleAnswerClick = useCallback((optionIndex: number) => {
     if (selectedAnswer !== null) return;
-    const correct = optionIndex === activeQuestions[currentQuestionIndex].correctAnswerIndex;
+    const question = activeQuestions[currentQuestionIndex];
+    // Garde contre un tableau de questions vide (défense en profondeur)
+    if (!question) return;
+    const correct = optionIndex === question.correctAnswerIndex;
     setSelectedAnswer(optionIndex);
     setIsAnswerCorrect(correct);
 
@@ -149,7 +148,29 @@ export function useQuiz(user: User | null) {
       newAnswers[currentQuestionIndex] = optionIndex;
       return newAnswers;
     });
-  };
+  }, [selectedAnswer, activeQuestions, currentQuestionIndex]);
+
+  // Garde une référence à jour de handleAnswerClick pour l'effet du minuteur
+  useEffect(() => {
+    handleAnswerClickRef.current = handleAnswerClick;
+  }, [handleAnswerClick]);
+
+  // Minuteur de la question en cours (suspendu si 0 vie en attente).
+  // `handleAnswerClick` est utilisé indirectement via `handleAnswerClickRef` pour
+  // déclencher le timeout (-1), évitant ainsi toute closure obsolète.
+  useEffect(() => {
+    let timer: number;
+    const hasLives = livesState.lives > 0;
+    if (started && !loading && !showResults && selectedAnswer === null && timeLeft > 0 && hasLives) {
+      timer = window.setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && selectedAnswer === null && hasLives) {
+      playTimeout();
+      handleAnswerClickRef.current?.(-1);
+    }
+    return () => clearInterval(timer);
+  }, [started, loading, showResults, selectedAnswer, timeLeft, livesState.lives]);
 
   const goToNextQuestion = () => {
     if (currentQuestionIndex < activeQuestions.length - 1) {

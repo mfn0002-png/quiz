@@ -1,19 +1,14 @@
 import { Router } from 'express';
 import { runAssistantAgent } from '../services/assistantAgent.js';
 import { clearHistory, getHistory } from '../services/sessionService.js';
+import { validate, validateParams } from '../middleware/validate.js';
+import { chatSchema, sessionIdParamsSchema } from '../validation/schemas.js';
 
 const router = Router();
 
 // POST /api/assistant/chat
-router.post('/chat', async (req, res) => {
+router.post('/chat', validate(chatSchema), async (req, res) => {
   const { question, sessionId } = req.body;
-
-  if (!question || typeof question !== 'string') {
-    return res.status(400).json({ error: 'Une question valide est requise.' });
-  }
-  if (!sessionId || typeof sessionId !== 'string') {
-    return res.status(400).json({ error: 'Un sessionId est requis.' });
-  }
 
   try {
     const result = await runAssistantAgent(sessionId, question);
@@ -31,16 +26,15 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    res.status(500).json({ error: msg || "Erreur serveur de l'assistant IA." });
+    res.status(500).json({ error: "Erreur serveur de l'assistant IA." });
   }
 });
 
 
 // GET /api/assistant/history/:sessionId
 // Récupère l'historique de conversation d'une session depuis Redis
-router.get('/history/:sessionId', async (req, res) => {
+router.get('/history/:sessionId', validateParams(sessionIdParamsSchema), async (req, res) => {
   const { sessionId } = req.params;
-  if (!sessionId) return res.status(400).json({ error: 'sessionId requis.' });
 
   try {
     const history = await getHistory(sessionId);
@@ -53,12 +47,16 @@ router.get('/history/:sessionId', async (req, res) => {
 
 // DELETE /api/assistant/session/:sessionId
 // Réinitialise l'historique d'une session (bouton "Nouvelle conversation")
-router.delete('/session/:sessionId', async (req, res) => {
+router.delete('/session/:sessionId', validateParams(sessionIdParamsSchema), async (req, res) => {
   const { sessionId } = req.params;
-  if (!sessionId) return res.status(400).json({ error: 'sessionId requis.' });
 
-  await clearHistory(sessionId).catch(err => console.error('Erreur clearHistory :', err));
-  res.json({ success: true, message: 'Session réinitialisée avec succès.' });
+  try {
+    await clearHistory(sessionId);
+    res.json({ success: true, message: 'Session réinitialisée avec succès.' });
+  } catch (error) {
+    console.error('Erreur clearHistory :', error);
+    res.status(500).json({ error: 'Erreur réinitialisation de la session.' });
+  }
 });
 
 export default router;

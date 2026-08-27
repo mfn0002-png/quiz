@@ -56,11 +56,9 @@ export const saveSession = async (
 
 export const getUserSessions = async (userId: string, maxLimit: number = 20): Promise<SessionRecord[]> => {
   const sessionsRef = collection(db, 'users', userId, 'sessions');
-  const snapshot = await getDocs(sessionsRef);
-  return snapshot.docs
-    .map(d => ({ id: d.id, ...(d.data() as SessionRecord) }))
-    .sort((a, b) => b.date.toMillis() - a.date.toMillis())
-    .slice(0, maxLimit);
+  const q = query(sessionsRef, orderBy('date', 'desc'), limit(maxLimit));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(d => ({ id: d.id, ...(d.data() as SessionRecord) }));
 };
 
 export interface UserStats {
@@ -119,26 +117,31 @@ const updateLeaderboardAfterSession = async (
   score: number,
   total: number
 ): Promise<void> => {
-  const stats = await getUserStats(userId);
   const entryRef = doc(db, 'leaderboard', userId);
   const existing = await getDoc(entryRef);
   const prevData = existing.exists() ? (existing.data() as LeaderboardEntry) : null;
+
+  const prevGames = prevData?.totalGames ?? 0;
+  const prevBest = prevData?.bestScore ?? 0;
+  const prevAvg = prevData?.avgScore ?? 0;
+
+  const pct = total > 0 ? Math.min(100, (score / total) * 100) : 0;
+  const best = Math.max(prevBest, Math.min(score, 5));
+  const totalGames = prevGames + 1;
+  // Moyenne pondérée du pourcentage sans rescan de l'historique
+  const avg = prevGames === 0 ? pct : (prevAvg * prevGames + pct) / totalGames;
 
   await setDoc(
     entryRef,
     {
       displayName: prevData?.displayName || 'Joueur',
       photoURL: prevData?.photoURL || null,
-      bestScore: stats.bestScore,
-      totalGames: stats.totalGames,
-      avgScore: stats.averageScore,
+      bestScore: best,
+      totalGames,
+      avgScore: avg,
     },
     { merge: true }
   );
-
-  // score/total ne sont pas utilisés directement ici mais gardés pour la signature de l'appelant
-  void score;
-  void total;
 };
 
 export const upsertLeaderboardProfile = async (user: User): Promise<void> => {

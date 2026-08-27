@@ -108,13 +108,27 @@ export const resetAssistantSession = async (sessionId?: string): Promise<void> =
   }).catch(err => console.error("Erreur réinitialisation session :", err));
 };
 
+export interface AssistantHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  keywords?: Keyword[];
+  quote?: string | null;
+  quoteMsgId?: number | null;
+  quizData?: ChatQuizData;
+}
+
 /**
  * Récupère l'historique de conversation sauvegardé dans Redis pour la session en cours.
  */
-export const getAssistantHistory = async (sessionId?: string): Promise<{ role: 'user' | 'assistant'; content: string; keywords?: Keyword[] }[]> => {
+export const getAssistantHistory = async (sessionId?: string): Promise<AssistantHistoryMessage[]> => {
   const finalSessionId = sessionId || getClientSessionId();
-  const response = await fetch(`${API_BASE_URL}/assistant/history/${finalSessionId}`);
-  if (!response.ok) return [];
-  const data = await response.json().catch(() => ({ history: [] }));
-  return data.history || [];
+  try {
+    const response = await fetch(`${API_BASE_URL}/assistant/history/${finalSessionId}`);
+    if (!response.ok) return [];
+    const data = await response.json().catch(() => ({ history: [] }));
+    return data.history || [];
+  } catch (err) {
+    console.warn("Erreur récupération historique assistant :", err);
+    return [];
+  }
 };

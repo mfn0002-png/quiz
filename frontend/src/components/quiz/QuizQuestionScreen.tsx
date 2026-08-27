@@ -6,7 +6,7 @@ import { QUESTION_TIME, MAX_GLOBAL_LIVES } from '../../constants';
 import { LivesState } from '../../services/livesService';
 
 interface QuizQuestionScreenProps {
-  question: Question;
+  question?: Question;
   questionIndex: number;
   totalQuestions: number;
   score: number;
@@ -57,6 +57,17 @@ export function QuizQuestionScreen({
   }, [lives, showNoLivesModal]);
 
   const isLastQuestion = questionIndex + 1 >= totalQuestions;
+
+  // Défense en profondeur : si la question est indisponible (liste vide/invalide),
+  // on affiche un état de repli au lieu de faire crasher l'application.
+  if (!question) {
+    return (
+      <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Question indisponible</h3>
+        <p style={{ color: 'var(--text-secondary)' }}>Aucune question n'a pu être chargée.</p>
+      </div>
+    );
+  }
 
   const handleNextClick = () => {
     // Si le joueur a terminé les 6 questions, aller directement au bilan sans afficher de popup

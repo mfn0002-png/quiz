@@ -43,7 +43,7 @@ export function Assistant() {
     getAssistantHistory(sessionId).then(history => {
       if (history && history.length > 0) {
         const loadedMsgs = history.map((msg, index) => {
-          let quote: string | null = (msg as any).quote || null;
+          let quote: string | null = msg.quote || null;
           let content = msg.content;
 
           // Extraire la citation si le message utilisateur stocké en Redis utilise la syntaxe > "extrait"\n\n question
@@ -60,11 +60,11 @@ export function Assistant() {
             role: msg.role as 'user' | 'assistant',
             content,
             quote,
-            quoteMsgId: (msg as any).quoteMsgId || null,
+            quoteMsgId: msg.quoteMsgId || null,
             assistantData: {
               answer: content,
               keywords: msg.keywords || [],
-              quizData: (msg as any).quizData
+              quizData: msg.quizData
             }
           };
         });
@@ -229,7 +229,7 @@ export function Assistant() {
         assistantData: response
       };
       setMessages(prev => [...prev, assistantMsg]);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       const parsed = parseApiError(err);
       const errorMsg = `${parsed.icon} ${parsed.title} : ${parsed.detail}${parsed.hint ? ` (${parsed.hint})` : ''}`;
@@ -589,7 +589,7 @@ function ChatQuizCard({ quizData, sessionId, msgId }: { quizData: ChatQuizData; 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {quizData.options.map((opt, idx) => {
           const letter = ['A', 'B', 'C', 'D'][idx];
-          let btnStyle: React.CSSProperties = {
+          const btnStyle: React.CSSProperties = {
             padding: '0.65rem 0.85rem',
             borderRadius: '8px',
             border: '1px solid rgba(0,0,0,0.12)',
