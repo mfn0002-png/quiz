@@ -27,8 +27,8 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
   const cleanMarkdownStars = (str: string) => {
     if (!str) return '';
     return str
-      .replace(/\*\*([^\*]+)\*\*/g, '$1')
-      .replace(/\*([^\*]+)\*/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
       .replace(/\*/g, '');
   };
 
@@ -122,7 +122,7 @@ export function KeywordText({ text, keywords, highlightPassage }: KeywordTextPro
           }
 
           // 3. Puces de liste (* item ou - item)
-          const bulletMatch = trimmed.match(/^([*\-])\s+(.*)$/);
+          const bulletMatch = trimmed.match(/^([*-])\s+(.*)$/);
           if (bulletMatch) {
             const itemContent = bulletMatch[2];
             return (

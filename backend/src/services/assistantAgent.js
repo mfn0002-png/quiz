@@ -10,8 +10,9 @@
 
 import { SchemaType } from '@google/generative-ai';
 import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
-import { getHistory, saveHistory } from './sessionService.js';
+import { getHistory, saveHistory, saveConversation } from './sessionService.js';
 import { runQuizAgent } from './quizAgent.js';
+import { fetchIslamicRAGContext } from './ragService.js';
 
 // ─────────────────────────────────────────────
 // Instruction système
@@ -207,6 +208,62 @@ Réponds en UTF-8 propre avec accents normaux (é, à, etc.). JAMAIS d'entités 
   }
 }
 
+
+/**
+ * Construit un sujet de recherche RAG contextualisé si l'utilisateur pose une question de suivi.
+ */
+
+
+
+/**
+ * Extrait le sujet/thème principal de la conversation en cours.
+ */
+function getActiveTopic(simpleHistory = []) {
+  if (!simpleHistory || simpleHistory.length === 0) return "";
+
+  // 1. Thème issu des mots-clés extraits lors des réponses précédentes de l'Assistant
+  const assistantMsgs = simpleHistory.filter(m => m.role === "assistant" && Array.isArray(m.keywords) && m.keywords.length > 0);
+  if (assistantMsgs.length > 0) {
+    const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
+    const terms = lastAssistant.keywords
+      .map(k => (typeof k === "string" ? k : (k?.term || k?.text || "")))
+      .filter(Boolean);
+    if (terms.length > 0) {
+      return terms.slice(0, 3).join(" ");
+    }
+  }
+
+  // 2. Thème issu du premier message utilisateur de la discussion
+  const firstUserMsg = simpleHistory.find(m => m.role === "user");
+  if (firstUserMsg) {
+    return firstUserMsg.content.slice(0, 60);
+  }
+
+  return "";
+}
+
+/**
+ * Construit un sujet de recherche RAG contextualisé garanti pour tout fil de discussion.
+ */
+function buildRAGSearchTopic(userMessage, simpleHistory = []) {
+  if (!simpleHistory || simpleHistory.length === 0) {
+    return userMessage;
+  }
+
+  const topicContext = getActiveTopic(simpleHistory);
+
+  // Si un thème de conversation existe et n'est pas déjà explicitement répété dans la question,
+  // on l'injecte systématiquement pour enrichir la recherche RAG.
+  if (topicContext) {
+    const cleanTopic = topicContext.replace(/^(quel|quelle|qu'est-ce que|parle-moi de)\s+/i, "").trim();
+    if (cleanTopic && !userMessage.toLowerCase().includes(cleanTopic.toLowerCase())) {
+      return `${cleanTopic} ${userMessage}`;
+    }
+  }
+
+  return userMessage;
+}
+
 // ─────────────────────────────────────────────
 // Convertisseur historique (simplifié ↔ Gemini)
 // ─────────────────────────────────────────────
@@ -244,33 +301,54 @@ function toSimpleHistory(geminiHistory, previousSimpleHistory = []) {
  * @param {string} userMessage - Message de l'utilisateur
  * @returns {{ answer: string, keywords: Array }}
  */
-export async function runAssistantAgent(sessionId, userMessage) {
-  console.log('\n💬 ==================== ASSISTANT AGENT ====================');
-  console.log(`🆔 Session ID      : ${sessionId}`);
+export async function runAssistantAgent(sessionId, userMessage, clientId = null) {
+  const conversationId = sessionId || `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const finalClientId = clientId || (sessionId && !sessionId.startsWith('conv_') ? sessionId : null);
+
+  console.log("💬 ==================== ASSISTANT AGENT ====================");
+  console.log(`🆔 Conversation ID : ${conversationId}`);
+  if (finalClientId) console.log(`👤 Client ID       : ${finalClientId}`);
   console.log(`📥 Question reçue  : "${userMessage}"`);
 
-  // 1. Récupérer l'historique Redis et le convertir au format Gemini
-  const simpleHistory = await getHistory(sessionId);
-  console.log(`📜 Historique Redis : ${simpleHistory.length} messages en mémoire`);
+  // 1. Récupérer l'historique de la conversation
+  const simpleHistory = await getHistory(conversationId);
+  console.log(`📜 Historique : ${simpleHistory.length} messages en mémoire`);
   if (simpleHistory.length > 0) {
     console.log('   Dernier échange :', simpleHistory.slice(-2).map(m => `[${m.role}] ${m.content.slice(0, 50)}...`));
   }
 
   const geminiHistory = toGeminiHistory(simpleHistory);
 
-  // 2. Créer le modèle avec outils
+  // 2. Enrichir le message avec le contexte RAG (Coran + Hadiths)
+  console.log('📖 [Assistant Agent] Recherche RAG pour enrichir la réponse...');
+  const ragSearchTopic = buildRAGSearchTopic(userMessage, simpleHistory);
+  if (ragSearchTopic !== userMessage) {
+    console.log(` 💡 [Assistant Agent] Question de suivi détectée → Thème RAG contextualisé : "${ragSearchTopic}"`);
+  }
+  const ragContext = await fetchIslamicRAGContext(ragSearchTopic);
+  const enrichedMessage = ragContext
+    ? `${userMessage}
+
+📚 Sources de référence authentiques :
+${ragContext}`
+    : userMessage;
+  if (ragContext) {
+    console.log('✅ [Assistant Agent] RAG injecté dans le prompt');
+  }
+
+  // 3. Créer le modèle avec outils
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
     systemInstruction: SYSTEM_INSTRUCTION,
     tools: TOOLS,
   });
 
-  // 3. Démarrer le chat avec l'historique existant
+  // 4. Démarrer le chat avec l'historique existant
   const chat = model.startChat({ history: geminiHistory });
 
-  // 4. Envoi de la requête à Gemini et traitement direct des outils
+  // 5. Envoi de la requête enrichie à Gemini et traitement direct des outils
   console.log('🤖 Envoi de la requête à Gemini...');
-  let response = await withRetry(() => chat.sendMessage(userMessage));
+  let response = await withRetry(() => chat.sendMessage(enrichedMessage));
 
   let answer = '';
   let quizData = null;
@@ -279,7 +357,7 @@ export async function runAssistantAgent(sessionId, userMessage) {
   if (calls && calls.length > 0) {
     const call = calls[0];
     console.log(`🔧 [Assistant Agent] Exécution de l'outil : "${call.name}" avec args :`, JSON.stringify(call.args));
-    const toolRes = await executeTool(call.name, call.args, sessionId);
+    const toolRes = await executeTool(call.name, call.args, conversationId);
 
     if (typeof toolRes === 'object' && toolRes.isQuiz) {
       answer = toolRes.text;
@@ -294,10 +372,10 @@ export async function runAssistantAgent(sessionId, userMessage) {
   console.log(`✨ Réponse finale générée (${answer.length} caractères) :`);
   console.log(`   "${answer.slice(0, 150)}${answer.length > 150 ? '...' : ''}"`);
 
-  // 5. Extraire les mots-clés si pas de quizData (sinon ils sont déjà dans quizData)
+  // 5. Extraire les mots-clés
   const keywords = quizData ? (quizData.keywords || []) : await extractKeywords(answer);
 
-  // 6. Sauvegarder l'historique mis à jour en Redis
+  // 6. Sauvegarder l'historique mis à jour
   const updatedSimple = [
     ...simpleHistory,
     { role: 'user', content: userMessage },
@@ -308,10 +386,12 @@ export async function runAssistantAgent(sessionId, userMessage) {
       ...(quizData ? { quizData } : {})
     }
   ];
-  await saveHistory(sessionId, updatedSimple);
-  console.log(`💾 Historique mis à jour dans Redis : ${updatedSimple.length} messages stockés avec mots-clés & quiz`);
+  
+  const autoTitle = simpleHistory.length === 0 ? userMessage.slice(0, 45) : null;
+  await saveConversation(finalClientId, conversationId, autoTitle, updatedSimple);
 
-  console.log('===========================================================\n');
+  console.log(`💾 Historique mis à jour dans Redis : ${updatedSimple.length} messages stockés pour conv ${conversationId}`);
+  console.log("===========================================================");
 
-  return { answer, keywords, ...(quizData ? { quizData } : {}) };
+  return { conversationId, answer, keywords, ...(quizData ? { quizData } : {}) };
 }

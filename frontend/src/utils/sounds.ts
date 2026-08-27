@@ -1,6 +1,9 @@
 // Effets sonores utilisant l'API Web Audio native (aucune dépendance)
 
-const ctx = () => new (window.AudioContext || (window as any).webkitAudioContext)();
+const ctx = () => {
+  const w = window as Window & { webkitAudioContext?: typeof AudioContext };
+  return new (window.AudioContext || w.webkitAudioContext)();
+};
 
 function playTone(frequency: number, duration: number, type: OscillatorType, gainValue: number, fadeOut = true) {
   try {
@@ -21,7 +24,7 @@ function playTone(frequency: number, duration: number, type: OscillatorType, gai
 
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + duration);
-  } catch (e) {
+  } catch {
     // Silently fail if Web Audio API is not available
   }
 }

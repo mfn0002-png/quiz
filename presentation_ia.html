@@ -3,573 +3,301 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guide & Présentation IA : LLM, RAG & Agents Autonomes</title>
-  
-  <!-- Google Fonts -->
+  <title>Architecture IA : LLM, RAG & Agents Autonomes — Présentation Complète</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
       --bg-primary: #0b0f19;
       --bg-secondary: #111827;
       --bg-card: rgba(17, 24, 39, 0.7);
       --bg-card-hover: rgba(31, 41, 55, 0.8);
-      
       --accent-purple: #8b5cf6;
       --accent-pink: #ec4899;
       --accent-blue: #3b82f6;
       --accent-cyan: #06b6d4;
       --accent-emerald: #10b981;
       --accent-amber: #f59e0b;
-      
+      --accent-red: #ef4444;
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
       --text-subtle: #6b7280;
-      
       --border-color: rgba(255, 255, 255, 0.08);
       --glass-border: rgba(255, 255, 255, 0.12);
       --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.15);
-      
       --radius-lg: 16px;
       --radius-md: 12px;
       --radius-sm: 8px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--bg-primary);
       color: var(--text-main);
-      line-height: 1.6;
+      line-height: 1.7;
       overflow-x: hidden;
-      background-image: 
+      background-image:
         radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.12) 0%, transparent 45%),
         radial-gradient(circle at 85% 65%, rgba(59, 130, 246, 0.12) 0%, transparent 45%);
       background-attachment: fixed;
     }
 
-    /* Layout Header */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(16px);
       background: rgba(11, 15, 25, 0.85);
       border-bottom: 1px solid var(--border-color);
       padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
 
     .logo-badge {
       background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 800;
-      color: white;
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-weight: 800; color: white;
       box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
     }
 
     .logo-title {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 700;
-      font-size: 1.25rem;
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;
       background: linear-gradient(to right, #fff, #9ca3af);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .header-actions {
-      display: flex;
-      gap: 12px;
-    }
+    .header-actions { display: flex; gap: 12px; }
 
     .btn {
-      padding: 0.5rem 1.2rem;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      font-size: 0.875rem;
-      cursor: pointer;
-      border: 1px solid var(--glass-border);
-      transition: all 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      padding: 0.5rem 1.2rem; border-radius: var(--radius-sm);
+      font-weight: 600; font-size: 0.875rem; cursor: pointer;
+      border: 1px solid var(--glass-border); transition: all 0.2s ease;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
-      color: white;
-      border: none;
+      color: white; border: none;
       box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
     }
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
-    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-main);
-    }
+    .app-container { display: grid; grid-template-columns: 280px 1fr; max-width: 1500px; margin: 0 auto; min-height: calc(100vh - 70px); }
 
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* App Container */
-    .app-container {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      max-width: 1500px;
-      margin: 0 auto;
-      min-height: calc(100vh - 70px);
-    }
-
-    /* Sidebar Navigation */
     aside.sidebar {
-      padding: 2rem 1.5rem;
-      border-right: 1px solid var(--border-color);
-      position: sticky;
-      top: 70px;
-      height: calc(100vh - 70px);
-      overflow-y: auto;
+      padding: 2rem 1.5rem; border-right: 1px solid var(--border-color);
+      position: sticky; top: 70px; height: calc(100vh - 70px); overflow-y: auto;
     }
 
     .nav-group-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-subtle);
-      margin-bottom: 0.75rem;
-      margin-top: 1.5rem;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-subtle); margin-bottom: 0.75rem; margin-top: 1.5rem;
     }
+    .nav-group-title:first-child { margin-top: 0; }
 
-    .nav-group-title:first-child {
-      margin-top: 0;
-    }
-
-    .nav-links {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .nav-links { list-style: none; display: flex; flex-direction: column; gap: 4px; }
 
     .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0.65rem 0.85rem;
-      border-radius: var(--radius-sm);
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.65rem 0.85rem; border-radius: var(--radius-sm);
+      color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; transition: all 0.2s ease;
     }
+    .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: white; background: rgba(139, 92, 246, 0.15); border-left: 3px solid var(--accent-purple); }
 
-    .nav-link:hover {
-      color: white;
-      background: rgba(255, 255, 255, 0.05);
-    }
+    main.content { padding: 2.5rem 3rem; max-width: 1050px; }
 
-    .nav-link.active {
-      color: white;
-      background: rgba(139, 92, 246, 0.15);
-      border-left: 3px solid var(--accent-purple);
-    }
-
-    /* Main Content */
-    main.content {
-      padding: 2.5rem 3rem;
-      max-width: 1050px;
-    }
-
-    /* Hero Banner */
     .hero-banner {
       background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.15));
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-lg);
-      padding: 3rem;
-      margin-bottom: 3rem;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+      padding: 3rem; margin-bottom: 3rem; position: relative; overflow: hidden;
     }
-
     .hero-banner::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 250px;
-      height: 250px;
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 250px; height: 250px;
       background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(139, 92, 246, 0.2);
-      border: 1px solid rgba(139, 92, 246, 0.4);
-      color: #c4b5fd;
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd; padding: 0.3rem 0.8rem; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem;
     }
 
     .hero-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.75rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 1rem;
+      font-family: 'Outfit', sans-serif; font-size: 2.75rem; font-weight: 800;
+      line-height: 1.2; margin-bottom: 1rem;
       background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .hero-subtitle {
-      font-size: 1.15rem;
-      color: var(--text-muted);
-      max-width: 750px;
-      line-height: 1.7;
-    }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); max-width: 750px; line-height: 1.7; }
 
-    /* Card System */
-    .section-block {
-      margin-bottom: 3.5rem;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 1.5rem;
-    }
+    .section-block { margin-bottom: 3.5rem; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
 
     .section-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
     }
 
-    .section-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: white;
-    }
+    .section-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 700; color: white; }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.25rem;
-    }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
 
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 1.75rem;
-      transition: all 0.25s ease;
-      backdrop-filter: blur(8px);
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 1.75rem;
+      transition: all 0.25s ease; backdrop-filter: blur(8px);
     }
-
     .card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--glass-border);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
+      background: var(--bg-card-hover); border-color: var(--glass-border);
+      transform: translateY(-2px); box-shadow: var(--shadow-glow);
     }
 
     .card-badge {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.75rem;
     }
 
     .badge-purple { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
     .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
     .badge-emerald { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
     .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 
-    .card-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 0.75rem;
-    }
+    .card-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 0.75rem; }
+    .card-text { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
 
-    .card-text {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* Comparison Box */
     .comparison-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-      margin-top: 1.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      background: var(--bg-secondary); border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 1.5rem; margin-top: 1.5rem;
     }
 
-    .comp-col {
-      padding: 1.25rem;
-      border-radius: var(--radius-sm);
-    }
+    .comp-col { padding: 1.25rem; border-radius: var(--radius-sm); }
+    .comp-col.bad { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); }
+    .comp-col.good { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); }
 
-    .comp-col.bad {
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .comp-col.good {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .comp-title {
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .comp-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
     .comp-col.bad .comp-title { color: #fca5a5; }
     .comp-col.good .comp-title { color: #6ee7b7; }
 
-    /* Interactive Pipeline Flowchart */
-    .flow-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
+    .flow-container { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
 
     .flow-step {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 1.25rem 1.75rem;
-      border-radius: var(--radius-md);
-      position: relative;
+      display: flex; align-items: center; gap: 1.5rem;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      padding: 1.25rem 1.75rem; border-radius: var(--radius-md); position: relative;
     }
-
     .flow-step::after {
-      content: '↓';
-      position: absolute;
-      bottom: -22px;
-      left: 35px;
-      font-size: 1.2rem;
-      color: var(--accent-purple);
-      font-weight: 700;
+      content: '↓'; position: absolute; bottom: -22px; left: 35px;
+      font-size: 1.2rem; color: var(--accent-purple); font-weight: 700;
     }
-
-    .flow-step:last-child::after {
-      display: none;
-    }
+    .flow-step:last-child::after { display: none; }
 
     .step-num {
       background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: white;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.95rem; color: white; flex-shrink: 0;
     }
 
-    .step-info h4 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.05rem;
-      color: white;
-      margin-bottom: 0.25rem;
-    }
+    .step-info h4 { font-family: 'Outfit', sans-serif; font-size: 1.05rem; color: white; margin-bottom: 0.25rem; }
+    .step-info p { color: var(--text-muted); font-size: 0.875rem; }
 
-    .step-info p {
-      color: var(--text-muted);
-      font-size: 0.875rem;
-    }
-
-    /* Code Block */
     .code-block {
-      background: #0d1117;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-sm);
-      padding: 1.25rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: #e6edf3;
-      overflow-x: auto;
-      margin-top: 1rem;
+      background: #0d1117; border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm); padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+      color: #e6edf3; overflow-x: auto; margin-top: 1rem;
     }
 
     .code-keyword { color: #ff7b72; }
     .code-string { color: #a5d6ff; }
     .code-comment { color: #8b949e; font-style: italic; }
 
-    /* Slide Deck Deck View */
-    .slides-deck {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-    }
+    .slides-deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
 
     .slide-card {
       background: linear-gradient(145deg, rgba(31, 41, 55, 0.6), rgba(17, 24, 39, 0.8));
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+      padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;
     }
 
-    .slide-num {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: var(--accent-pink);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-    }
+    .slide-num { font-size: 0.75rem; font-weight: 800; color: var(--accent-pink); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .slide-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 1rem; }
 
-    .slide-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 1rem;
-    }
+    .slide-bullets { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .slide-bullets li { font-size: 0.875rem; color: var(--text-muted); padding-left: 1.25rem; position: relative; }
+    .slide-bullets li::before { content: '•'; position: absolute; left: 0; color: var(--accent-purple); font-size: 1.2rem; line-height: 1; }
 
-    .slide-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .slide-bullets li {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      padding-left: 1.25rem;
-      position: relative;
-    }
-
-    .slide-bullets li::before {
-      content: '•';
-      position: absolute;
-      left: 0;
-      color: var(--accent-purple);
-      font-size: 1.2rem;
-      line-height: 1;
-    }
-
-    /* Highlight Focus Box */
     .focus-box {
-      background: rgba(139, 92, 246, 0.08);
-      border-left: 4px solid var(--accent-purple);
-      padding: 1.25rem 1.5rem;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      margin-top: 1.5rem;
+      background: rgba(139, 92, 246, 0.08); border-left: 4px solid var(--accent-purple);
+      padding: 1.25rem 1.5rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-top: 1.5rem;
+    }
+    .focus-box h4 { color: #c4b5fd; font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 0.5rem; }
+
+    .speaker-note {
+      background: rgba(245, 158, 11, 0.08); border-left: 4px solid var(--accent-amber);
+      padding: 1rem 1.25rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); font-style: italic;
+    }
+    .speaker-note strong { color: var(--accent-amber); font-style: normal; }
+
+    .quote-block {
+      background: rgba(6, 182, 212, 0.08); border-left: 4px solid var(--accent-cyan);
+      padding: 1.25rem 1.5rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin: 1.5rem 0; font-size: 1.05rem; color: var(--text-muted);
     }
 
-    .focus-box h4 {
-      color: #c4b5fd;
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+    .timeline {
+      display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0;
+      border-left: 3px solid var(--accent-purple); margin-left: 1rem;
     }
+    .timeline-item { padding: 1rem 0 1rem 1.5rem; position: relative; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -8px; top: 1.2rem;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent-purple); border: 2px solid var(--bg-primary);
+    }
+    .timeline-item h4 { font-family: 'Outfit'; color: white; font-size: 1rem; margin-bottom: 0.25rem; }
+    .timeline-item p { color: var(--text-muted); font-size: 0.9rem; }
 
-    /* Responsive */
     @media (max-width: 900px) {
-      .app-container {
-        grid-template-columns: 1fr;
-      }
+      .app-container { grid-template-columns: 1fr; }
+      aside.sidebar { display: none; }
+      main.content { padding: 1.5rem; }
+      .hero-title { font-size: 2rem; }
+      .comparison-box { grid-template-columns: 1fr; }
+    }
 
-      aside.sidebar {
-        display: none;
-      }
-
-      main.content {
-        padding: 1.5rem;
-      }
-
-      .hero-title {
-        font-size: 2rem;
-      }
-
-      .comparison-box {
-        grid-template-columns: 1fr;
-      }
+    @media print {
+      aside.sidebar { display: none; }
+      .app-container { grid-template-columns: 1fr; }
+      header { position: static; }
+      body { background: white; color: black; }
+      .card { border: 1px solid #ccc; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <div class="logo-area">
       <div class="logo-badge">IA</div>
@@ -583,11 +311,11 @@
 
   <div class="app-container">
 
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="nav-group-title">Introduction</div>
       <ul class="nav-links">
         <li><a href="#hero" class="nav-link active"><span>🚀</span> Vue d'Ensemble</a></li>
+        <li><a href="#contexte" class="nav-link"><span>📋</span> Contexte du Projet</a></li>
       </ul>
 
       <div class="nav-group-title">Concepts Clés</div>
@@ -601,23 +329,68 @@
       <ul class="nav-links">
         <li><a href="#cas-pratique" class="nav-link"><span>🛠️</span> Étude de Cas : Quiz Agent</a></li>
         <li><a href="#json-schema" class="nav-link"><span>🎯</span> JSON Schema Strict</a></li>
+        <li><a href="#architecture" class="nav-link"><span>🏗️</span> Architecture Technique</a></li>
+      </ul>
+
+      <div class="nav-group-title">Synthèse</div>
+      <ul class="nav-links">
         <li><a href="#slides" class="nav-link"><span>🎯</span> Support de Slides</a></li>
+        <li><a href="#oral" class="nav-link"><span>🎤</span> Plan d'Exposé (20-40 min)</a></li>
       </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="content">
 
-      <!-- Hero Banner -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- HERO -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="hero" class="hero-banner">
-        <div class="hero-tag">✨ Guide & Présentation Pédagogique</div>
-        <h1 class="hero-title">Comprendre l'IA Générative : LLM, RAG & Agents Autonomes</h1>
+        <div class="hero-tag">✨ Guide & Présentation Pédagogique — Exposé 20-40 min</div>
+        <h1 class="hero-title">Comprendre l'IA Générative : Des Modèles LLM aux Agents Autonomes & RAG</h1>
         <p class="hero-subtitle">
-          Comment passer d'un simple générateur de texte passif à un système d'IA intelligent, fiable, ancré dans la réalité et capable de réaliser des actions complexes.
+          Comment passer d'un simple générateur de texte passif à un système d'IA intelligent, fiable, ancré dans la réalité et capable de réaliser des actions complexes en autonomie.
         </p>
       </section>
 
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- CONTEXTE DU PROJET -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <section id="contexte" class="section-block">
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <h2 class="section-title">Contexte du Projet Quiz</h2>
+        </div>
+
+        <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
+          Ce projet est un <strong>quiz interactif sur l'Islam</strong> utilisant les technologies les plus modernes de l'IA. L'objectif n'est pas simplement de poser des questions, mais de créer un <strong>assistant intelligent capable de générer des questions personnalisées, de s'adapter au niveau du joueur et de fournir des explications pédagogiques</strong>.
+        </p>
+
+        <div class="grid-3">
+          <div class="card">
+            <span class="card-badge badge-purple">Frontend</span>
+            <h3 class="card-title">React + TypeScript</h3>
+            <p class="card-text">Application web moderne avec Vite, routage React Router, thème sombre/clair, et une interface responsive.</p>
+          </div>
+          <div class="card">
+            <span class="card-badge badge-cyan">Backend</span>
+            <h3 class="card-title">Node.js + Express</h3>
+            <p class="card-text">API REST sécurisée avec rate limiting, validation Zod, et helmet pour les headers de sécurité.</p>
+          </div>
+          <div class="card">
+            <span class="card-badge badge-emerald">IA</span>
+            <h3 class="card-title">Gemini + RAG + Agents</h3>
+            <p class="card-text">Pipeline multi-étapes : contexte RAG, génération de questions, déduplication Redis, et auto-vérification.</p>
+          </div>
+        </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (1 min) :</strong> Présenter le projet en quelques mots — un quiz sur l'Islam qui utilise l'IA pour générer des questions dynamiques. L'intérêt n'est pas seulement fonctionnel, mais technique : on utilise RAG, agents, mémoire Redis, et réflexion auto-correcte.
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════ -->
       <!-- SECTION 1 : LES LLM -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="llm" class="section-block">
         <div class="section-header">
           <div class="section-icon">🧠</div>
@@ -625,15 +398,35 @@
         </div>
 
         <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
-          Un **LLM (Large Language Model)** tel que Gemini, GPT-4 ou Claude est un réseau de neurones entraîné sur d'immenses volumes de données textuelles. Son objectif fondamental est de prédire le <strong>mot (ou token) suivant le plus probable</strong>.
+          Un <strong>LLM (Large Language Model)</strong> tel que Gemini, GPT-4 ou Claude est un réseau de neurones entraîné sur d'immenses volumes de données textuelles. Son objectif fondamental est de prédire le <strong>mot (ou token) suivant le plus probable</strong> en fonction du contexte fourni.
         </p>
+
+        <!-- Analogie pédagogique -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(139, 92, 246, 0.1)); border-color: rgba(245, 158, 11, 0.3); margin-bottom: 1.5rem;">
+          <h3 class="card-title" style="color: #fde68a; display: flex; align-items: center; gap: 8px;">
+            💡 L'Analogie de l'Étudiant Extrapolateur
+          </h3>
+          <p class="card-text">
+            Imaginez un étudiant brillant qui a lu des millions de livres, mais qui <strong>n'a jamais mis les pieds dans le monde réel</strong>. Quand on lui pose une question, il <strong>extrapole</strong> à partir de ce qu'il a lu, avec un style très convaincant. Parfois il a raison, parfois il <strong>invente</strong> des faits qui semblent vrais mais qui ne le sont pas.
+          </p>
+          <div class="comparison-box" style="margin-top: 1rem; background: transparent; border: none; padding: 0;">
+            <div class="comp-col bad">
+              <div class="comp-title">❌ LLM sans contexte</div>
+              <p class="card-text">"Le Coran compte 114 sourates" → Correct ✅<br>"Le verset 255 de la sourate 3 parle de..." → Peut inventer ❌</p>
+            </div>
+            <div class="comp-col good">
+              <div class="comp-title">✅ LLM avec RAG</div>
+              <p class="card-text">Le système fournit d'abord le texte exact du verset, puis le LLM formule la question à partir de ce texte réel → 0 hallucination.</p>
+            </div>
+          </div>
+        </div>
 
         <div class="grid-3">
           <div class="card">
             <span class="card-badge badge-purple">Principe</span>
             <h3 class="card-title">Prédiction de Tokens</h3>
             <p class="card-text">
-              Le modèle ne "pense" pas comme un humain : il calcule des probabilités statistiques pour compléter une phrase avec fluidité.
+              Le modèle ne "pense" pas comme un humain : il calcule des <strong>probabilités statistiques</strong> pour compléter une phrase avec fluidité. Chaque mot généré est le plus probable parmi des milliards de possibilités.
             </p>
           </div>
 
@@ -641,7 +434,7 @@
             <span class="card-badge badge-cyan">Forces</span>
             <h3 class="card-title">Polyvalence</h3>
             <p class="card-text">
-              Excellence en rédaction, résumé, traduction, génération de code et compréhension du langage naturel.
+              Excellence en rédaction, résumé, traduction, génération de code, compréhension du langage naturel, et synthèse d'informations complexes.
             </p>
           </div>
 
@@ -649,7 +442,7 @@
             <span class="card-badge badge-amber">Contrainte</span>
             <h3 class="card-title">Passivité</h3>
             <p class="card-text">
-              De base, le modèle attend une consigne (prompt) et renvoie du texte. Il ne peut exécuter aucune action système tout seul.
+              De base, le modèle attend une consigne (prompt) et renvoie du texte. Il ne peut exécuter aucune action système tout seul — pas d'appels API, pas de calculs, pas d'accès à des bases de données.
             </p>
           </div>
         </div>
@@ -658,21 +451,31 @@
         <h3 style="color: white; font-family: 'Outfit'; margin-top: 2rem; margin-bottom: 1rem;">⚠️ Les 3 Limites Majeures des LLM Purs</h3>
         <div class="grid-3">
           <div class="card" style="border-left: 4px solid #ef4444;">
-            <h4 style="color: #fca5a5; margin-bottom: 0.5rem;">1. Hallucinations</h4>
-            <p class="card-text">Le modèle privilégie la fluidité à la vérité. S'il ne sait pas, il peut "inventer" des faits avec assurance.</p>
+            <h4 style="color: #fca5a5; margin-bottom: 0.5rem;">1. Les Hallucinations</h4>
+            <p class="card-text">Le modèle privilégie la fluidité à la vérité. S'il ne sait pas, il peut <strong>"inventer" des faits avec beaucoup d'assurance</strong>. Par exemple, il peut inventer un verset qui n'existe pas ou attribuer une parole fausse à un prophète.</p>
           </div>
           <div class="card" style="border-left: 4px solid #f59e0b;">
-            <h4 style="color: #fde68a; margin-bottom: 0.5rem;">2. Péremption (Cutoff)</h4>
-            <p class="card-text">Il ne connaît pas les événements récents ni les données privées/spécifiques de votre entreprise.</p>
+            <h4 style="color: #fde68a; margin-bottom: 0.5rem;">2. Péremption des Données (Cutoff)</h4>
+            <p class="card-text">Il ne connaît pas les événements récents (après sa date d'entraînement) ni les <strong>données privées/spécifiques</strong> de votre entreprise ou de votre domaine d'expertise.</p>
           </div>
           <div class="card" style="border-left: 4px solid #8b5cf6;">
-            <h4 style="color: #c4b5fd; margin-bottom: 0.5rem;">3. Inaction</h4>
-            <p class="card-text">Il ne sait pas interroger une BDD, envoyer un e-mail ou déclencher un calcul système par lui-même.</p>
+            <h4 style="color: #c4b5fd; margin-bottom: 0.5rem;">3. L'Inaction (Passivité)</h4>
+            <p class="card-text">Il ne sait pas interroger une base de données, envoyer un e-mail, faire un calcul ou déclencher un processus. Il est <strong>limité à la génération de texte</strong>.</p>
           </div>
+        </div>
+
+        <div class="quote-block">
+          <strong>💡 C'est pour résoudre ces 3 limites que l'on a inventé le RAG et les AGENTS IA.</strong>
+        </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (3-4 min) :</strong> Expliquer que le LLM est statistique, pas intelligent au sens humain. Donner l'analogie de l'étudiant qui lit des millions de livres mais n'a jamais vécu. Insister sur les hallucinations avec un exemple concret (verset inventé). Conclure que ces limites créent le besoin du RAG (pour la vérité) et des agents (pour l'autonomie).
         </div>
       </section>
 
+      <!-- ═══════════════════════════════════════════════════ -->
       <!-- SECTION 2 : LE RAG -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="rag" class="section-block">
         <div class="section-header">
           <div class="section-icon">🔍</div>
@@ -680,22 +483,22 @@
         </div>
 
         <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
-          Le **RAG** est l'architecture qui connecte le LLM à une **source de vérités externes** (base de données, API, fichiers PDF) pour ancrer ses réponses dans des faits réels vérifiables.
+          Le <strong>RAG</strong> est l'architecture qui connecte le LLM à une <strong>source de vérités externes</strong> (base de données, API, fichiers PDF) pour ancrer ses réponses dans des faits réels vérifiables. C'est la solution aux hallucinations.
         </p>
 
-        <!-- Analogie -->
-        <div class="card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); border-color: rgba(6, 182, 212, 0.3);">
+        <!-- Analogie de l'élève à l'examen -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); border-color: rgba(6, 182, 212, 0.3); margin-bottom: 1.5rem;">
           <h3 class="card-title" style="color: #67e8f9; display: flex; align-items: center; gap: 8px;">
             💡 L'Analogie de l'Élève à l'Examen
           </h3>
           <div class="comparison-box" style="margin-top: 1rem; background: transparent; border: none; padding: 0;">
             <div class="comp-col bad">
               <div class="comp-title">❌ SANS RAG (Mémoire pure)</div>
-              <p class="card-text">L'élève répond uniquement de mémoire. S'il hésite sur une date ou une formule, il risque de se tromper ou d'inventer.</p>
+              <p class="card-text">L'élève répond uniquement de mémoire. S'il hésite sur une date ou une formule, il risque de se tromper ou d'inventer. C'est le comportement d'un LLM seul.</p>
             </div>
             <div class="comp-col good">
               <div class="comp-title">✅ AVEC RAG (Livre ouvert)</div>
-              <p class="card-text">On pose le livre officiel ouvert à la bonne page sur la table de l'élève. Il extrait les faits exacts et rédige sa réponse.</p>
+              <p class="card-text">On pose le livre officiel ouvert à la bonne page sur la table de l'élève. Il extrait les faits exacts et rédige sa réponse en s'appuyant sur ce texte réel. <strong>Zéro invention possible.</strong></p>
             </div>
           </div>
         </div>
@@ -706,22 +509,51 @@
           <div class="card">
             <span class="card-badge badge-purple">Étape 1</span>
             <h3 class="card-title">1. Retrieval (Recherche)</h3>
-            <p class="card-text">Extraction des documents ou extraits les plus pertinents dans la base de connaissances ou via API.</p>
+            <p class="card-text">Quand l'utilisateur pose une question, le système <strong>recherche automatiquement</strong> les documents, versets ou extraits les plus pertinents dans une base de connaissances ou via une API externe.</p>
           </div>
           <div class="card">
             <span class="card-badge badge-cyan">Étape 2</span>
-            <h3 class="card-title">2. Augmentation</h3>
-            <p class="card-text">Injection des données extraites directement dans la consigne (prompt) transmise au LLM.</p>
+            <h3 class="card-title">2. Augmentation (Enrichissement)</h3>
+            <p class="card-text">Le système <strong>injecte ces extraits directement dans la consigne (prompt)</strong> envoyée au LLM : "Voici les documents officiels. En t'appuyant UNIQUEMENT sur ces documents, réponds..."</p>
           </div>
           <div class="card">
             <span class="card-badge badge-emerald">Étape 3</span>
-            <h3 class="card-title">3. Generation</h3>
-            <p class="card-text">Le LLM formule une réponse fluide et 100% garantie par les sources authentiques fournies.</p>
+            <h3 class="card-title">3. Generation (Génération)</h3>
+            <p class="card-text">Le LLM formule une réponse fluide, exacte et <strong>garantie par les sources authentiques fournies</strong>. L'information ne vient plus de sa mémoire, mais du document réel.</p>
           </div>
+        </div>
+
+        <!-- Flux RAG détaillé -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <h3 class="card-title">🔄 Flux Complet du RAG</h3>
+          <div class="code-block">
+<span class="code-comment">// Flux RAG dans notre projet Quiz</span>
+
+[ Question Utilisateur ] : "Quel est le verset 255 de la sourate Al-Baqara ?"
+        │
+        ▼
+[ 1. RAG Service ] ──► Recherche dans la base locale ou via API alquran.cloud
+        │                   → Récupère le texte exact du verset 255
+        ▼
+[ 2. Prompt Enrichi ] : "Voici le verset 255 : [texte exact].
+                          Génère une question QCM sur ce verset précis."
+        │
+        ▼
+[ 3. LLM Gemini ] ──► Génère 5 questions avec réponses exactes
+        │                   → Les réponses sont VÉRIFIÉES par le texte fourni
+        ▼
+[ RÉSULTAT ] : Quiz sans hallucination, ancré dans les sources authentiques
+          </div>
+        </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (3-4 min) :</strong> Utiliser l'analogie de l'examen à livre ouvert — c'est le concept le plus simple à comprendre. Montrer le flux visuel : question → recherche → injection → réponse garantie. Insister sur le fait que le RAG élimine les hallucinations car l'information vient d'une source vérifiable, pas de la mémoire du modèle.
         </div>
       </section>
 
+      <!-- ═══════════════════════════════════════════════════ -->
       <!-- SECTION 3 : LES AGENTS IA -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="agents" class="section-block">
         <div class="section-header">
           <div class="section-icon">🤖</div>
@@ -729,11 +561,47 @@
         </div>
 
         <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
-          Un **Agent IA** est un LLM auquel on a donné une **mémoire**, des **outils (Function Calling)** et une **capacité de raisonnement/réflexion** pour résoudre un objectif de façon autonome.
+          Un <strong>Agent IA</strong> est un LLM auquel on a donné une <strong>mémoire</strong>, des <strong>outils (Function Calling)</strong> et une <strong>capacité de raisonnement/réflexion</strong> pour résoudre un objectif de façon autonome. Ce n'est plus un simple chatbot, c'est un <strong>exécuteur d'actions</strong>.
         </p>
 
+        <!-- Analogie de l'assistante -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(139, 92, 246, 0.1)); border-color: rgba(236, 72, 153, 0.3); margin-bottom: 1.5rem;">
+          <h3 class="card-title" style="color: #f9a8d4; display: flex; align-items: center; gap: 8px;">
+            💡 L'Analogie de l'Assistante Personnelle
+          </h3>
+          <p class="card-text">
+            Un LLM classique, c'est comme demander à quelqu'un : <em>"Qu'est-ce que tu penses de ce sujet ?"</em> — il répond, mais ne fait rien.<br><br>
+            Un <strong>Agent IA</strong>, c'est comme avoir une assistante personnelle qui : <strong>comprend</strong> votre demande, <strong>planifie</strong> les étapes, <strong>exécute</strong> les tâches (appelle des services, consulte des bases), puis <strong>vérifie</strong> son propre travail avant de vous donner le résultat.
+          </p>
+        </div>
+
+        <!-- Comparaison LLM vs Agent -->
+        <h3 style="color: white; font-family: 'Outfit'; margin-top: 2rem; margin-bottom: 1rem;">📊 Comparaison : LLM Classique vs Agent IA</h3>
+        <div class="comparison-box">
+          <div class="comp-col bad">
+            <div class="comp-title">🤖 LLM Classique (Chatbot)</div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
+              <li>• Répond de manière passive</li>
+              <li>• Ne génère que du texte</li>
+              <li>• Oublie entre les sessions</li>
+              <li>• Pas de vérification</li>
+              <li>• Pas d'accès au monde extérieur</li>
+            </ul>
+          </div>
+          <div class="comp-col good">
+            <div class="comp-title">🤖 Agent IA (Notre Quiz)</div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
+              <li>• Exécute un objectif de manière autonome</li>
+              <li>• <strong>Utilise des outils</strong> (API, BDD, scripts)</li>
+              <li>• Garde une <strong>mémoire</strong> (Redis, session)</li>
+              <li>• <strong>Auto-vérifie</strong> son travail (Reflection)</li>
+              <li>• Interagit avec le monde réel</li>
+            </ul>
+          </div>
+        </div>
+
         <!-- Boucle Agentique -->
-        <div class="card">
+        <div class="card" style="margin-top: 1.5rem;">
           <h3 class="card-title">🔄 La Boucle de Raisonnement Agentique (ReAct)</h3>
           <div class="flow-container">
             <div class="flow-step">
@@ -754,51 +622,93 @@
               <div class="step-num">3</div>
               <div class="step-info">
                 <h4>Action (Function Calling / Outillage)</h4>
-                <p>L'agent exécute du code backend (appel d'API, requêtes SQL, calculs système).</p>
+                <p>L'agent exécute du code backend : appels d'API, requêtes Redis, calculs système.</p>
               </div>
             </div>
             <div class="flow-step">
               <div class="step-num">4</div>
               <div class="step-info">
                 <h4>Auto-Réflexion (Reflection & Self-Correction)</h4>
-                <p>L'agent relit son résultat en jouant le rôle de réviseur pour corriger d'éventuelles erreurs avant de répondre.</p>
+                <p>L'agent relit son résultat en jouant le rôle de réviseur pour corriger les erreurs avant de répondre.</p>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (4-5 min) :</strong> Utiliser l'analogie de l'assistante personnelle. Montrer le tableau comparatif. Insister sur le Function Calling (l'IA appelle du vrai code). La boucle ReAct est le cœur de l'agentique : percevoir → raisonner → agir → vérifier. C'est ce qui différencie un chatbot d'un vrai agent.
+        </div>
       </section>
 
-      <!-- SECTION 4 : ÉTUDE DE CAS & CODE -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- SECTION 4 : ÉTUDE DE CAS -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="cas-pratique" class="section-block">
         <div class="section-header">
           <div class="section-icon">🛠️</div>
           <h2 class="section-title">4. Étude de Cas Concrète : Le Quiz Intelligent</h2>
         </div>
 
-        <p class="card-text" style="margin-bottom: 1.5rem;">
-          Voici comment ces 3 concepts s'articulent dans une architecture réelle pour garantir un quiz dynamique, sans doublon et sans hallucination :
+        <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
+          Voici comment ces 3 concepts (LLM, RAG, Agents) s'articulent dans notre architecture réelle pour garantir un quiz dynamique, sans doublon et sans hallucination.
         </p>
 
-        <div class="code-block">
-<span class="code-comment">// Illustration du Pipeline Multi-Agents du Quiz Agent</span>
+        <!-- Pipeline complet -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h3 class="card-title">🔗 Pipeline Complet du Quiz Agent</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <h4>Étape 1 : Agent Profil Adaptatif</h4>
+              <p>Le système lit le profil du joueur dans Redis (niveau recommandé, erreurs consécutives) et détermine automatiquement la difficulté : Débutant, Intermédiaire ou Expert.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Étape 2 : Service RAG Islamique</h4>
+              <p>Le système recherche le contexte authentique : versets du Coran, hadiths, textes jurisprudentiels via une base locale ou l'API alquran.cloud.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Étape 3 : LLM Gemini avec JSON Schema</h4>
+              <p>Gemini génère les questions avec un schéma JSON strict (types ARRAY, OBJECT, INTEGER, STRING) pour garantir un format exploitable.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Étape 4 : Mémoire Redis Anti-Doublons</h4>
+              <p>Le système filtre les questions déjà vues par le joueur (mémoire de session TTL 7 jours) et les doublons sémantiques (> 50% de mots en commun).</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Étape 5 : Agent de Réflexion (Reflection)</h4>
+              <p>Un second appel à Gemini relit les questions et vérifie : la bonne réponse est-elle correcte ? Le niveau est-il respecté ? Les explications sont-elles pédagogiques ?</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Étape 6 : Fallback en Cascade</h4>
+              <p>Si Gemini est indisponible : questions du pool Redis → questions statiques locales. Le quiz fonctionne toujours.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code illustratif -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h3 class="card-title">💻 Illustration du Pipeline Multi-Agents</h3>
+          <div class="code-block">
+<span class="code-comment">// Pipeline complet du Quiz Agent (quizAgent.js)</span>
 <span class="code-keyword">async function</span> <span class="code-string">runQuizPipeline</span>(topic, playerSession) {
+
   <span class="code-comment">// 1. Agent Profil : Résolution adaptative de la difficulté</span>
   <span class="code-keyword">const</span> difficulty = <span class="code-keyword">await</span> resolveDifficulty(playerSession);
 
-  <span class="code-comment">// 2. Service RAG : Extraction de sources authentiques (Base locale ou API)</span>
+  <span class="code-comment">// 2. Service RAG : Extraction de sources authentiques</span>
   <span class="code-keyword">const</span> ragContext = <span class="code-keyword">await</span> fetchIslamicRAGContext(topic);
 
   <span class="code-comment">// 3. LLM Gemini : Génération du draft avec JSON Schema strict</span>
   <span class="code-keyword">const</span> draft = <span class="code-keyword">await</span> generateDraft(difficulty, topic, ragContext);
 
-  <span class="code-comment">// 4. Mémoire Redis : Filtrage des questions déjà vues par le joueur</span>
+  <span class="code-comment">// 4. Mémoire Redis : Filtrage des questions déjà vues</span>
   <span class="code-keyword">const</span> uniqueQuestions = deduplicateWithRedis(draft, playerSession);
 
-  <span class="code-comment">// 5. Reflection Agent : Auto-vérification et validation de l'exactitude</span>
+  <span class="code-comment">// 5. Reflection Agent : Auto-vérification et validation</span>
   <span class="code-keyword">const</span> finalQuiz = <span class="code-keyword">await</span> reflectAndVerify(uniqueQuestions);
 
-  <span class="code-keyword">return</span> finalQuiz;
+  <span class="code-keyword">return</span> finalQuiz; <span class="code-comment">// Quiz parfait & sourcé</span>
 }
+          </div>
         </div>
 
         <!-- Focus sur JSON Schema Strict -->
@@ -811,83 +721,159 @@
             En passant la configuration <code>responseMimeType: 'application/json'</code> et le schéma <code>QUESTION_SCHEMA</code> (définissant les types <code>ARRAY</code>, <code>OBJECT</code>, <code>INTEGER</code>, <code>STRING</code>) à l'API Gemini, <strong>le moteur de l'IA est contraint physiquement lors du décodage de ses tokens</strong> de ne produire QUE du JSON pur, valide et directement exploitable par le Frontend React.
           </p>
         </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (5-6 min) :</strong> Détailler chaque étape du pipeline. Montrer le code illustratif. Expliquer le JSON Schema : sans lui, le LLM peut produire du texte libre qui casse le parser. Avec lui, le format est garanti à 100%. Montrer le fallback : même si l'IA tombe, le quiz continue de fonctionner (résilience).
+        </div>
       </section>
 
-      <!-- SECTION 5 : SLIDES DE PRESENTATION -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- SECTION 5 : ARCHITECTURE TECHNIQUE -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <section id="architecture" class="section-block">
+        <div class="section-header">
+          <div class="section-icon">🏗️</div>
+          <h2 class="section-title">5. Architecture Technique Complète</h2>
+        </div>
+
+        <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
+          Découvrons comment tout s'assemble dans l'architecture réelle du projet.
+        </p>
+
+        <div class="grid-2">
+          <div class="card">
+            <span class="card-badge badge-emerald">Frontend</span>
+            <h3 class="card-title">React + TypeScript + Vite</h3>
+            <p class="card-text">
+              Application SPA avec React Router. Hooks métier séparés : <code>useQuiz</code> (logique quiz), <code>useChallenge</code> (défis entre joueurs), <code>useAuthUser</code> (connexion Google). Services d'accès : <code>apiService</code>, <code>firestoreService</code>, <code>livesService</code>.
+            </p>
+          </div>
+
+          <div class="card">
+            <span class="card-badge badge-cyan">Backend</span>
+            <h3 class="card-title">Node.js + Express + Zod</h3>
+            <p class="card-text">
+              API REST sécurisée avec helmet, CORS restreint, rate limiting (IP + sessionId), validation Zod sur tous les endpoints. Logs structurés en français. Gestion propre des erreurs 429/500.
+            </p>
+          </div>
+
+          <div class="card">
+            <span class="card-badge badge-purple">Mémoire</span>
+            <h3 class="card-title">Upstash Redis + Firebase</h3>
+            <p class="card-text">
+              Redis pour la mémoire temporaire : historique conversations (TTL 24h), questions vues (TTL 7j), pool de secours (TTL 30j), profil joueur (TTL 30j). Firebase pour la persistance durable : sessions, classement, auth.
+            </p>
+          </div>
+
+          <div class="card">
+            <span class="card-badge badge-amber">IA</span>
+            <h3 class="card-title">Gemini + RAG + Agents</h3>
+            <p class="card-text">
+              Double pipeline agentique : Quiz Agent (génération QCM) et Assistant Agent (conversation avec function calling). Retry exponentiel sur 429, fallback en cascade, schéma JSON strict.
+            </p>
+          </div>
+        </div>
+
+        <div class="speaker-note">
+          <strong>🎤 Note orale (3-4 min) :</strong> Présenter chaque couche de l'architecture. Insister sur la séparation des responsabilités : frontend/UI, backend/logique, Redis/mémoire temporaire, Firebase/persistance, Gemini/IA. Montrer que chaque composant a un rôle clair.
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- SECTION 6 : SUPPORT DE SLIDES -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <section id="slides" class="section-block">
         <div class="section-header">
           <div class="section-icon">🎯</div>
-          <h2 class="section-title">5. Support de Présentation Oral (Slide-par-Slide)</h2>
+          <h2 class="section-title">6. Support de Présentation Oral (Slide-par-Slide)</h2>
         </div>
 
         <p class="card-text" style="margin-bottom: 1.5rem;">
-          Voici la trame réutilisable pour présenter ce sujet oralement devant un jury, une équipe ou en conférence :
+          Voici la trame réutilisable pour présenter ce sujet oralement devant un jury, une équipe ou en conférence (20-40 minutes).
         </p>
 
         <div class="slides-deck">
-          
+
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 1</div>
+              <div class="slide-num">Slide 1 — 2 min</div>
               <h3 class="slide-title">Introduction & Vision</h3>
               <ul class="slide-bullets">
                 <li>Des LLM simples aux Systèmes Agentiques autonomes.</li>
                 <li>Comment rendre l'IA fiable et utile en production.</li>
+                <li>Présentation du projet Quiz comme étude de cas.</li>
               </ul>
             </div>
           </div>
 
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 2</div>
+              <div class="slide-num">Slide 2 — 4 min</div>
               <h3 class="slide-title">Les LLM et leurs Limites</h3>
               <ul class="slide-bullets">
                 <li>Prédiction statistique du mot suivant.</li>
-                <li>Problème des hallucinations et du manque de données temps réel.</li>
+                <li>Les 3 limites : hallucinations, cutoff, passivité.</li>
+                <li>Analogie de l'étudiant extrapolateur.</li>
               </ul>
             </div>
           </div>
 
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 3</div>
+              <div class="slide-num">Slide 3 — 4 min</div>
               <h3 class="slide-title">Le RAG (Ancrage Vérité)</h3>
               <ul class="slide-bullets">
                 <li>L'analogie de l'examen à livre ouvert.</li>
-                <li>Recherche ➔ Injection ➔ Génération garantie.</li>
+                <li>Recherche → Injection → Génération garantie.</li>
+                <li>Dans le projet : versets du Coran injectés avant génération.</li>
               </ul>
             </div>
           </div>
 
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 4</div>
+              <div class="slide-num">Slide 4 — 5 min</div>
               <h3 class="slide-title">Les Agents IA Autonomes</h3>
               <ul class="slide-bullets">
                 <li>Outillage (Function Calling) & Mémoire de session.</li>
                 <li>Boucle d'auto-correction (Reflection Agent).</li>
+                <li>Analogie de l'assistante personnelle.</li>
               </ul>
             </div>
           </div>
 
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 5</div>
-              <h3 class="slide-title">Étude de Cas & JSON Schema</h3>
+              <div class="slide-num">Slide 5 — 6 min</div>
+              <h3 class="slide-title">Étude de Cas : Le Quiz Agent</h3>
               <ul class="slide-bullets">
                 <li>Pipeline complet RAG + Gemini + Redis.</li>
                 <li>Garantie de format par JSON Schema strict.</li>
+                <li>Fallback en cascade (résilience).</li>
               </ul>
             </div>
           </div>
 
           <div class="slide-card">
             <div>
-              <div class="slide-num">Slide 6</div>
-              <h3 class="slide-title">Conclusion</h3>
+              <div class="slide-num">Slide 6 — 3 min</div>
+              <h3 class="slide-title">Architecture Technique</h3>
+              <ul class="slide-bullets">
+                <li>Séparation des couches : Frontend, Backend, Redis, Firebase, IA.</li>
+                <li>Sécurité : CORS, rate limiting, validation Zod.</li>
+                <li>Tests automatisés (vitest + node:test).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="slide-card">
+            <div>
+              <div class="slide-num">Slide 7 — 2 min</div>
+              <h3 class="slide-title">Conclusion & Perspectives</h3>
               <ul class="slide-bullets">
                 <li>L'avenir réside dans l'orchestration multi-agents.</li>
                 <li>Passer de la théorie à la pratique avec des projets réels.</li>
+                <li>Ouverture : agents collaboratifs, mémoire long terme, évaluation automatique.</li>
               </ul>
             </div>
           </div>
@@ -895,11 +881,118 @@
         </div>
       </section>
 
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- SECTION 7 : PLAN D'ORAL DÉTAILLÉ -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <section id="oral" class="section-block">
+        <div class="section-header">
+          <div class="section-icon">🎤</div>
+          <h2 class="section-title">7. Plan d'Exposé Détaillé (20-40 min)</h2>
+        </div>
+
+        <p class="card-text" style="margin-bottom: 1.5rem; font-size: 1.05rem;">
+          Voici le déroulé complet de l'exposé, slide par slide, avec les points à couvrir, les analogies à utiliser et les questions du jury anticipated.
+        </p>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-emerald);">
+          <h3 class="card-title">🎬 Introduction (2 min)</h3>
+          <p class="card-text">
+            <strong>Ouverture :</strong> "Aujourd'hui, l'IA générative est partout — mais elle souffre de 3 problèmes majeurs : elle invente des faits, elle ne connaît pas vos données, et elle ne peut rien faire toute seule. Notre projet résout ces 3 problèmes."
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Plan :</strong> LLM → leurs limites → le RAG comme solution → les agents comme autonomie → démo du quiz → architecture → conclusion.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-purple);">
+          <h3 class="card-title">🧠 Les LLM (4 min)</h3>
+          <p class="card-text">
+            <strong>Point clé :</strong> Le LLM est un prédicteur statistique de tokens. Il est brillant pour rédiger, mais il peut <strong>inventer des faits</strong> (hallucinations), il ne connaît pas les <strong>données récentes ou privées</strong> (cutoff), et il est <strong>limité à la génération de texte</strong> (passivité).
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Analogie :</strong> "C'est comme un étudiant qui a lu des millions de livres mais n'a jamais vécu dans le monde réel. Il extrapolle avec assurance, mais parfois il invente."
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Question jury anticipée :</strong> "Comment fonctionne un LLM ?" → Réponse : prédiction du token suivant par probabilité statistique, entraîné sur des milliards de textes.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-cyan);">
+          <h3 class="card-title">🔍 Le RAG (4 min)</h3>
+          <p class="card-text">
+            <strong>Point clé :</strong> Le RAG résout les hallucinations en <strong>fournissant les sources exactes</strong> au LLM avant qu'il ne réponde. C'est l'analogie de l'examen à livre ouvert.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>3 étapes :</strong> Retrieval (recherche des documents) → Augmentation (injection dans le prompt) → Generation (réponse garantie par les sources).
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Dans le projet :</strong> Le RAG cherche les versets du Coran dans une base locale ou via l'API alquran.cloud, puis injecte le texte exact dans le prompt de Gemini.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Question jury anticipée :</strong> "Quelle est la différence entre RAG et fine-tuning ?" → Le RAG ajoute des connaissances au moment de l'inférence sans réentraîner le modèle.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-pink);">
+          <h3 class="card-title">🤖 Les Agents IA (5 min)</h3>
+          <p class="card-text">
+            <strong>Point clé :</strong> Un Agent IA est un LLM doté de <strong>bras</strong> (outils/Function Calling), d'un <strong>cerveau</strong> (raisonnement/ReAct), et d'une <strong>mémoire</strong> (session Redis).
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>La boucle ReAct :</strong> Perception → Raisonnement → Action → Auto-Réflexion. C'est ce qui différencie un chatbot d'un vrai agent.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Function Calling :</strong> L'IA peut appeler des fonctions backend (générer un quiz, calculer la Zakat, etc.) de manière autonome.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Question jury anticipée :</strong> "Qu'est-ce qui distingue un agent d'un simple chatbot ?" → L'autonomie, l'utilisation d'outils, la mémoire, et la réflexion auto-correcte.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-amber);">
+          <h3 class="card-title">🛠️ Étude de Cas : Quiz Agent (6 min)</h3>
+          <p class="card-text">
+            <strong>Point clé :</strong> Montrer le pipeline complet et chaque composant en action.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Pipeline :</strong> Profil adaptatif → RAG islamique → Gemini + JSON Schema → Déduplication Redis → Reflection → Fallback cascade.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>JSON Schema :</strong> Sans schéma strict, le LLM peut produire du texte libre qui casse le parser. Avec le schéma, le format est garanti à 100%.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Question jury anticipée :</strong> "Comment gérez-vous les erreurs de l'IA ?" → Fallback en cascade : Redis → questions statiques. Le quiz fonctionne toujours.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-blue);">
+          <h3 class="card-title">🏗️ Architecture Technique (3 min)</h3>
+          <p class="card-text">
+            <strong>Point clé :</strong> Montrer la séparation des couches et la robustesse de l'architecture.
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Couches :</strong> React (UI) → Express (API) → Redis (mémoire) → Firebase (persistance) → Gemini (IA).
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Sécurité :</strong> CORS restreint, rate limiting IP+sessionId, validation Zod, helmet, API keys non commitées.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-red);">
+          <h3 class="card-title">🎯 Conclusion (2 min)</h3>
+          <p class="card-text">
+            <strong>Ouverture :</strong> "L'avenir du développement logiciel réside dans l'orchestration d'agents spécialisés travaillant ensemble. Passer de la théorie à la pratique permet de construire des applications d'IA de niveau production."
+          </p>
+          <p class="card-text" style="margin-top: 0.75rem;">
+            <strong>Perspectives :</strong> Agents collaboratifs, mémoire long terme, évaluation automatique, multi-modalité.
+          </p>
+        </div>
+      </section>
+
     </main>
-  </div>
+  </div>                                                                                                                                                                
 
   <script>
-    // Smooth navigation active link update
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('section');
 

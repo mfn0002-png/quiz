@@ -1,3 +1,11 @@
+export interface AssistantConversation {
+  id: string;
+  title: string;
+  createdAt: string;
+  lastUpdated: string;
+  messageCount: number;
+}
+
 import { Difficulty, Question, Keyword } from '../data/questions';
 export type { Keyword };
 
@@ -82,12 +90,20 @@ export const sendQuizResults = async (
 /**
  * Appelle l'API Backend Express pour la conversation avec l'Assistant IA Gemini Agent.
  */
-export const askQuestion = async (userQuestion: string, sessionId?: string): Promise<AssistantResponse> => {
-  const finalSessionId = sessionId || getClientSessionId();
+export const askQuestion = async (
+  userQuestion: string,
+  conversationId?: string | null,
+  clientId?: string
+): Promise<AssistantResponse & { conversationId?: string }> => {
+  const finalClientId = clientId || getClientSessionId();
+  const body: any = { question: userQuestion, clientId: finalClientId };
+  if (conversationId) body.conversationId = conversationId;
+  else body.sessionId = finalClientId;
+
   const response = await fetch(`${API_BASE_URL}/assistant/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: userQuestion, sessionId: finalSessionId })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -131,4 +147,31 @@ export const getAssistantHistory = async (sessionId?: string): Promise<Assistant
     console.warn("Erreur récupération historique assistant :", err);
     return [];
   }
+};
+
+
+/**
+ * Récupère la liste des conversations enregistrées pour le client courant.
+ */
+export const getAssistantConversations = async (clientId?: string): Promise<AssistantConversation[]> => {
+  const finalClientId = clientId || getClientSessionId();
+  try {
+    const response = await fetch(`${API_BASE_URL}/assistant/conversations/${finalClientId}`);
+    if (!response.ok) return [];
+    const data = await response.json().catch(() => ({ conversations: [] }));
+    return data.conversations || [];
+  } catch (err) {
+    console.warn("Erreur récupération conversations assistant :", err);
+    return [];
+  }
+};
+
+/**
+ * Supprime une conversation spécifique sans toucher aux autres.
+ */
+export const deleteAssistantConversation = async (conversationId: string, clientId?: string): Promise<void> => {
+  const finalClientId = clientId || getClientSessionId();
+  await fetch(`${API_BASE_URL}/assistant/conversation/${finalClientId}/${conversationId}`, {
+    method: 'DELETE'
+  }).catch(err => console.error("Erreur suppression conversation :", err));
 };

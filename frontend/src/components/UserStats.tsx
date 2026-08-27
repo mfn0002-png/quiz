@@ -153,7 +153,8 @@ export function UserStats({ user, refreshKey, onReplayQuiz }: UserStatsProps) {
 
                       const isReviewOpen = expandedReviewId === sess.id;
                       const hasQuestions = sess.questions && sess.questions.length > 0;
-                      const isReplaySession = (sess as any).isReplay || categorySessions.some((other) => (
+                      const withReplayFlag = sess as SessionRecord & { isReplay?: boolean };
+                      const isReplaySession = !!withReplayFlag.isReplay || categorySessions.some((other) => (
                         other.id !== sess.id &&
                         other.difficulty === sess.difficulty &&
                         ((other.date?.toMillis ? other.date.toMillis() : 0) < (sess.date?.toMillis ? sess.date.toMillis() : 0))

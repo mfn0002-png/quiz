@@ -20,7 +20,7 @@ export function parseApiError(err: unknown): UserFacingError {
   if (typeof err === 'string') {
     message = err;
   } else if (err && typeof err === 'object' && 'message' in err) {
-    message = String((err as any).message);
+    message = String((err as Record<string, unknown>).message);
   } else {
     message = String(err || '');
   }

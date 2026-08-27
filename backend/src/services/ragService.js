@@ -6,6 +6,8 @@
  * en combinant une base locale rapide et un fallback API REST.
  */
 
+import { fetchHadiths, formatHadiths } from './hadithService.js';
+
 // Dataset local de références islamiques authentiques
 const ISLAMIC_KNOWLEDGE_BASE = {
   'Piliers de l\'Islam': [
@@ -95,11 +97,14 @@ const ISLAMIC_KNOWLEDGE_BASE = {
  * (ex: "la patience (As-Sabr)" -> "patience")
  */
 function cleanSearchKeyword(topic) {
-  if (!topic) return '';
-  return topic
-    .replace(/\(.*?\)/g, '')                         // Supprime tout ce qui est entre parenthèses
-    .replace(/^(la|le|les|l'|du|de|des)\s+/i, '')    // Supprime les articles de début
+  if (!topic) return "";
+  const cleaned = topic
+    .replace(/\(.*?\)/g, "")
+    .replace(/\b(qu'est-ce|quel|quelle|quels|quelles|est-ce|que|qui|comment|pourquoi|dans|sur|du|de|la|le|les|l'|des|un|une|on|a|mentionne|mentionné|hadith|verset|sourate|donne-moi|dit-on|parle-moi)\b/gi, " ")
+    .replace(/[^a-zA-Z0-9\s\u00C0-\u017F-]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
+  return cleaned || topic;
 }
 
 /**
@@ -125,36 +130,49 @@ export async function fetchIslamicRAGContext(topic) {
     return `Références authentiques pour "${topic}" :\n${formatted}`;
   }
 
-  // 2. Nettoyage du terme de recherche pour l'API REST
+  // 2. Recherche en parallèle : API alquran.cloud (Coran) + API UmmahAPI (Hadiths)
   const searchKeyword = cleanSearchKeyword(topic);
-  console.log(` 🌐 [RAG Service - API Externe] Interrogation de l'API alquran.cloud pour : "${topic}" (mot-clé: "${searchKeyword}")...`);
+  console.log(` 🌐 [RAG Service - API Externe] Recherche parallèle pour "${topic}" (mot-clé: "${searchKeyword}")...`);
 
-  // 3. Fallback API REST (api.alquran.cloud) si thème spécifique
-  try {
-    const response = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(searchKeyword)}/all/fr.hamidullah`, {
-      signal: AbortSignal.timeout(3000), // Timeout 3s
-    });
+  const [coranResult, hadithsResult] = await Promise.allSettled([
+    // API alquran.cloud (Coran)
+    fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(searchKeyword)}/all/fr.hamidullah`, {
+      signal: AbortSignal.timeout(3000),
+    }).then(res => res.ok ? res.json() : null),
 
-    if (response.ok) {
-      const data = await response.json();
-      const matches = data.data?.matches?.slice(0, 3) || [];
-      if (matches.length > 0) {
-        const apiFormatted = matches
-          .map(m => `• [Sourate ${m.surah.englishName} (${m.surah.number}):${m.numberInSurah}] : "${m.text.trim()}"`)
-          .join('\n');
-        console.log(` ✅ [RAG Service - API Externe] ${matches.length} verset(s) récupéré(s) via API alquran.cloud pour "${topic}"`);
-        return `Versets de référence pour "${topic}" :\n${apiFormatted}`;
-      } else {
-        console.log(` ⚠️ [RAG Service - API Externe] Aucun verset trouvé via l'API pour "${topic}". Fallback sur contexte générique.`);
-      }
-    } else {
-      console.log(` ⚠️ [RAG Service - API Externe] Erreur statut HTTP ${response.status} de l'API alquran.cloud.`);
+    // API UmmahAPI (Hadiths)
+    fetchHadiths(topic, 3),
+  ]);
+
+  // 3. Traiter les résultats du Coran
+  let coranContext = '';
+  if (coranResult.status === 'fulfilled' && coranResult.value) {
+    const matches = coranResult.value.data?.matches?.slice(0, 3) || [];
+    if (matches.length > 0) {
+      coranContext = matches
+        .map(m => `• [Sourate ${m.surah.englishName} (${m.surah.number}):${m.numberInSurah}] : "${m.text.trim()}"`)
+        .join('\n');
+      console.log(` ✅ [RAG Service - Coran] ${matches.length} verset(s) récupéré(s) pour "${topic}"`);
     }
-  } catch (err) {
-    console.warn(` ⚠️ [RAG Service - API Externe] Échec API externe (${err.message}), fallback sur contexte générique.`);
+  } else if (coranResult.status === 'rejected') {
+    console.warn(` ⚠️ [RAG Service - Coran] Échec: ${coranResult.reason?.message || 'Erreur inconnue'}`);
   }
 
-  // 4. Contexte par défaut
-  console.log(` ℹ️ [RAG Service] Fallback final sur contexte générique pour "${topic}".`);
+  // 4. Traiter les résultats des Hadiths
+  const hadithsContext = formatHadiths(hadithsResult.status === 'fulfilled' ? hadithsResult.value : []);
+
+  // 5. Combiner les résultats
+  const parts = [];
+  if (coranContext) parts.push(`Versets de référence pour "${topic}" :\n${coranContext}`);
+  if (hadithsContext) parts.push(`Hadiths de référence pour "${topic}" :\n${hadithsContext}`);
+
+  if (parts.length > 0) {
+    const combined = parts.join('\n\n');
+    console.log(` 📚 [RAG Service] Contexte combiné généré pour "${topic}" (${parts.length} source(s))`);
+    return combined;
+  }
+
+  // 6. Fallback contexte par défaut
+  console.log(` ℹ️ [RAG Service] Fallback sur contexte générique pour "${topic}".`);
   return `Contexte pour "${topic}" : Utiliser les notions authentiques reconnues du Coran et de la Sunnah authentique.`;
 }

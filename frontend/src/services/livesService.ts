@@ -22,8 +22,8 @@ export interface LivesState {
  */
 export function getGlobalLivesState(): LivesState {
   const now = Date.now();
-  let savedLivesStr = localStorage.getItem(LIVES_STORAGE_KEY);
-  let savedLastRechargeStr = localStorage.getItem(LAST_RECHARGE_KEY);
+  const savedLivesStr = localStorage.getItem(LIVES_STORAGE_KEY);
+  const savedLastRechargeStr = localStorage.getItem(LAST_RECHARGE_KEY);
 
   let currentLives = savedLivesStr !== null ? parseInt(savedLivesStr, 10) : MAX_GLOBAL_LIVES;
   let lastRechargeTime = savedLastRechargeStr !== null ? parseInt(savedLastRechargeStr, 10) : now;
