@@ -39,6 +39,49 @@ RÈGLES STRICTES DE DÉCLENCHEMENT DES OUTILS :
 
 Réponds toujours en français correct avec des accents (é, à, è, ô, ç). JAMAIS d'entités HTML.`;
 
+
+/**
+ * Génère l'instruction système dynamique enrichie de l'horloge système et de la date hégirienne en temps réel.
+ */
+function getDynamicSystemInstruction() {
+  const now = new Date();
+  const gregDate = now.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  let hijriDate = "";
+  try {
+    hijriDate = new Intl.DateTimeFormat("fr-FR-u-ca-islamic-umalqura", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(now);
+  } catch {
+    try {
+      hijriDate = new Intl.DateTimeFormat("fr-FR-u-ca-islamic", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(now);
+    } catch {
+      hijriDate = "Calendrier Hégirien";
+    }
+  }
+
+  return `${SYSTEM_INSTRUCTION}
+
+HORLOGE TEMPS RÉEL ET CALENDRIER HÉGIRIEN :
+- Date grégorienne actuelle : ${gregDate}
+- Date hégirienne actuelle (calendrier musulman) : ${hijriDate} Hégire (AH).
+Si l'utilisateur demande quelle est la date d'aujourd'hui, le jour actuel ou la date du calendrier musulman / hégirien, tu réponds directement avec la date hégirienne exacte (${hijriDate}) et la date grégorienne (${gregDate}).
+
+CONSIGNE IMPÉRATIVE : Lorsque tu mentionnes la date hégirienne, ajoute systématiquement à la fin la note suivante :
+"💡 À noter : La date islamique peut varier d’un jour selon la méthode utilisée (calcul astronomique ou observation locale du croissant lunaire)."`;
+}
+
 // ─────────────────────────────────────────────
 // Définition des outils (Function Calling)
 // ─────────────────────────────────────────────
@@ -341,7 +384,7 @@ ${ragContext}`
   // 3. Créer le modèle avec outils
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
-    systemInstruction: SYSTEM_INSTRUCTION,
+    systemInstruction: getDynamicSystemInstruction(),
     tools: TOOLS,
   });
 

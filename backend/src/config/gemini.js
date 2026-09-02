@@ -24,14 +24,21 @@ export async function withRetry(fn, maxRetries = 3) {
     try {
       return await fn();
     } catch (error) {
-      const is429 = error?.status === 429 ||
-        (error?.message && error.message.includes('429')) ||
-        (error?.message && error.message.toLowerCase().includes('quota'));
+      const msgLower = (error?.message || '').toLowerCase();
+      const isTransient = (
+        error?.status === 429 ||
+        error?.status === 503 ||
+        msgLower.includes('429') ||
+        msgLower.includes('503') ||
+        msgLower.includes('quota') ||
+        msgLower.includes('unavailable') ||
+        msgLower.includes('capacity') ||
+        msgLower.includes('overloaded')
+      );
 
-      if (is429 && attempt < maxRetries) {
-        // Délai exponentiel : 2s, 4s, 8s...
+      if (isTransient && attempt < maxRetries) {
         const delayMs = Math.pow(2, attempt) * 1000;
-        console.warn(`⚠️ Quota Gemini atteint (tentative ${attempt}/${maxRetries}). Retry dans ${delayMs / 1000}s...`);
+        console.warn(`⚠️ Erreur temporaire Gemini (429/503) (tentative ${attempt}/${maxRetries}). Retry dans ${delayMs / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
       } else {
         throw error;
