@@ -9,8 +9,8 @@ const router = Router();
 // POST /api/assistant/chat
 router.post('/chat', validate(chatSchema), async (req, res) => {
   const { question, conversationId, sessionId, clientId } = req.body;
-  const activeConvId = conversationId || sessionId;
-  const activeClientId = clientId || sessionId;
+  const activeClientId = clientId || sessionId || 'anonymous';
+  const activeConvId = conversationId || `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
   try {
     const result = await runAssistantAgent(activeConvId, question, activeClientId);

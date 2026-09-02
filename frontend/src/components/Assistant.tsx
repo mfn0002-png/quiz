@@ -66,9 +66,12 @@ export function Assistant() {
 
   // Charger les messages de la conversation active (ou fallback sessionId legacy)
   const loadConversationMessages = async (convId: string | null) => {
-    const targetId = convId || clientId;
+    if (!convId) {
+      setMessages([DEFAULT_WELCOME_MSG]);
+      return;
+    }
     try {
-      const history = await getAssistantHistory(targetId);
+      const history = await getAssistantHistory(convId);
       if (history && history.length > 0) {
         const loadedMsgs = history.map((msg, index) => {
           let quote: string | null = msg.quote || null;
@@ -463,7 +466,7 @@ export function Assistant() {
               </button>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
               {conversations.length === 0 ? (
                 <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
                   Aucune conversation enregistrée.
@@ -551,7 +554,7 @@ export function Assistant() {
           }}
         >
           {/* Zone des messages */}
-          <div style={{
+          <div className="custom-scrollbar" style={{
             flex: 1,
             overflowY: 'auto',
             padding: '1.25rem',

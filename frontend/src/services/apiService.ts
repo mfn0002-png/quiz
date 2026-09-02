@@ -97,8 +97,9 @@ export const askQuestion = async (
 ): Promise<AssistantResponse & { conversationId?: string }> => {
   const finalClientId = clientId || getClientSessionId();
   const body: any = { question: userQuestion, clientId: finalClientId };
-  if (conversationId) body.conversationId = conversationId;
-  else body.sessionId = finalClientId;
+  if (conversationId) {
+    body.conversationId = conversationId;
+  }
 
   const response = await fetch(`${API_BASE_URL}/assistant/chat`, {
     method: 'POST',

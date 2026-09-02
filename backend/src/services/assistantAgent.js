@@ -302,8 +302,10 @@ function toSimpleHistory(geminiHistory, previousSimpleHistory = []) {
  * @returns {{ answer: string, keywords: Array }}
  */
 export async function runAssistantAgent(sessionId, userMessage, clientId = null) {
-  const conversationId = sessionId || `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  const finalClientId = clientId || (sessionId && !sessionId.startsWith('conv_') ? sessionId : null);
+  const conversationId = sessionId && sessionId.startsWith('conv_')
+    ? sessionId
+    : (sessionId && sessionId !== 'anonymous' && !clientId ? `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}` : (sessionId || `conv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`));
+  const finalClientId = clientId || (sessionId && !sessionId.startsWith('conv_') ? sessionId : 'anonymous');
 
   console.log("💬 ==================== ASSISTANT AGENT ====================");
   console.log(`🆔 Conversation ID : ${conversationId}`);
