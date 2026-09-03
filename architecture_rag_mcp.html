@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Agent / RAG / MCP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d2e;
+      --border: #2a2d3e;
+      --text: #e4e6f0;
+      --muted: #8b8fa3;
+      --accent-rag: #4a9eff;
+      --accent-mcp: #2ecc71;
+      --accent-gemini: #a78bfa;
+      --accent-agent: #f87171;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-rag), var(--accent-gemini), var(--accent-mcp));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .section {
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .section-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .section-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .mermaid-container {
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .mermaid {
+      width: 100%;
+    }
+
+    .key-point {
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.08), rgba(167, 139, 250, 0.08));
+      border: 1px solid rgba(74, 158, 255, 0.2);
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .key-point p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .key-point strong {
+      color: var(--accent-rag);
+    }
+
+    .comparison-table {
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .comparison-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .comparison-table th {
+      background: rgba(74, 158, 255, 0.1);
+      padding: 1rem 1.25rem;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table td {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comparison-table td:first-child {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .rag-col { color: var(--accent-rag) !important; }
+    .mcp-col { color: var(--accent-mcp) !important; }
+  </style>
+</head>
+<body>
+
+  <h1>Architecture Agent / RAG / MCP</h1>
+  <p class="subtitle">Comment les composants interagissent dans le Quiz Islamique</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-agent)"></div> Agent (assistantAgent)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-rag)"></div> RAG (ragService)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-gemini)"></div> Gemini (IA)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-mcp)"></div> MCP (islamicMcpServer)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: #f39c12"></div> Services (APIs)</div>
+  </div>
+
+  <!-- Diagram 1: RAG AVANT Gemini -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number" style="background: var(--accent-rag)">1</div>
+      <div>
+        <div class="section-title">AVANT Gemini - Le RAG prepare le contexte</div>
+        <div class="section-desc">Le RAG cherche des sources authentiques pour enrichir la question AVANT de l'envoyer a Gemini</div>
+      </div>
+    </div>
+    <div class="mermaid-container">
+      <pre class="mermaid">
+sequenceDiagram
+    participant U as Utilisateur
+    participant A as Agent
+    participant R as RAG
+    participant M as MCP Server
+    participant S as Services / APIs
+
+    U->>A: Quelle est l invocation pour voyager ?
+
+    rect rgba(74, 158, 255, 0.1)
+    Note over A,S: AVANT Gemini - Le RAG enrichit le prompt
+    A->>R: fetchIslamicRAGContext voyage
+    R->>R: Cherche dans la base locale
+    R-->>R: Pas trouve localement
+    R->>M: executeMcpTool search_duas topic voyage
+    M->>S: fetchDuas voyage
+    S-->>M: Donnees brutes de API
+    M-->>R: Dua formatee du voyage
+    R->>M: executeMcpTool search_hadiths query travel
+    M->>S: fetchHadiths travel
+    S-->>M: Hadiths bruts
+    M-->>R: Hadiths formates
+    R-->>A: Contexte combine duas + hadiths + versets
+    end
+
+    Note over A: Le message est maintenant ENRICHI
+
+    A->>A: Envoie le message enrichi a Gemini
+    Note over A: Gemini redige une reponse savante avec les VRAIES sources
+
+    A-->>U: Reponse avec citations authentiques
+      </pre>
+    </div>
+  </div>
+
+  <!-- Diagram 2: Outils MCP APRES Gemini -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number" style="background: var(--accent-mcp)">2</div>
+      <div>
+        <div class="section-title">APRES Gemini - Function Calling via Outils MCP</div>
+        <div class="section-desc">Gemini DECIDE d utiliser un outil quand il doit executer une action calcul quiz horaires</div>
+      </div>
+    </div>
+    <div class="mermaid-container">
+      <pre class="mermaid">
+sequenceDiagram
+    participant U as Utilisateur
+    participant A as Agent
+    participant R as RAG
+    participant G as Gemini
+    participant M as MCP Server
+    participant S as Services
+
+    U->>A: Calcule ma zakat sur 10000 EUR
+
+    rect rgba(74, 158, 255, 0.1)
+    Note over A,R: AVANT - RAG cherche du contexte sur la Zakat
+    A->>R: fetchIslamicRAGContext zakat
+    R->>R: Trouve dans base locale !
+    R-->>A: Coran 2:43 et Hadith Bukhari sur la Zakat
+    end
+
+    A->>G: Message enrichi avec contexte RAG
+
+    rect rgba(46, 204, 113, 0.1)
+    Note over G: Gemini DECIDE avoir besoin de calculate_zakat
+    G-->>A: functionCall calculate_zakat amount 10000 currency EUR
+
+    Note over A,S: APRES - Agent execute outil via MCP
+    A->>M: executeMcpTool calculate_zakat amount 10000
+    M->>S: calculateZakat amount 10000 currency EUR
+    S-->>M: zakatAmount 250 exceedsNisab true
+    M-->>A: Zakat = 250 EUR - Depasse le Nisab
+    end
+
+    A-->>U: Votre Zakat est de 250 EUR avec explications
+      </pre>
+    </div>
+  </div>
+
+  <!-- Diagram 3: Vue d ensemble -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number" style="background: var(--accent-gemini)">3</div>
+      <div>
+        <div class="section-title">Vue d ensemble - Le Flux Complet</div>
+        <div class="section-desc">Tous les composants et comment ils s interconnectent</div>
+      </div>
+    </div>
+    <div class="mermaid-container">
+      <pre class="mermaid">
+flowchart TD
+    U["Utilisateur"]
+
+    subgraph AGENT["AGENT - assistantAgent.js"]
+        A1["1. Recoit le message"]
+        A2["2. Appelle le RAG"]
+        A3["3. Enrichit le prompt avec le contexte RAG"]
+        A4["4. Envoie a Gemini"]
+        A5{"5. Gemini veut un outil ?"}
+        A6["6. Execute outil via MCP"]
+        A7["7. Retourne la reponse finale"]
+    end
+
+    subgraph RAG["RAG - ragService.js"]
+        direction TB
+        R1{"Base locale a des donnees ?"}
+        R2["Retourne contexte local"]
+        R3["Recherche via executeMcpTool"]
+        R4["Combine les resultats"]
+    end
+
+    subgraph GEMINI["GEMINI - IA Google"]
+        G1["Raisonne avec le contexte enrichi"]
+        G2{"Besoin d agir ?"}
+        G3["Reponse texte directe"]
+        G4["functionCall outil demande"]
+    end
+
+    subgraph MCP["MCP SERVER - islamicMcpServer.js"]
+        M1["toolRegistry - Point entree unique"]
+    end
+
+    subgraph SERVICES["SERVICES"]
+        S1["duaService"]
+        S2["hadithService"]
+        S3["prayerService"]
+        S4["zakatService"]
+        S5["calendarService"]
+        S6["quizAgent"]
+    end
+
+    U -->|message| A1
+    A1 --> A2
+    A2 -->|fetchIslamicRAGContext| R1
+    R1 -->|Oui| R2
+    R1 -->|Non| R3
+    R3 -->|executeMcpTool| M1
+    M1 --> S1
+    M1 --> S2
+    S1 --> R4
+    S2 --> R4
+    R2 --> A3
+    R4 --> A3
+    A3 --> A4
+    A4 --> G1
+    G1 --> G2
+    G2 -->|Non| G3
+    G2 -->|Oui| G4
+    G3 --> A7
+    G4 --> A6
+    A6 -->|executeMcpTool| M1
+    M1 --> S3
+    M1 --> S4
+    M1 --> S5
+    M1 --> S6
+    S3 --> A7
+    S4 --> A7
+    S5 --> A7
+    S6 --> A7
+    A7 -->|reponse| U
+
+    style AGENT fill:#2a1a1a,stroke:#f87171,color:#fff
+    style RAG fill:#1a2a3a,stroke:#4a9eff,color:#fff
+    style GEMINI fill:#2a1a3a,stroke:#a78bfa,color:#fff
+    style MCP fill:#1a3a2a,stroke:#2ecc71,color:#fff
+    style SERVICES fill:#3a2a1a,stroke:#f39c12,color:#fff
+      </pre>
+    </div>
+  </div>
+
+  <!-- Tableau comparatif -->
+  <div class="comparison-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th class="rag-col">RAG (ragService)</th>
+          <th class="mcp-col">Outils MCP (function calling)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Quand ?</td>
+          <td class="rag-col"><strong>AVANT</strong> appel a Gemini</td>
+          <td class="mcp-col"><strong>APRES</strong> que Gemini decide</td>
+        </tr>
+        <tr>
+          <td>Qui decide ?</td>
+          <td>Agent automatiquement a chaque requete</td>
+          <td>Gemini choisit outil necessaire</td>
+        </tr>
+        <tr>
+          <td>But</td>
+          <td>Enrichir le prompt avec du <strong>contexte authentique</strong></td>
+          <td>Executer une <strong>action</strong> precise</td>
+        </tr>
+        <tr>
+          <td>Exemple</td>
+          <td>Injecter versets du Coran et hadiths pertinents</td>
+          <td>Calculer la Zakat, afficher horaires, lancer quiz</td>
+        </tr>
+        <tr>
+          <td>Analogie</td>
+          <td>Notes de cours sur la table d examen</td>
+          <td>Calculatrice autorisee pendant l examen</td>
+        </tr>
+        <tr>
+          <td>Sans lui ?</td>
+          <td>Gemini <strong>invente</strong> de faux hadiths et versets</td>
+          <td>Gemini <strong>ne peut pas agir</strong> calcul quiz etc</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Point cle -->
+  <div class="key-point">
+    <p>
+      <strong>Le RAG</strong> donne a Gemini les bonnes references AVANT qu il reponde (anti-hallucination).<br>
+      <strong>Les outils MCP</strong> permettent a Gemini d AGIR quand il en a besoin (calcul, quiz, horaires).<br><br>
+      <strong>Les deux passent par le MCP Server</strong>, mais a des moments et pour des raisons differentes.<br>
+      <strong style="color: var(--accent-mcp)">Complementaires, pas redondants.</strong>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1a2d4e',
+        primaryTextColor: '#e4e6f0',
+        primaryBorderColor: '#4a9eff',
+        lineColor: '#4a9eff',
+        secondaryColor: '#1a3a2e',
+        tertiaryColor: '#2a1a3a',
+        noteBkgColor: '#2a2d3e',
+        noteTextColor: '#e4e6f0',
+        noteBorderColor: '#4a9eff',
+        actorBkg: '#1a2d4e',
+        actorBorder: '#4a9eff',
+        actorTextColor: '#e4e6f0',
+        signalColor: '#e4e6f0',
+        signalTextColor: '#e4e6f0',
+        fontSize: '14px',
+      },
+      sequence: {
+        diagramMarginX: 20,
+        diagramMarginY: 20,
+        actorMargin: 60,
+        width: 180,
+        height: 50,
+        boxMargin: 10,
+        noteMargin: 10,
+        messageMargin: 40,
+        mirrorActors: false,
+        useMaxWidth: true,
+      },
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis',
+      }
+    });
+  </script>
+</body>
+</html>

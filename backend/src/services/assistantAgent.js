@@ -13,6 +13,8 @@ import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getHistory, saveHistory, saveConversation } from './sessionService.js';
 import { runQuizAgent } from './quizAgent.js';
 import { fetchIslamicRAGContext } from './ragService.js';
+import { executeMcpTool } from '../mcp/islamicMcpServer.js';
+
 
 // ─────────────────────────────────────────────
 // Instruction système
@@ -120,85 +122,76 @@ const TOOLS = [
           required: ['amount'],
         },
       },
+      {
+        name: 'get_prayer_times',
+        description: "Récupère les horaires de prière musulmanes pour une ville donnée.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            city: { type: SchemaType.STRING, description: "Le nom de la ville (ex: Paris, Lyon, Casablanca, Dakar)" },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'search_duas',
+        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion (ex: nouvel habit, voyage, repas).",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            topic: { type: SchemaType.STRING, description: "Le thème ou la situation de l'invocation" },
+          },
+          required: ['topic'],
+        },
+      },
+      {
+        name: 'search_hadiths',
+        description: "Recherche des hadiths authentiques dans Sahih Al-Bukhari & Muslim. Fournis la recherche en Anglais (ex: 'garment', 'prayer', 'fasting').",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            queryInEnglish: { type: SchemaType.STRING, description: "Les mots-clés en Anglais pour l'API des hadiths (ex: 'garment', 'prayer', 'fasting')" },
+          },
+          required: ['queryInEnglish'],
+        },
+      },
+      {
+        name: 'search_quran',
+        description: "Recherche des versets coraniques par thème ou mot-clé (traduction française Hamidullah).",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            query: { type: SchemaType.STRING, description: "Le thème ou mot-clé à rechercher dans le Coran" },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'get_hijri_calendar',
+        description: "Récupère la date hégirienne courante du calendrier musulman.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {},
+          required: [],
+        },
+      },
     ],
   },
 ];
+
+
 
 // ─────────────────────────────────────────────
 // Exécution des outils
 // ─────────────────────────────────────────────
 
 async function executeTool(name, args, sessionId = null) {
-  console.log(`🔧 [Assistant Agent] Appel de l'outil "${name}" avec args :`, JSON.stringify(args));
-
-  if (name === 'generate_quiz_question') {
-    const { topic, difficulty } = args;
-    console.log(`📞 [Assistant Agent] Délégation au Quiz Agent (runQuizAgent) pour "${topic}" (${difficulty})...`);
-    
-    // Appel direct au Quiz Agent avec son pipeline complet (Knowledge + Anti-doublon Redis + Auto-vérification)
-    const questions = await runQuizAgent(difficulty || 'Débutant', topic || 'Mélange', 1, sessionId);
-    const quizObj = questions[0];
-
-    console.log(`📤 [Quiz Agent -> Assistant] Question générée par le Quiz Agent : "${quizObj.text}"`);
-
-    return {
-      isQuiz: true,
-      quizData: {
-        topic: topic || 'Mélange',
-        difficulty: difficulty || 'Débutant',
-        questionText: quizObj.text,
-        options: quizObj.options,
-        correctAnswerIndex: quizObj.correctAnswerIndex,
-        explanation: quizObj.explanation,
-        keywords: quizObj.keywords || [],
-      },
-      text: quizObj.text,
-    };
-  }
-
-  if (name === 'calculate_zakat') {
-    const { amount, currency = 'EUR' } = args;
-    const zakatVal = amount * 0.025;
-    const zakatAmount = zakatVal.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    
-    // Taux de conversion approximatifs vers EUR pour calculer le Nisab (85g d'or ~= 5500 EUR)
-    const ratesToEur = {
-      EUR: 1,
-      USD: 0.92,
-      XOF: 0.001524, // 1 EUR = 655.957 XOF
-      XAF: 0.001524, // 1 EUR = 655.957 XAF
-      MAD: 0.092,
-      DZD: 0.0068,
-      TND: 0.30,
-      CAD: 0.68,
-      GBP: 1.17
-    };
-
-    const currUpper = (currency || 'EUR').toUpperCase();
-    const rate = ratesToEur[currUpper] || 1;
-    const amountInEur = amount * rate;
-    const nisabInEur = 5500; // Nisab or ~5 500 EUR
-    const nisabInLocalCurrency = Math.round(nisabInEur / rate);
-
-    const exceedsNisab = amountInEur >= nisabInEur;
-
-    let output = `Pour un montant de **${amount.toLocaleString('fr-FR')} ${currUpper}** :\n\n`;
-    if (exceedsNisab) {
-      output += `✅ **Votre montant DÉPASSE le Nisab.**\n`;
-      output += `• Le Nisab (85g d'or) est estimé à environ **${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}** (~5 500 EUR).\n`;
-      output += `• La Zakat due (2,5%) s'élève à **${zakatAmount} ${currUpper}** (à s'acquitter si ce montant est conservé pendant un an lunaire complet / Hawl).`;
-    } else {
-      output += `❌ **Votre montant NE DÉPASSE PAS le Nisab.**\n`;
-      output += `• Le Nisab de l'or (85g) est estimé à environ **${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}** (~5 500 EUR).\n`;
-      output += `• Comme votre montant de **${amount.toLocaleString('fr-FR')} ${currUpper}** est inférieur au Nisab (**${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}**), la Zakat n'est pas obligatoire pour ce montant.`;
-    }
-
-    console.log(`📤 [Assistant Agent] Outil "${name}" a produit :`, output);
-    return output;
-  }
-
-  return `Outil "${name}" inconnu.`;
+  console.log(`🔧 [Assistant Agent] Délégation à l'outil MCP "${name}" avec args :`, JSON.stringify(args));
+  return await executeMcpTool(name, args, sessionId);
 }
+
+
+
 
 // ─────────────────────────────────────────────
 // Extraction des mots-clés islamiques
