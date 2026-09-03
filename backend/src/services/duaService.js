@@ -207,39 +207,41 @@ export async function fetchDuas(topic, limit = 3) {
 
     if (response.ok) {
       const json = await response.json();
-      const rawDuas = json.data || json.duas || (Array.isArray(json) ? json : []);
+      const rawDuas = Array.isArray(json.data?.duas)
+        ? json.data.duas
+        : (Array.isArray(json.data) ? json.data : (Array.isArray(json.duas) ? json.duas : (Array.isArray(json) ? json : [])));
       
-      const matched = rawDuas.filter(d => {
-        const cat = (d.category || '').toLowerCase();
-        const title = (d.title || '').toLowerCase();
-        const translit = (d.transliteration || '').toLowerCase();
-        const trans = (d.translation || '').toLowerCase();
-        return cat.includes(normalizedTopic) || title.includes(normalizedTopic) || translit.includes(normalizedTopic) || trans.includes(normalizedTopic);
-      });
+      if (rawDuas.length > 0) {
+        const matched = rawDuas.filter(d => {
+          const cat = (d.category || '').toLowerCase();
+          const title = (d.title || '').toLowerCase();
+          const translit = (d.transliteration || '').toLowerCase();
+          const trans = (d.translation || '').toLowerCase();
+          return cat.includes(normalizedTopic) || title.includes(normalizedTopic) || translit.includes(normalizedTopic) || trans.includes(normalizedTopic);
+        });
 
-      const itemsToUse = (matched.length > 0 ? matched : rawDuas).slice(0, limit);
-      const formattedApiResults = itemsToUse.map(d => ({
-        title: d.title || 'Invocation',
-        arabic: d.arabic || '',
-        phonetic: d.transliteration || '',
-        french: d.translation || '',
-        source: d.source || 'Hisn al-Muslim'
-      })).filter(d => d.arabic || d.french);
+        const itemsToUse = (matched.length > 0 ? matched : rawDuas).slice(0, limit);
+        const formattedApiResults = itemsToUse.map(d => ({
+          title: d.title || 'Invocation',
+          arabic: d.arabic || '',
+          phonetic: d.transliteration || '',
+          french: d.translation || '',
+          source: d.source || 'Hisn al-Muslim'
+        })).filter(d => d.arabic || d.french);
 
-      if (formattedApiResults.length > 0) {
-        console.log(`✅ [Dua Service - API UmmahAPI] ${formattedApiResults.length} invocation(s) trouvée(s) pour "${topic}"`);
-        cache.set(cacheKey, { data: formattedApiResults, timestamp: Date.now() });
-        return formattedApiResults;
+        if (formattedApiResults.length > 0) {
+          console.log(`✅ [Dua Service - API UmmahAPI] ${formattedApiResults.length} invocation(s) trouvée(s) pour "${topic}"`);
+          cache.set(cacheKey, { data: formattedApiResults, timestamp: Date.now() });
+          return formattedApiResults;
+        }
       }
     }
   } catch (err) {
     console.warn(`⚠️ [Dua Service - API Externe] Échec ou timeout: ${err.message}`);
   }
 
-  // 3. Fallback par défaut sur les 2 premières du'âs générales si rien trouvé
-  const fallback = HISN_AL_MUSLIM_DATABASE.slice(0, Math.min(limit, 2));
-  cache.set(cacheKey, { data: fallback, timestamp: Date.now() });
-  return fallback;
+  // 3. Si rien n'est trouvé, retourner un tableau vide
+  return [];
 }
 
 /**

@@ -34,6 +34,11 @@ describe('duaService', () => {
       assert.equal(result.length, 1);
       assert.ok(result[0].title.includes('voyage') || result[0].title.includes('travel'));
     });
+
+    test('gère une requête vers l\'API externe sans planter (rawDuas.filter)', async () => {
+      const result = await fetchDuas('pluie', 1);
+      assert.ok(Array.isArray(result));
+    });
   });
 
   describe('formatDuas', () => {
