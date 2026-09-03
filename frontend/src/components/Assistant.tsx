@@ -36,6 +36,7 @@ export function Assistant() {
     return localStorage.getItem('quiz_active_conv_id') || null;
   });
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
+  const [isLoadingConvs, setIsLoadingConvs] = useState<boolean>(true);
   const [showHistoryDrawer, setShowHistoryDrawer] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<Message[]>([DEFAULT_WELCOME_MSG]);
@@ -56,8 +57,15 @@ export function Assistant() {
 
   // Charger la liste des conversations du client
   const refreshConversations = async () => {
-    const list = await getAssistantConversations(clientId);
-    setConversations(list);
+    setIsLoadingConvs(true);
+    try {
+      const list = await getAssistantConversations(clientId);
+      setConversations(list);
+    } catch (err) {
+      console.error('Erreur chargement liste conversations:', err);
+    } finally {
+      setIsLoadingConvs(false);
+    }
   };
 
   useEffect(() => {
@@ -366,8 +374,8 @@ export function Assistant() {
             }}
             title="Afficher l'historique des discussions"
           >
-            <History size={16} />
-            <span>Historique ({conversations.length})</span>
+            <History size={16} className={isLoadingConvs ? 'spin' : ''} />
+            <span>{isLoadingConvs ? 'Chargement...' : `Historique (${conversations.length})`}</span>
           </button>
 
           <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px' }}>
@@ -467,7 +475,11 @@ export function Assistant() {
             </div>
 
             <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
-              {conversations.length === 0 ? (
+              {isLoadingConvs ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                  ⏳ Chargement des discussions...
+                </div>
+              ) : conversations.length === 0 ? (
                 <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
                   Aucune conversation enregistrée.
                 </div>

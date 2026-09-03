@@ -294,6 +294,8 @@
       body { background: white; color: black; }
       .card { border: 1px solid #ccc; }
     }
+  
+        
   </style>
 </head>
 <body>
@@ -305,7 +307,7 @@
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimer / PDF</button>
-      <a href="#slides" class="btn btn-primary">🎯 Support de Présentation</a>
+      
     </div>
   </header>
 
@@ -334,8 +336,12 @@
 
       <div class="nav-group-title">Synthèse</div>
       <ul class="nav-links">
-        <li><a href="#slides" class="nav-link"><span>🎯</span> Support de Slides</a></li>
-        <li><a href="#oral" class="nav-link"><span>🎤</span> Plan d'Exposé (20-40 min)</a></li>
+        <li>
+          <a href="#oral" id="nav-oral-link" onclick="handleOralNavClick(event)" class="nav-link" style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="display: flex; align-items: center; gap: 0.5rem;"><span>🎤</span> Plan d'Exposé</span>
+            <span id="eye-icon" title="Afficher / Masquer la Synthèse" style="font-size: 1.05rem; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.08); transition: all 0.2s ease;">👁️</span>
+          </a>
+        </li>
       </ul>
     </aside>
 
@@ -532,7 +538,7 @@
 [ Question Utilisateur ] : "Quel est le verset 255 de la sourate Al-Baqara ?"
         │
         ▼
-[ 1. RAG Service ] ──► Recherche dans la base locale ou via API alquran.cloud
+[ 1. RAG Service ] ──► Recherche parallèle (Base locale, API alquran.cloud & API Hadiths UmmahAPI)
         │                   → Récupère le texte exact du verset 255
         ▼
 [ 2. Prompt Enrichi ] : "Voici le verset 255 : [texte exact].
@@ -663,7 +669,7 @@
             </div>
             <div class="timeline-item">
               <h4>Étape 2 : Service RAG Islamique</h4>
-              <p>Le système recherche le contexte authentique : versets du Coran, hadiths, textes jurisprudentiels via une base locale ou l'API alquran.cloud.</p>
+              <p>Le système recherche en parallèle le contexte authentique : versets du Coran et hadiths authentiques via la base locale, l'API AlQuran Cloud et l'API des Hadiths (UmmahAPI).</p>
             </div>
             <div class="timeline-item">
               <h4>Étape 3 : LLM Gemini avec JSON Schema</h4>
@@ -779,112 +785,13 @@
         </div>
       </section>
 
-      <!-- ═══════════════════════════════════════════════════ -->
-      <!-- SECTION 6 : SUPPORT DE SLIDES -->
-      <!-- ═══════════════════════════════════════════════════ -->
-      <section id="slides" class="section-block">
-        <div class="section-header">
-          <div class="section-icon">🎯</div>
-          <h2 class="section-title">6. Support de Présentation Oral (Slide-par-Slide)</h2>
-        </div>
-
-        <p class="card-text" style="margin-bottom: 1.5rem;">
-          Voici la trame réutilisable pour présenter ce sujet oralement devant un jury, une équipe ou en conférence (20-40 minutes).
-        </p>
-
-        <div class="slides-deck">
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 1 — 2 min</div>
-              <h3 class="slide-title">Introduction & Vision</h3>
-              <ul class="slide-bullets">
-                <li>Des LLM simples aux Systèmes Agentiques autonomes.</li>
-                <li>Comment rendre l'IA fiable et utile en production.</li>
-                <li>Présentation du projet Quiz comme étude de cas.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 2 — 4 min</div>
-              <h3 class="slide-title">Les LLM et leurs Limites</h3>
-              <ul class="slide-bullets">
-                <li>Prédiction statistique du mot suivant.</li>
-                <li>Les 3 limites : hallucinations, cutoff, passivité.</li>
-                <li>Analogie de l'étudiant extrapolateur.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 3 — 4 min</div>
-              <h3 class="slide-title">Le RAG (Ancrage Vérité)</h3>
-              <ul class="slide-bullets">
-                <li>L'analogie de l'examen à livre ouvert.</li>
-                <li>Recherche → Injection → Génération garantie.</li>
-                <li>Dans le projet : versets du Coran injectés avant génération.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 4 — 5 min</div>
-              <h3 class="slide-title">Les Agents IA Autonomes</h3>
-              <ul class="slide-bullets">
-                <li>Outillage (Function Calling) & Mémoire de session.</li>
-                <li>Boucle d'auto-correction (Reflection Agent).</li>
-                <li>Analogie de l'assistante personnelle.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 5 — 6 min</div>
-              <h3 class="slide-title">Étude de Cas : Le Quiz Agent</h3>
-              <ul class="slide-bullets">
-                <li>Pipeline complet RAG + Gemini + Redis.</li>
-                <li>Garantie de format par JSON Schema strict.</li>
-                <li>Fallback en cascade (résilience).</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 6 — 3 min</div>
-              <h3 class="slide-title">Architecture Technique</h3>
-              <ul class="slide-bullets">
-                <li>Séparation des couches : Frontend, Backend, Redis, Firebase, IA.</li>
-                <li>Sécurité : CORS, rate limiting, validation Zod.</li>
-                <li>Tests automatisés (vitest + node:test).</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="slide-card">
-            <div>
-              <div class="slide-num">Slide 7 — 2 min</div>
-              <h3 class="slide-title">Conclusion & Perspectives</h3>
-              <ul class="slide-bullets">
-                <li>L'avenir réside dans l'orchestration multi-agents.</li>
-                <li>Passer de la théorie à la pratique avec des projets réels.</li>
-                <li>Ouverture : agents collaboratifs, mémoire long terme, évaluation automatique.</li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-      </section>
+      
 
       <!-- ═══════════════════════════════════════════════════ -->
       <!-- SECTION 7 : PLAN D'ORAL DÉTAILLÉ -->
       <!-- ═══════════════════════════════════════════════════ -->
-      <section id="oral" class="section-block">
+
+      <section id="oral" class="section-block" style="display: none;">
         <div class="section-header">
           <div class="section-icon">🎤</div>
           <h2 class="section-title">7. Plan d'Exposé Détaillé (20-40 min)</h2>
@@ -926,7 +833,7 @@
             <strong>3 étapes :</strong> Retrieval (recherche des documents) → Augmentation (injection dans le prompt) → Generation (réponse garantie par les sources).
           </p>
           <p class="card-text" style="margin-top: 0.75rem;">
-            <strong>Dans le projet :</strong> Le RAG cherche les versets du Coran dans une base locale ou via l'API alquran.cloud, puis injecte le texte exact dans le prompt de Gemini.
+            <strong>Dans le projet :</strong> Le RAG cherche les versets du Coran et les hadiths authentiques dans la base locale ou en parallèle via l'API AlQuran Cloud et l'API des Hadiths (UmmahAPI), puis injecte le texte exact dans le prompt de Gemini.
           </p>
           <p class="card-text" style="margin-top: 0.75rem;">
             <strong>Question jury anticipée :</strong> "Quelle est la différence entre RAG et fine-tuning ?" → Le RAG ajoute des connaissances au moment de l'inférence sans réentraîner le modèle.
@@ -996,22 +903,73 @@
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('section');
 
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        if (pageYOffset >= sectionTop - 100) {
-          current = section.getAttribute('id');
-        }
-      });
+    
+    
+    function handleOralNavClick(e) {
+      if (e) e.preventDefault();
+      const oralSection = document.getElementById('oral');
+      const speakerNotes = document.querySelectorAll('.speaker-note');
+      const eyeIcon = document.getElementById('eye-icon');
+      const navLink = document.getElementById('nav-oral-link');
 
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${current}`) {
-          link.classList.add('active');
+      if (!oralSection) return;
+
+      const isCurrentlyHidden = getComputedStyle(oralSection).display === 'none';
+
+      if (isCurrentlyHidden) {
+        // Afficher la section Plan d'Exposé + TOUTES les notes orales (speaker-note)
+        oralSection.style.display = 'block';
+        speakerNotes.forEach(note => {
+          note.style.display = 'block';
+        });
+
+        if (eyeIcon) {
+          eyeIcon.innerHTML = '🙈';
+          eyeIcon.style.background = 'rgba(16, 185, 129, 0.25)';
         }
+        if (navLink) navLink.classList.add('active');
+
+
+      } else {
+        // Masquer la section Plan d'Exposé + TOUTES les notes orales (speaker-note)
+        oralSection.style.display = 'none';
+        speakerNotes.forEach(note => {
+          note.style.display = 'none';
+        });
+
+        if (eyeIcon) {
+          eyeIcon.innerHTML = '👁️';
+          eyeIcon.style.background = 'rgba(255, 255, 255, 0.08)';
+        }
+        if (navLink) navLink.classList.remove('active');
+      }
+    }
+
+    // Masquer les notes orales individuelles au démarrage de la page
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.speaker-note').forEach(note => {
+        note.style.display = 'none';
       });
     });
+
+
+    // window.addEventListener('scroll', () => {
+    //   let current = '';
+    //   sections.forEach(section => {
+    //     const sectionTop = section.offsetTop;
+    //     if (pageYOffset >= sectionTop - 100) {
+    //       current = section.getAttribute('id');
+    //     }
+    //   });
+
+    //   navLinks.forEach(link => {
+    //     link.classList.remove('active');
+    //     if (link.getAttribute('href') === `#${current}`) {
+    //       link.classList.add('active');
+    //     }
+    //   });
+    // });
+  
   </script>
 </body>
 </html>

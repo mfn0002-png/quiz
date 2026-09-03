@@ -2,11 +2,12 @@
  * ragService.js
  *
  * Service de Retrieval-Augmented Generation (RAG) pour le Quiz Islamique.
- * Fournit du contexte authentique (Coran et Hadiths avec références exactes)
- * en combinant une base locale rapide et un fallback API REST.
+ * Fournit du contexte authentique (Coran, Hadiths et Invocations/Duas avec références exactes)
+ * en combinant une base locale rapide et des fallbacks API REST (UmmahAPI, alquran.cloud).
  */
 
 import { fetchHadiths, formatHadiths } from './hadithService.js';
+import { fetchDuas, formatDuas } from './duaService.js';
 
 // Dataset local de références islamiques authentiques
 const ISLAMIC_KNOWLEDGE_BASE = {
@@ -94,16 +95,31 @@ const ISLAMIC_KNOWLEDGE_BASE = {
 
 /**
  * Nettoie le nom d'un thème pour la recherche sémantique API
- * (ex: "la patience (As-Sabr)" -> "patience")
+ * (ex: "quel duas dire lorsqu'on a une nouvel habit" -> "nouvel habit")
  */
 function cleanSearchKeyword(topic) {
   if (!topic) return "";
-  const cleaned = topic
+  let text = topic
     .replace(/\(.*?\)/g, "")
-    .replace(/\b(qu'est-ce|quel|quelle|quels|quelles|est-ce|que|qui|comment|pourquoi|dans|sur|du|de|la|le|les|l'|des|un|une|on|a|mentionne|mentionné|hadith|verset|sourate|donne-moi|dit-on|parle-moi)\b/gi, " ")
-    .replace(/[^a-zA-Z0-9\s\u00C0-\u017F-]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/['’]/g, " ")
+    .toLowerCase();
+
+  const stopWords = [
+    "qu'est-ce", "quel", "quelle", "quels", "quelles", "est-ce", "que", "qui", "comment", "pourquoi",
+    "dans", "sur", "du", "de", "la", "le", "les", "l", "des", "un", "une", "on", "a", "est", "ont",
+    "mentionne", "mentionné", "hadith", "verset", "sourate", "donne-moi", "dit-on", "parle-moi",
+    "dire", "lorsqu", "lorsque", "quand", "lors", "fait", "faire", "dit", "dois-je", "faut-il",
+    "peux-tu", "réciter", "invoquer", "pour", "avec", "en", "au", "aux", "duas", "dua", "doua", "douas",
+    "invocation", "invocations"
+  ];
+
+  const pattern = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'gi');
+  let cleaned = text
+    .replace(pattern, ' ')
+    .replace(/[^a-zA-Z0-9\s\u00C0-\u017F-]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
   return cleaned || topic;
 }
 
@@ -130,18 +146,21 @@ export async function fetchIslamicRAGContext(topic) {
     return `Références authentiques pour "${topic}" :\n${formatted}`;
   }
 
-  // 2. Recherche en parallèle : API alquran.cloud (Coran) + API UmmahAPI (Hadiths)
+  // 2. Recherche en parallèle : Coran (alquran.cloud) + Hadiths (UmmahAPI) + Invocations/Duas (duaService)
   const searchKeyword = cleanSearchKeyword(topic);
-  console.log(` 🌐 [RAG Service - API Externe] Recherche parallèle pour "${topic}" (mot-clé: "${searchKeyword}")...`);
+  console.log(` 🌐 [RAG Service - APIs Externes] Recherche parallèle pour "${topic}" (mot-clé épuré: "${searchKeyword}")...`);
 
-  const [coranResult, hadithsResult] = await Promise.allSettled([
+  const [coranResult, hadithsResult, duasResult] = await Promise.allSettled([
     // API alquran.cloud (Coran)
     fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(searchKeyword)}/all/fr.hamidullah`, {
       signal: AbortSignal.timeout(3000),
     }).then(res => res.ok ? res.json() : null),
 
     // API UmmahAPI (Hadiths)
-    fetchHadiths(topic, 3),
+    fetchHadiths(searchKeyword, 3),
+
+    // Service Duas (UmmahAPI + Hisn al-Muslim)
+    fetchDuas(topic, 3),
   ]);
 
   // 3. Traiter les résultats du Coran
@@ -161,8 +180,12 @@ export async function fetchIslamicRAGContext(topic) {
   // 4. Traiter les résultats des Hadiths
   const hadithsContext = formatHadiths(hadithsResult.status === 'fulfilled' ? hadithsResult.value : []);
 
-  // 5. Combiner les résultats
+  // 5. Traiter les résultats des Invocations (Duas)
+  const duasContext = formatDuas(duasResult.status === 'fulfilled' ? duasResult.value : []);
+
+  // 6. Combiner les résultats
   const parts = [];
+  if (duasContext) parts.push(`Invocations authentiques de référence (Hisn al-Muslim / Duas) pour "${topic}" :\n${duasContext}`);
   if (coranContext) parts.push(`Versets de référence pour "${topic}" :\n${coranContext}`);
   if (hadithsContext) parts.push(`Hadiths de référence pour "${topic}" :\n${hadithsContext}`);
 
@@ -172,7 +195,7 @@ export async function fetchIslamicRAGContext(topic) {
     return combined;
   }
 
-  // 6. Fallback contexte par défaut
+  // 7. Fallback contexte par défaut
   console.log(` ℹ️ [RAG Service] Fallback sur contexte générique pour "${topic}".`);
   return `Contexte pour "${topic}" : Utiliser les notions authentiques reconnues du Coran et de la Sunnah authentique.`;
 }
