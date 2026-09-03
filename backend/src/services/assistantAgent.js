@@ -11,8 +11,6 @@
 import { SchemaType } from '@google/generative-ai';
 import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getHistory, saveHistory, saveConversation } from './sessionService.js';
-import { runQuizAgent } from './quizAgent.js';
-import { fetchIslamicRAGContext } from './ragService.js';
 import { executeMcpTool } from '../mcp/islamicMcpServer.js';
 
 
@@ -38,6 +36,7 @@ RÈGLES STRICTES DE DÉCLENCHEMENT DES OUTILS :
    - Si l'utilisateur demande "un autre quiz" ou "encore une question" SANS mentionner de nouveau sujet, réutilise le thème du quiz précédent dans l'historique.
    - Si l'utilisateur a simplement répondu "oui" ou "d'accord" à ta proposition précédente, réutilise le thème que tu lui as proposé.
    - Ne choisis 'Mélange' QUE SI l'utilisateur demande "un quiz" au tout début sans n'avoir jamais mentionné de sujet spécifique.
+4. RÈGLE ABSOLUE POUR LES INVOCATIONS (Du'âs) : Dès que l'utilisateur demande une invocation, un dua, une formule à réciter — pour TOUTE situation (repas, sommeil, voyage, pluie, colère, etc.) — tu DOIS OBLIGATOIREMENT appeler l'outil 'search_duas' pour fournir un texte authentique avec source. Il est STRICTEMENT INTERDIT de répondre une invocation de mémoire sans passer par l'outil, même si tu la connais.
 
 Réponds toujours en français correct avec des accents (é, à, è, ô, ç). JAMAIS d'entités HTML.`;
 
@@ -135,13 +134,13 @@ const TOOLS = [
       },
       {
         name: 'search_duas',
-        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion (ex: nouvel habit, voyage, repas).",
+        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion. Fournis le thème en Anglais (ex: 'rain', 'travel', 'sleep', 'food', 'weather', 'morning').",
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
-            topic: { type: SchemaType.STRING, description: "Le thème ou la situation de l'invocation" },
+            topicInEnglish: { type: SchemaType.STRING, description: "Le thème en Anglais pour l'API des Duas (ex: 'rain', 'travel', 'sleep', 'food', 'morning', 'distress')" },
           },
-          required: ['topic'],
+          required: ['topicInEnglish'],
         },
       },
       {
@@ -245,60 +244,6 @@ Réponds en UTF-8 propre avec accents normaux (é, à, etc.). JAMAIS d'entités 
 }
 
 
-/**
- * Construit un sujet de recherche RAG contextualisé si l'utilisateur pose une question de suivi.
- */
-
-
-
-/**
- * Extrait le sujet/thème principal de la conversation en cours.
- */
-function getActiveTopic(simpleHistory = []) {
-  if (!simpleHistory || simpleHistory.length === 0) return "";
-
-  // 1. Thème issu des mots-clés extraits lors des réponses précédentes de l'Assistant
-  const assistantMsgs = simpleHistory.filter(m => m.role === "assistant" && Array.isArray(m.keywords) && m.keywords.length > 0);
-  if (assistantMsgs.length > 0) {
-    const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
-    const terms = lastAssistant.keywords
-      .map(k => (typeof k === "string" ? k : (k?.term || k?.text || "")))
-      .filter(Boolean);
-    if (terms.length > 0) {
-      return terms.slice(0, 3).join(" ");
-    }
-  }
-
-  // 2. Thème issu du premier message utilisateur de la discussion
-  const firstUserMsg = simpleHistory.find(m => m.role === "user");
-  if (firstUserMsg) {
-    return firstUserMsg.content.slice(0, 60);
-  }
-
-  return "";
-}
-
-/**
- * Construit un sujet de recherche RAG contextualisé garanti pour tout fil de discussion.
- */
-function buildRAGSearchTopic(userMessage, simpleHistory = []) {
-  if (!simpleHistory || simpleHistory.length === 0) {
-    return userMessage;
-  }
-
-  const topicContext = getActiveTopic(simpleHistory);
-
-  // Si un thème de conversation existe et n'est pas déjà explicitement répété dans la question,
-  // on l'injecte systématiquement pour enrichir la recherche RAG.
-  if (topicContext) {
-    const cleanTopic = topicContext.replace(/^(quel|quelle|qu'est-ce que|parle-moi de)\s+/i, "").trim();
-    if (cleanTopic && !userMessage.toLowerCase().includes(cleanTopic.toLowerCase())) {
-      return `${cleanTopic} ${userMessage}`;
-    }
-  }
-
-  return userMessage;
-}
 
 // ─────────────────────────────────────────────
 // Convertisseur historique (simplifié ↔ Gemini)
@@ -357,36 +302,19 @@ export async function runAssistantAgent(sessionId, userMessage, clientId = null)
 
   const geminiHistory = toGeminiHistory(simpleHistory);
 
-  // 2. Enrichir le message avec le contexte RAG (Coran + Hadiths)
-  console.log('📖 [Assistant Agent] Recherche RAG pour enrichir la réponse...');
-  const ragSearchTopic = buildRAGSearchTopic(userMessage, simpleHistory);
-  if (ragSearchTopic !== userMessage) {
-    console.log(` 💡 [Assistant Agent] Question de suivi détectée → Thème RAG contextualisé : "${ragSearchTopic}"`);
-  }
-  const ragContext = await fetchIslamicRAGContext(ragSearchTopic);
-  const enrichedMessage = ragContext
-    ? `${userMessage}
-
-📚 Sources de référence authentiques :
-${ragContext}`
-    : userMessage;
-  if (ragContext) {
-    console.log('✅ [Assistant Agent] RAG injecté dans le prompt');
-  }
-
-  // 3. Créer le modèle avec outils
+  // 2. Créer le modèle avec la suite d'outils MCP
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
     systemInstruction: getDynamicSystemInstruction(),
     tools: TOOLS,
   });
 
-  // 4. Démarrer le chat avec l'historique existant
+  // 3. Démarrer le chat avec l'historique existant
   const chat = model.startChat({ history: geminiHistory });
 
-  // 5. Envoi de la requête enrichie à Gemini et traitement direct des outils
+  // 4. Envoi de la requête à Gemini (choix autonome des outils MCP)
   console.log('🤖 Envoi de la requête à Gemini...');
-  let response = await withRetry(() => chat.sendMessage(enrichedMessage));
+  let response = await withRetry(() => chat.sendMessage(userMessage));
 
   let answer = '';
   let quizData = null;

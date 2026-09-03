@@ -23,9 +23,9 @@ import { runQuizAgent } from '../services/quizAgent.js';
 // ─────────────────────────────────────────────
 
 const toolRegistry = {
-  search_duas: async ({ topic }) => {
-    const duas = await fetchDuas(topic);
-    return formatDuas(duas) || `Aucune invocation trouvée pour "${topic}".`;
+  search_duas: async ({ topicInEnglish }) => {
+    const duas = await fetchDuas(topicInEnglish);
+    return formatDuas(duas) || `Aucune invocation trouvée pour "${topicInEnglish}".`;
   },
 
   search_hadiths: async ({ queryInEnglish }) => {
