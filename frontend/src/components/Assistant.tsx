@@ -22,6 +22,10 @@ interface Message {
   assistantData?: AssistantResponse;
 }
 
+interface AssistantProps {
+  isCompact?: boolean;
+}
+
 const DEFAULT_WELCOME_MSG: Message = {
   id: 0,
   role: 'assistant',
@@ -29,7 +33,7 @@ const DEFAULT_WELCOME_MSG: Message = {
   assistantData: { answer: '', keywords: [] }
 };
 
-export function Assistant() {
+export function Assistant({ isCompact = false }: AssistantProps = {}) {
   const clientId = getClientSessionId();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(() => {
@@ -659,10 +663,10 @@ export function Assistant() {
             <div className="custom-scrollbar" style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '1.25rem',
+              padding: isCompact ? '0.65rem 0.75rem' : '1.25rem',
               display: 'flex',
               flexDirection: 'column',
-              gap: '1.25rem',
+              gap: isCompact ? '0.65rem' : '1.25rem',
             }}>
               {messages.map((msg) => {
                 const isMsgHighlighted = msg.id === highlightedMsgId;
@@ -677,7 +681,7 @@ export function Assistant() {
                       alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
                       backgroundColor: isMsgHighlighted ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
                       borderRadius: '12px',
-                      padding: isMsgHighlighted ? '0.5rem' : '0',
+                      padding: isMsgHighlighted ? (isCompact ? '0.35rem' : '0.5rem') : '0',
                       transition: 'background-color 300ms ease-in-out',
                     }}
                   >
@@ -689,10 +693,10 @@ export function Assistant() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.35rem',
-                          fontSize: '0.85rem',
+                          fontSize: isCompact ? '0.75rem' : '0.85rem',
                           color: 'var(--text-secondary)',
-                          marginBottom: '0.35rem',
-                          maxWidth: '80%',
+                          marginBottom: '0.25rem',
+                          maxWidth: isCompact ? '90%' : '80%',
                           marginLeft: 'auto',
                           justifyContent: 'flex-end',
                           cursor: 'pointer',
@@ -700,8 +704,8 @@ export function Assistant() {
                         }}
                         title="Cliquer pour voir le passage d'origine dans la conversation"
                       >
-                        <span style={{ fontSize: '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
-                        <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '350px' }}>
+                        <span style={{ fontSize: isCompact ? '0.95rem' : '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
+                        <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: isCompact ? '220px' : '350px' }}>
                           "{msg.quote}"
                         </span>
                       </div>
@@ -710,33 +714,38 @@ export function Assistant() {
                     <div
                       style={{
                         display: 'flex',
-                        gap: '0.75rem',
+                        gap: isCompact ? '0.45rem' : '0.75rem',
                         alignItems: 'flex-start',
                         flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
                       }}
                     >
                       {/* Avatar */}
                       <div style={{
-                        width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+                        width: isCompact ? '28px' : '36px',
+                        height: isCompact ? '28px' : '36px',
+                        borderRadius: '50%',
+                        flexShrink: 0,
                         backgroundColor: msg.role === 'user' ? 'var(--secondary-color)' : 'var(--primary-color)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}>
                         {msg.role === 'user'
-                          ? <User size={18} color="white" />
-                          : <Bot size={18} color="white" />
+                          ? <User size={isCompact ? 14 : 18} color="white" />
+                          : <Bot size={isCompact ? 14 : 18} color="white" />
                         }
                       </div>
 
                       {/* Bulle */}
                       <div style={{
-                        maxWidth: '80%',
+                        maxWidth: isCompact ? '88%' : '80%',
                         backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--background-color)',
                         color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
-                        padding: '0.875rem 1.1rem',
-                        borderRadius: msg.role === 'user' ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
+                        padding: isCompact ? '0.55rem 0.8rem' : '0.875rem 1.1rem',
+                        borderRadius: msg.role === 'user' ? '14px 3px 14px 14px' : '3px 14px 14px 14px',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        fontSize: '1rem',
-                        lineHeight: 1.7,
+                        fontSize: isCompact ? '0.85rem' : '1rem',
+                        lineHeight: isCompact ? 1.5 : 1.7,
                         border: msg.role === 'assistant' ? '1px solid rgba(0,0,0,0.06)' : 'none',
                         whiteSpace: 'pre-wrap',
                         transition: 'all 300ms ease-in-out',
@@ -751,8 +760,8 @@ export function Assistant() {
                               highlightPassage={isMsgHighlighted ? highlightedPassage : null}
                             />
                             {msg.assistantData.keywords.length > 0 && (
-                              <div className="no-quote" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0' }}>
+                              <div className="no-quote" style={{ marginTop: isCompact ? '0.4rem' : '0.75rem', paddingTop: isCompact ? '0.4rem' : '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                                <p style={{ fontSize: isCompact ? '0.72rem' : '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.35rem 0' }}>
                                   ✨ Cliquez sur les mots surlignés pour leur définition
                                 </p>
                               </div>
@@ -768,24 +777,26 @@ export function Assistant() {
               })}
 
               {loading && (
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: isCompact ? '0.45rem' : '0.75rem', alignItems: 'center' }}>
                   <div style={{
-                    width: '36px', height: '36px', borderRadius: '50%',
+                    width: isCompact ? '28px' : '36px',
+                    height: isCompact ? '28px' : '36px',
+                    borderRadius: '50%',
                     backgroundColor: 'var(--primary-color)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
-                    <Bot size={18} color="white" />
+                    <Bot size={isCompact ? 14 : 18} color="white" />
                   </div>
                   <div style={{
                     backgroundColor: 'var(--background-color)',
-                    padding: '0.875rem 1.1rem',
-                    borderRadius: '4px 18px 18px 18px',
+                    padding: isCompact ? '0.55rem 0.8rem' : '0.875rem 1.1rem',
+                    borderRadius: '3px 14px 14px 14px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.4rem'
                   }}>
-                    <Loader2 size={18} className="spin" style={{ color: 'var(--primary-color)' }} />
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>L'assistant réfléchit...</span>
+                    <Loader2 size={isCompact ? 15 : 18} className="spin" style={{ color: 'var(--primary-color)' }} />
+                    <span style={{ color: 'var(--text-secondary)', fontSize: isCompact ? '0.82rem' : '0.95rem' }}>L'assistant réfléchit...</span>
                   </div>
                 </div>
               )}
@@ -796,7 +807,7 @@ export function Assistant() {
 
           {/* Formulaire de saisie */}
           <div style={{
-            padding: '1rem',
+            padding: isCompact ? '0.65rem 0.75rem' : '1rem',
             borderTop: '1px solid rgba(0,0,0,0.08)',
             backgroundColor: 'var(--surface-color)',
           }}>
@@ -808,13 +819,13 @@ export function Assistant() {
                 justifyContent: 'space-between',
                 backgroundColor: 'rgba(56, 189, 248, 0.1)',
                 borderLeft: '4px solid #38bdf8',
-                padding: '0.5rem 0.85rem',
+                padding: isCompact ? '0.35rem 0.65rem' : '0.5rem 0.85rem',
                 borderRadius: '0 8px 8px 0',
-                marginBottom: '0.65rem',
-                fontSize: '0.88rem',
+                marginBottom: isCompact ? '0.45rem' : '0.65rem',
+                fontSize: isCompact ? '0.78rem' : '0.88rem',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden', flex: 1 }}>
-                  <MessageSquareQuote size={16} style={{ color: '#0284c7', flexShrink: 0 }} />
+                  <MessageSquareQuote size={isCompact ? 14 : 16} style={{ color: '#0284c7', flexShrink: 0 }} />
                   <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                     "{quotedText}"
                   </span>
@@ -832,32 +843,32 @@ export function Assistant() {
                   }}
                   title="Annuler la citation"
                 >
-                  <X size={15} />
+                  <X size={14} />
                 </button>
               </div>
             )}
 
-            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-end' }}>
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Posez votre question sur l'Islam (ex: Qu'est-ce que la Zakat ?)..."
+                placeholder="Posez votre question sur l'Islam..."
                 rows={1}
                 disabled={loading}
                 style={{
                   flex: 1,
-                  padding: '0.75rem 1rem',
+                  padding: isCompact ? '0.5rem 0.75rem' : '0.75rem 1rem',
                   borderRadius: '12px',
                   border: '1px solid rgba(0,0,0,0.15)',
                   backgroundColor: 'var(--background-color)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.95rem',
+                  fontSize: isCompact ? '0.85rem' : '0.95rem',
                   resize: 'none',
                   outline: 'none',
                   fontFamily: 'inherit',
-                  minHeight: '44px',
+                  minHeight: isCompact ? '38px' : '44px',
                   maxHeight: '120px',
                 }}
               />
@@ -865,8 +876,8 @@ export function Assistant() {
                 type="submit"
                 disabled={loading || !input.trim()}
                 style={{
-                  width: '44px',
-                  height: '44px',
+                  width: isCompact ? '38px' : '44px',
+                  height: isCompact ? '38px' : '44px',
                   borderRadius: '12px',
                   border: 'none',
                   backgroundColor: 'var(--primary-color)',
@@ -880,7 +891,7 @@ export function Assistant() {
                   transition: 'all 150ms',
                 }}
               >
-                {loading ? <Loader2 size={18} className="spin" /> : <Send size={18} />}
+                {loading ? <Loader2 size={isCompact ? 15 : 18} className="spin" /> : <Send size={isCompact ? 15 : 18} />}
               </button>
             </form>
           </div>
