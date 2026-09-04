@@ -24,22 +24,34 @@ function getApiKey() {
  * @param {number} [limit=3] - Nombre maximal d'invocations à retourner
  * @returns {Promise<Array<{title: string, arabic: string, phonetic: string, french: string, source: string}>>}
  */
-export async function fetchDuas(topic, limit = 3) {
-  if (!topic || topic === 'Mélange') return [];
+export async function fetchDuas(input, limit = 3) {
+  if (!input) return [];
 
-  const cleanTopic = topic.toLowerCase().trim();
-  const cacheKey = `dua:${cleanTopic}:${limit}`;
+  const rawTopic = typeof input === 'string' ? input : (input?.topic || input?.topicInEnglish || '');
+  if (!rawTopic || rawTopic === 'Mélange') return [];
+
+  const rawKeywords = Array.isArray(input?.keywords) ? input.keywords : [];
+
+  // Extraire tous les termes et synonymes passés dynamiquement par Gemini
+  const allTerms = [
+    ...rawTopic.toLowerCase().split(/\s+/),
+    ...rawKeywords.map(k => String(k).toLowerCase().trim()),
+  ].filter(w => w.length > 2);
+
+  const cleanTopic = rawTopic.toLowerCase().trim();
+  const searchTerms = [...new Set(allTerms)];
+  const cacheKey = `dua:${cleanTopic}:${searchTerms.join(',')}:${limit}`;
 
   if (cache.has(cacheKey)) {
     const entry = cache.get(cacheKey);
     if (Date.now() - entry.timestamp < CACHE_TTL_MS) {
-      console.log(`📖 [Dua Service] Cache hit pour "${topic}"`);
+      console.log(`📖 [Dua Service] Cache hit pour "${cleanTopic}"`);
       return entry.data;
     }
     cache.delete(cacheKey);
   }
 
-  console.log(`🌐 [Dua Service - API UmmahAPI] Appel distant pour "${topic}"...`);
+  console.log(`🌐 [Dua Service - API UmmahAPI] Appel distant pour "${cleanTopic}" [synonymes: ${searchTerms.join(', ')}]...`);
 
   try {
     const apiKey = getApiKey();
@@ -60,11 +72,18 @@ export async function fetchDuas(topic, limit = 3) {
       return [];
     }
 
-    const results = rawDuas.filter(dua =>
-      (dua.category || '').toLowerCase().includes(cleanTopic) ||
-      (dua.title || '').toLowerCase().includes(cleanTopic) ||
-      (dua.translation || '').toLowerCase().includes(cleanTopic)
-    );
+    const results = rawDuas.filter(dua => {
+      const cat = (dua.category || '').toLowerCase();
+      const title = (dua.title || '').toLowerCase();
+      const trans = (dua.translation || '').toLowerCase();
+
+      // Correspondance complète sur l'intitulé ou la catégorie
+      if (cat.includes(cleanTopic) || title.includes(cleanTopic) || trans.includes(cleanTopic)) {
+        return true;
+      }
+      // Correspondance sur l'un des synonymes / mots-clés générés par Gemini
+      return searchTerms.some(term => cat.includes(term) || title.includes(term) || trans.includes(term));
+    });
 
     const formatted = results.slice(0, limit).map(d => ({
       title: d.title || 'Invocation',
@@ -74,7 +93,7 @@ export async function fetchDuas(topic, limit = 3) {
       source: d.source || 'Hisn al-Muslim',
     })).filter(d => d.arabic || d.french);
 
-    console.log(`✅ [Dua Service - API UmmahAPI] ${formatted.length} invocation(s) trouvée(s) pour "${topic}"`);
+    console.log(`✅ [Dua Service - API UmmahAPI] ${formatted.length} invocation(s) trouvée(s) pour "${cleanTopic}"`);
     cache.set(cacheKey, { data: formatted, timestamp: Date.now() });
     return formatted;
   } catch (err) {

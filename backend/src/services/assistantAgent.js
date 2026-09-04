@@ -134,11 +134,16 @@ const TOOLS = [
       },
       {
         name: 'search_duas',
-        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion. Fournis le thème en Anglais (ex: 'rain', 'travel', 'sleep', 'food', 'weather', 'morning').",
+        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion. Fournis le thème principal et une liste de synonymes et mots-clés en Anglais pour maximiser la recherche (ex: pour sortir de la maison: ['leaving', 'home', 'house', 'exit'], pour s'habiller: ['clothing', 'clothes', 'garment', 'dress'], pour manger: ['food', 'eating', 'meal']).",
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
-            topicInEnglish: { type: SchemaType.STRING, description: "Le thème en Anglais pour l'API des Duas (ex: 'rain', 'travel', 'sleep', 'food', 'morning', 'distress')" },
+            topicInEnglish: { type: SchemaType.STRING, description: "Le thème principal en Anglais (ex: 'leaving home', 'travel', 'sleep', 'food')" },
+            keywords: {
+              type: SchemaType.ARRAY,
+              items: { type: SchemaType.STRING },
+              description: "Liste de synonymes et mots-clés associés en Anglais pour couvrir toutes les variantes (ex: ['leaving', 'home', 'house', 'exit'], ['travel', 'journey', 'transport'], ['clothing', 'garment', 'dress'])"
+            }
           },
           required: ['topicInEnglish'],
         },
@@ -329,11 +334,33 @@ export async function runAssistantAgent(sessionId, userMessage, clientId = null)
       answer = toolRes.text;
       quizData = toolRes.quizData;
     } else {
-      answer = toolRes;
+      console.log('🤖 Formulation de la réponse finale par Gemini à partir des données de l\'outil...');
+      const synthesisModel = genAI.getGenerativeModel({
+        model: GEMINI_MODEL,
+        systemInstruction: getDynamicSystemInstruction(),
+      });
+      const synthesisChat = synthesisModel.startChat({ history: geminiHistory });
+      const synthesisPrompt = `L'utilisateur a posé la question suivante : "${userMessage}"
+
+        Voici les données authentiques retournées par l'outil "${call.name}" :
+        ${typeof toolRes === 'string' ? toolRes : JSON.stringify(toolRes, null, 2)}
+
+        Formule une réponse complète, bienveillante, pédagogique et magnifiquement présentée à l'utilisateur en français en intégrant ces données authentiques (avec les textes en arabe, phonétique, traductions françaises et références exactes). Si pertinent, propose-lui à la fin de tester ses connaissances avec un petit quiz.`;
+
+      const followUp = await withRetry(() => synthesisChat.sendMessage(synthesisPrompt));
+      answer = followUp.response.text();
     }
   } else {
     answer = response.response.text();
   }
+
+  // Nettoyage des entités HTML résiduelles
+  answer = answer
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
 
   console.log(`✨ Réponse finale générée (${answer.length} caractères) :`);
   console.log(`   "${answer.slice(0, 150)}${answer.length > 150 ? '...' : ''}"`);

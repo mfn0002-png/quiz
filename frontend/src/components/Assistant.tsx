@@ -37,6 +37,9 @@ export function Assistant() {
   });
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
   const [isLoadingConvs, setIsLoadingConvs] = useState<boolean>(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(() => {
+    return !!localStorage.getItem('quiz_active_conv_id');
+  });
   const [showHistoryDrawer, setShowHistoryDrawer] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<Message[]>([DEFAULT_WELCOME_MSG]);
@@ -76,8 +79,10 @@ export function Assistant() {
   const loadConversationMessages = async (convId: string | null) => {
     if (!convId) {
       setMessages([DEFAULT_WELCOME_MSG]);
+      setIsLoadingMessages(false);
       return;
     }
+    setIsLoadingMessages(true);
     try {
       const history = await getAssistantHistory(convId);
       if (history && history.length > 0) {
@@ -113,6 +118,8 @@ export function Assistant() {
     } catch (err) {
       console.error("Erreur chargement historique :", err);
       setMessages([DEFAULT_WELCOME_MSG]);
+    } finally {
+      setIsLoadingMessages(false);
     }
   };
 
@@ -174,6 +181,11 @@ export function Assistant() {
   }, [messages, loading]);
 
   const handleSelectConv = (convId: string) => {
+    if (convId === activeConvId) {
+      setShowHistoryDrawer(false);
+      return;
+    }
+    setIsLoadingMessages(true);
     setActiveConvId(convId);
     localStorage.setItem('quiz_active_conv_id', convId);
     setShowHistoryDrawer(false);
@@ -183,6 +195,7 @@ export function Assistant() {
     setActiveConvId(null);
     localStorage.removeItem('quiz_active_conv_id');
     setMessages([DEFAULT_WELCOME_MSG]);
+    setIsLoadingMessages(false);
     setShowHistoryDrawer(false);
     setErrorBanner(null);
   };
@@ -565,143 +578,221 @@ export function Assistant() {
             boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
           }}
         >
-          {/* Zone des messages */}
-          <div className="custom-scrollbar" style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-          }}>
-            {messages.map((msg) => {
-              const isMsgHighlighted = msg.id === highlightedMsgId;
+          {isLoadingMessages ? (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              gap: '1.25rem',
+            }}>
+              <div style={{
+                width: '68px',
+                height: '68px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15))',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary-color)',
+                boxShadow: '0 4px 20px rgba(59, 130, 246, 0.12)',
+              }}>
+                <Bot size={36} />
+              </div>
 
-              return (
-                <div
-                  key={msg.id}
-                  data-msg-id={msg.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    backgroundColor: isMsgHighlighted ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
-                    borderRadius: '12px',
-                    padding: isMsgHighlighted ? '0.5rem' : '0',
-                    transition: 'background-color 300ms ease-in-out',
-                  }}
-                >
-                  {/* Ligne de citation au-dessus de la bulle utilisateur */}
-                  {msg.role === 'user' && msg.quote && (
-                    <div
-                      onClick={() => navigateToQuote(msg.quote!, msg.quoteMsgId)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        fontSize: '0.85rem',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '0.35rem',
-                        maxWidth: '80%',
-                        marginLeft: 'auto',
-                        justifyContent: 'flex-end',
-                        cursor: 'pointer',
-                        transition: 'opacity 150ms',
-                      }}
-                      title="Cliquer pour voir le passage d'origine dans la conversation"
-                    >
-                      <span style={{ fontSize: '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
-                      <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '350px' }}>
-                        "{msg.quote}"
-                      </span>
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '0.75rem',
-                      alignItems: 'flex-start',
-                      flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                    }}
-                  >
-                    {/* Avatar */}
-                    <div style={{
-                      width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                      backgroundColor: msg.role === 'user' ? 'var(--secondary-color)' : 'var(--primary-color)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {msg.role === 'user'
-                        ? <User size={18} color="white" />
-                        : <Bot size={18} color="white" />
-                      }
-                    </div>
-
-                    {/* Bulle */}
-                    <div style={{
-                      maxWidth: '80%',
-                      backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--background-color)',
-                      color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
-                      padding: '0.875rem 1.1rem',
-                      borderRadius: msg.role === 'user' ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      fontSize: '1rem',
-                      lineHeight: 1.7,
-                      border: msg.role === 'assistant' ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                      whiteSpace: 'pre-wrap',
-                      transition: 'all 300ms ease-in-out',
-                    }}>
-                      {msg.role === 'assistant' && msg.assistantData?.quizData ? (
-                        <ChatQuizCard quizData={msg.assistantData.quizData} sessionId={clientId} msgId={msg.id} />
-                      ) : msg.role === 'assistant' && msg.assistantData && msg.id !== 0 ? (
-                        <>
-                          <KeywordText
-                            text={msg.content}
-                            keywords={msg.assistantData.keywords}
-                            highlightPassage={isMsgHighlighted ? highlightedPassage : null}
-                          />
-                          {msg.assistantData.keywords.length > 0 && (
-                            <div className="no-quote" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0' }}>
-                                ✨ Cliquez sur les mots surlignés pour leur définition
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        msg.content
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {loading && (
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%',
-                  backgroundColor: 'var(--primary-color)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+              <div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.45rem',
+                  lineHeight: 1.4,
                 }}>
-                  <Bot size={18} color="white" />
-                </div>
-                <div style={{
-                  backgroundColor: 'var(--background-color)',
-                  padding: '0.875rem 1.1rem',
-                  borderRadius: '4px 18px 18px 18px',
+                  Assalamu Alaykoum wa Rahmatullahi wa Barakatuh 🌙
+                </h3>
+                <p style={{
+                  fontSize: '0.92rem',
+                  color: 'var(--text-secondary)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  margin: 0,
                 }}>
-                  <Loader2 size={18} className="spin" style={{ color: 'var(--primary-color)' }} />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>L'assistant réfléchit...</span>
-                </div>
+                  <Loader2 size={16} className="spin" style={{ color: 'var(--primary-color)' }} />
+                  <span>Chargement de votre discussion en cours...</span>
+                </p>
               </div>
-            )}
 
-            <div ref={bottomRef} />
-          </div>
+              {/* Skeleton placeholders */}
+              <div style={{
+                width: '100%',
+                maxWidth: '440px',
+                marginTop: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                opacity: 0.6,
+              }}>
+                <div style={{
+                  alignSelf: 'flex-end',
+                  width: '55%',
+                  height: '40px',
+                  borderRadius: '16px 16px 4px 16px',
+                  backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                }} />
+                <div style={{
+                  alignSelf: 'flex-start',
+                  width: '80%',
+                  height: '60px',
+                  borderRadius: '16px 16px 16px 4px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                }} />
+              </div>
+            </div>
+          ) : (
+            /* Zone des messages */
+            <div className="custom-scrollbar" style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+            }}>
+              {messages.map((msg) => {
+                const isMsgHighlighted = msg.id === highlightedMsgId;
+
+                return (
+                  <div
+                    key={msg.id}
+                    data-msg-id={msg.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                      backgroundColor: isMsgHighlighted ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                      borderRadius: '12px',
+                      padding: isMsgHighlighted ? '0.5rem' : '0',
+                      transition: 'background-color 300ms ease-in-out',
+                    }}
+                  >
+                    {/* Ligne de citation au-dessus de la bulle utilisateur */}
+                    {msg.role === 'user' && msg.quote && (
+                      <div
+                        onClick={() => navigateToQuote(msg.quote!, msg.quoteMsgId)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          fontSize: '0.85rem',
+                          color: 'var(--text-secondary)',
+                          marginBottom: '0.35rem',
+                          maxWidth: '80%',
+                          marginLeft: 'auto',
+                          justifyContent: 'flex-end',
+                          cursor: 'pointer',
+                          transition: 'opacity 150ms',
+                        }}
+                        title="Cliquer pour voir le passage d'origine dans la conversation"
+                      >
+                        <span style={{ fontSize: '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
+                        <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '350px' }}>
+                          "{msg.quote}"
+                        </span>
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.75rem',
+                        alignItems: 'flex-start',
+                        flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
+                      }}
+                    >
+                      {/* Avatar */}
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: msg.role === 'user' ? 'var(--secondary-color)' : 'var(--primary-color)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        {msg.role === 'user'
+                          ? <User size={18} color="white" />
+                          : <Bot size={18} color="white" />
+                        }
+                      </div>
+
+                      {/* Bulle */}
+                      <div style={{
+                        maxWidth: '80%',
+                        backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--background-color)',
+                        color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
+                        padding: '0.875rem 1.1rem',
+                        borderRadius: msg.role === 'user' ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        fontSize: '1rem',
+                        lineHeight: 1.7,
+                        border: msg.role === 'assistant' ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                        whiteSpace: 'pre-wrap',
+                        transition: 'all 300ms ease-in-out',
+                      }}>
+                        {msg.role === 'assistant' && msg.assistantData?.quizData ? (
+                          <ChatQuizCard quizData={msg.assistantData.quizData} sessionId={clientId} msgId={msg.id} />
+                        ) : msg.role === 'assistant' && msg.assistantData && msg.id !== 0 ? (
+                          <>
+                            <KeywordText
+                              text={msg.content}
+                              keywords={msg.assistantData.keywords}
+                              highlightPassage={isMsgHighlighted ? highlightedPassage : null}
+                            />
+                            {msg.assistantData.keywords.length > 0 && (
+                              <div className="no-quote" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0' }}>
+                                  ✨ Cliquez sur les mots surlignés pour leur définition
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          msg.content
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {loading && (
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '50%',
+                    backgroundColor: 'var(--primary-color)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <Bot size={18} color="white" />
+                  </div>
+                  <div style={{
+                    backgroundColor: 'var(--background-color)',
+                    padding: '0.875rem 1.1rem',
+                    borderRadius: '4px 18px 18px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <Loader2 size={18} className="spin" style={{ color: 'var(--primary-color)' }} />
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>L'assistant réfléchit...</span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={bottomRef} />
+            </div>
+          )}
 
           {/* Formulaire de saisie */}
           <div style={{
