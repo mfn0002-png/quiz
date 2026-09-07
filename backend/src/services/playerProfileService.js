@@ -20,7 +20,12 @@ export async function getPlayerProfile(sessionId) {
   const key = `sess:${sessionId}:profile`;
   let data = null;
   if (redis) {
-    data = await redis.get(key);
+    try {
+      data = await redis.get(key);
+    } catch (err) {
+      console.warn(`⚠️ [PlayerProfile Redis get error, fallback memoryStore] ${err.message}`);
+      data = memoryStore.get(key) ?? null;
+    }
   } else {
     data = memoryStore.get(key) ?? null;
   }
@@ -40,7 +45,12 @@ export async function getPlayerProfile(sessionId) {
 export async function savePlayerProfile(sessionId, profile) {
   const key = `sess:${sessionId}:profile`;
   if (redis) {
-    await redis.set(key, profile, { ex: TTL_PLAYER_PROFILE });
+    try {
+      await redis.set(key, profile, { ex: TTL_PLAYER_PROFILE });
+    } catch (err) {
+      console.warn(`⚠️ [PlayerProfile Redis set error, fallback memoryStore] ${err.message}`);
+      memoryStore.set(key, profile);
+    }
   } else {
     memoryStore.set(key, profile);
   }

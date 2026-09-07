@@ -23,6 +23,7 @@ export function AssistantTab() {
           alignItems: 'center',
           gap: '0.85rem',
           backgroundColor: 'var(--surface-color-subtle)',
+          flexShrink: 0,
         }}
       >
         <div
@@ -46,7 +47,7 @@ export function AssistantTab() {
           </p>
         </div>
       </div>
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <Assistant isCompact={false} />
       </div>
     </div>

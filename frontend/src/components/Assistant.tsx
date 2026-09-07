@@ -339,22 +339,29 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
 
   return (
     <div style={{
-      maxWidth: '900px',
+      maxWidth: isCompact ? '100%' : '960px',
+      width: '100%',
       margin: '0 auto',
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100vh - 140px)',
+      height: '100%',
+      flex: 1,
+      minHeight: 0,
       position: 'relative',
+      overflow: 'hidden',
+      padding: isCompact ? '0.5rem' : '0.85rem 1.25rem 0.65rem 1.25rem',
+      boxSizing: 'border-box',
     }}>
       {errorBanner && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           border: '1px solid rgba(239, 68, 68, 0.3)',
           color: 'var(--error-color)',
-          padding: '0.75rem 1rem',
+          padding: isCompact ? '0.5rem 0.75rem' : '0.75rem 1rem',
           borderRadius: '12px',
-          marginBottom: '0.75rem',
-          fontSize: '0.9rem',
+          marginBottom: isCompact ? '0.4rem' : '0.65rem',
+          fontSize: isCompact ? '0.82rem' : '0.9rem',
+          flexShrink: 0,
         }}>
           <strong>⚠️ {errorBanner.message}</strong>
           {errorBanner.detail && <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.8 }}>{errorBanner.detail}</div>}
@@ -365,37 +372,49 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0.75rem 1rem',
+        padding: isCompact ? '0.4rem 0.65rem' : '0.65rem 1rem',
         backgroundColor: 'var(--surface-color)',
         border: '1px solid rgba(0,0,0,0.08)',
-        borderRadius: '16px',
-        marginBottom: '0.75rem',
+        borderRadius: isCompact ? '12px' : '16px',
+        marginBottom: isCompact ? '0.45rem' : '0.65rem',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isCompact ? '0.4rem' : '0.6rem', minWidth: 0, flex: 1 }}>
           <button
             onClick={() => setShowHistoryDrawer(!showHistoryDrawer)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '10px',
+              gap: '0.35rem',
+              padding: isCompact ? '0.35rem 0.6rem' : '0.5rem 0.85rem',
+              borderRadius: isCompact ? '8px' : '10px',
               border: '1px solid rgba(0,0,0,0.12)',
               backgroundColor: showHistoryDrawer ? 'var(--primary-color)' : 'var(--background-color)',
               color: showHistoryDrawer ? 'white' : 'var(--text-primary)',
-              fontSize: '0.88rem',
+              fontSize: isCompact ? '0.78rem' : '0.88rem',
               fontWeight: 600,
               cursor: 'pointer',
+              flexShrink: 0,
               transition: 'all 150ms',
             }}
             title="Afficher l'historique des discussions"
           >
-            <History size={16} className={isLoadingConvs ? 'spin' : ''} />
-            <span>{isLoadingConvs ? 'Chargement...' : `Historique (${conversations.length})`}</span>
+            <History size={isCompact ? 14 : 16} className={isLoadingConvs ? 'spin' : ''} />
+            <span>{isLoadingConvs ? '...' : isCompact ? `Historique (${conversations.length})` : `Historique (${conversations.length})`}</span>
           </button>
 
-          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px' }}>
+          <div style={{
+            fontSize: isCompact ? '0.78rem' : '0.88rem',
+            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+            minWidth: 0,
+            paddingRight: '0.5rem'
+          }}>
             {activeConv ? activeConv.title : 'Discussion en cours'}
           </div>
         </div>
@@ -405,21 +424,22 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.5rem 0.9rem',
-            borderRadius: '10px',
+            gap: '0.35rem',
+            padding: isCompact ? '0.35rem 0.65rem' : '0.5rem 0.9rem',
+            borderRadius: isCompact ? '8px' : '10px',
             border: 'none',
             backgroundColor: 'var(--primary-color)',
             color: 'white',
-            fontSize: '0.88rem',
+            fontSize: isCompact ? '0.78rem' : '0.88rem',
             fontWeight: 600,
             cursor: 'pointer',
+            flexShrink: 0,
             boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
             transition: 'all 150ms',
           }}
         >
-          <Plus size={16} />
-          <span>Nouvelle conversation</span>
+          <Plus size={isCompact ? 14 : 16} />
+          <span>{isCompact ? 'Nouveau' : 'Nouvelle conversation'}</span>
         </button>
       </div>
 
@@ -457,21 +477,35 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
       )}
 
       {/* Conteneur principal avec volet latéral d'historique */}
-      <div style={{ display: 'flex', flex: 1, gap: '0.75rem', minHeight: 0, position: 'relative' }}>
+      <div style={{
+        display: 'flex',
+        flex: 1,
+        gap: isCompact ? '0.4rem' : '0.75rem',
+        minHeight: 0,
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
 
         {/* Volet latéral (Sidebar / Drawer des conversations) */}
         {showHistoryDrawer && (
           <div style={{
-            width: '280px',
+            position: isCompact ? 'absolute' : 'relative',
+            top: isCompact ? 0 : undefined,
+            left: isCompact ? 0 : undefined,
+            right: isCompact ? 0 : undefined,
+            bottom: isCompact ? 0 : undefined,
+            width: isCompact ? '100%' : '280px',
+            height: '100%',
             flexShrink: 0,
             backgroundColor: 'var(--surface-color)',
             border: '1px solid rgba(0,0,0,0.08)',
-            borderRadius: '16px',
+            borderRadius: isCompact ? '12px' : '16px',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-            zIndex: 20,
+            boxShadow: isCompact ? '0 8px 30px rgba(0,0,0,0.2)' : '0 4px 16px rgba(0,0,0,0.08)',
+            zIndex: 30,
           }}>
             <div style={{
               padding: '0.85rem 1rem',
@@ -481,6 +515,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
               justifyContent: 'space-between',
               fontWeight: 700,
               fontSize: '0.92rem',
+              flexShrink: 0,
             }}>
               <span>📜 Discussions passées</span>
               <button
@@ -491,7 +526,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
               </button>
             </div>
 
-            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0.5rem' }}>
               {isLoadingConvs ? (
                 <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
                   ⏳ Chargement des discussions...
@@ -523,7 +558,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-        justifyContent: 'space-between',
+                        justifyContent: 'space-between',
                         transition: 'all 150ms',
                       }}
                     >
@@ -574,11 +609,13 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
           style={{
             flex: 1,
             backgroundColor: 'var(--surface-color)',
-            borderRadius: '16px',
+            borderRadius: isCompact ? '12px' : '16px',
             border: '1px solid rgba(0,0,0,0.08)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
+            minHeight: 0,
+            height: '100%',
             boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
           }}
         >
@@ -663,10 +700,11 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
             <div className="custom-scrollbar" style={{
               flex: 1,
               overflowY: 'auto',
-              padding: isCompact ? '0.65rem 0.75rem' : '1.25rem',
+              minHeight: 0,
+              padding: isCompact ? '0.75rem 0.65rem' : '1.25rem',
               display: 'flex',
               flexDirection: 'column',
-              gap: isCompact ? '0.65rem' : '1.25rem',
+              gap: isCompact ? '0.75rem' : '1.25rem',
             }}>
               {messages.map((msg) => {
                 const isMsgHighlighted = msg.id === highlightedMsgId;
@@ -807,9 +845,10 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
 
           {/* Formulaire de saisie */}
           <div style={{
-            padding: isCompact ? '0.65rem 0.75rem' : '1rem',
+            padding: isCompact ? '0.55rem 0.65rem' : '1rem',
             borderTop: '1px solid rgba(0,0,0,0.08)',
             backgroundColor: 'var(--surface-color)',
+            flexShrink: 0,
           }}>
             {/* Aperçu de la citation sélectionnée */}
             {quotedText && (

@@ -26,10 +26,25 @@ export async function fetchIslamicRAGContext(topic) {
   // Recherche en parallèle via les 3 outils du Serveur MCP
   console.log(` 🌐 [RAG Service] Recherche parallèle MCP pour "${topic}"...`);
 
+  // Mapping / enrichissement des termes pour optimiser la recherche multilingue
+  const topicMap = {
+    'pratiques': { quran: 'prière', english: 'worship deeds prayer' },
+    'piliers': { quran: 'prière', english: 'pillars islam faith' },
+    'prophètes': { quran: 'prophète', english: 'prophet messenger' },
+    'histoire': { quran: 'peuple', english: 'history companions' },
+    'foi': { quran: 'croire', english: 'faith belief tawheed' },
+    'jurisprudence': { quran: 'loi', english: 'ruling obligations' },
+  };
+
+  const normalized = topic.toLowerCase().trim();
+  const mapping = topicMap[normalized] || {};
+  const quranQuery = mapping.quran || topic;
+  const englishQuery = mapping.english || topic;
+
   const [coranResult, hadithsResult, duasResult] = await Promise.allSettled([
-    executeMcpTool('search_quran', { query: topic }),
-    executeMcpTool('search_hadiths', { queryInEnglish: topic }),
-    executeMcpTool('search_duas', { topic }),
+    executeMcpTool('search_quran', { query: quranQuery }),
+    executeMcpTool('search_hadiths', { queryInEnglish: englishQuery }),
+    executeMcpTool('search_duas', { topic: englishQuery }),
   ]);
 
   // Traiter les résultats (ignorer les résultats vides ou en erreur)
@@ -53,7 +68,10 @@ export async function fetchIslamicRAGContext(topic) {
 
   if (parts.length > 0) {
     const combined = parts.join('\n\n');
-    console.log(` 📚 [RAG Service] Contexte MCP combiné généré pour "${topic}" (${parts.length} source(s))`);
+    console.log(` 📚 [RAG Service] Contexte MCP combiné généré pour "${topic}" (${parts.length} source(s)) :`);
+    combined.split('\n').forEach(line => {
+      console.log(`    │ ${line}`);
+    });
     return combined;
   }
 

@@ -4,7 +4,7 @@ export type ActiveTab = 'quiz' | 'assistant' | 'stats' | 'leaderboard';
 
 export const CATEGORIES = ['Mélange', 'Prophètes', 'Coran', "Piliers de l'Islam", 'Histoire', 'Pratiques'];
 
-export const DIFFICULTIES: Difficulty[] = ['Auto', 'Débutant', 'Intermédiaire', 'Avancé'];
+export const DIFFICULTIES: Difficulty[] = ['Auto', 'Débutant', 'Intermédiaire', 'Expert'];
 
 export const QUESTION_TIME = 30;
 export const DEFAULT_QUESTION_COUNT = 6;

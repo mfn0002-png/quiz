@@ -17,17 +17,35 @@ const TTL_SEEN    = 604_800;     // 7 jours
 // ─────────────────────────────────────────────
 
 async function rGet(key) {
-  if (redis) return await redis.get(key);
+  if (redis) {
+    try {
+      return await redis.get(key);
+    } catch (err) {
+      console.warn(`⚠️ [SessionService Redis rGet error, fallback memoryStore] ${err.message}`);
+    }
+  }
   return memoryStore.get(key) ?? null;
 }
 
 async function rSet(key, value, ttl) {
-  if (redis) return await redis.set(key, value, { ex: ttl });
+  if (redis) {
+    try {
+      return await redis.set(key, value, { ex: ttl });
+    } catch (err) {
+      console.warn(`⚠️ [SessionService Redis rSet error, fallback memoryStore] ${err.message}`);
+    }
+  }
   memoryStore.set(key, value);
 }
 
 async function rDel(key) {
-  if (redis) return await redis.del(key);
+  if (redis) {
+    try {
+      return await redis.del(key);
+    } catch (err) {
+      console.warn(`⚠️ [SessionService Redis rDel error, fallback memoryStore] ${err.message}`);
+    }
+  }
   memoryStore.delete(key);
 }
 
