@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:widget": "vite build --config vite.widget.config.ts && node -e \"const fs=require('fs');const css=fs.readFileSync('dist-widget/style.css','utf8');const js=fs.readFileSync('dist-widget/widget.js','utf8');const inject='(function(){var s=document.createElement(\\\"style\\\");s.textContent='+JSON.stringify(css)+';document.head.appendChild(s);})();';fs.writeFileSync('dist-widget/widget.js',inject+js);fs.unlinkSync('dist-widget/style.css');console.log('✅ CSS injecté dans widget.js');\"",
     "start": "vite preview --host 0.0.0.0 --port $PORT",
     "lint": "eslint .",
     "test": "vitest run",
@@ -30,6 +31,7 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",
     "jsdom": "^26.1.0",
+    "terser": "^5.51.2",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.11.0",
     "vite": "^5.4.10",

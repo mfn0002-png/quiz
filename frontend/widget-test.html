@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Widget NoorQuiz — Page hôte simulée</title>
+  <style>
+    /* Styles du SITE HÔTE — totalement indépendants du widget */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #fdf6e3;
+      color: #2c1810;
+      line-height: 1.7;
+    }
+
+    header {
+      background: #1a472a;
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.5rem; }
+    header p  { font-size: 0.9rem; opacity: 0.85; }
+
+    main {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+
+    article {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+    }
+
+    article h2 { color: #1a472a; margin-bottom: 1rem; font-size: 1.35rem; }
+    article p  { margin-bottom: 0.75rem; font-size: 1rem; }
+
+    .badge {
+      display: inline-block;
+      background: #1a472a;
+      color: white;
+      padding: 0.2rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-family: sans-serif;
+      margin-bottom: 0.75rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+      font-size: 0.85rem;
+      font-family: sans-serif;
+    }
+
+    /* === TEST : Surcharge optionnelle du thème du widget ===
+       Décommentez pour tester l'adaptation automatique au thème du site
+    #noor-widget-root {
+      --primary-color: #1a472a;  ← couleur verte du site de mosquée
+    }
+    */
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>🕌 Mosquée Assalam</h1>
+      <p>Centre islamique — Paris 13ème</p>
+    </div>
+  </header>
+
+  <main>
+    <article>
+      <span class="badge">Article</span>
+      <h2>Les piliers de l'Islam</h2>
+      <p>
+        L'Islam repose sur cinq piliers fondamentaux qui constituent les obligations
+        essentielles de tout musulman. Ces piliers sont la Shahada (attestation de foi),
+        la Salat (prière), la Zakat (aumône légale), le Sawm (jeûne du Ramadan)
+        et le Hajj (pèlerinage à La Mecque).
+      </p>
+      <p>
+        Chacun de ces piliers a une signification profonde et une application précise
+        dans la vie quotidienne du croyant, renforçant son lien avec Allah et avec
+        la communauté musulmane.
+      </p>
+    </article>
+
+    <article>
+      <span class="badge">Horaires</span>
+      <h2>Prières du jour</h2>
+      <p>Fajr : 05h12 · Dhuhr : 13h48 · Asr : 17h15 · Maghrib : 20h02 · Isha : 21h34</p>
+      <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+        💬 <em>Vous avez des questions sur la religion ? Notre assistant IA islamique
+        est disponible en bas à droite de cette page.</em>
+      </p>
+    </article>
+  </main>
+
+  <footer>
+    &copy; 2025 Mosquée Assalam — Widget NoorQuiz intégré pour démonstration
+  </footer>
+
+  <!--
+    ═══════════════════════════════════════════════════════════════════
+    INTÉGRATION DU WIDGET NOORQUIZ — 1 seule ligne à ajouter au site
+    ═══════════════════════════════════════════════════════════════════
+
+    data-api-url    : URL de votre backend NoorQuiz
+    data-theme      : "dark" (défaut) ou "light"
+    data-noorquiz-url : URL de votre site NoorQuiz
+  -->
+  <script
+    src="../dist-widget/widget.js"
+    data-api-url="http://localhost:5005/api"
+    data-theme="dark"
+    data-noorquiz-url="https://noorquiz.com">
+  </script>
+
+</body>
+</html>
