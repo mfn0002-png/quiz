@@ -93,15 +93,17 @@ export const sendQuizResults = async (
 export const askQuestion = async (
   userQuestion: string,
   conversationId?: string | null,
-  clientId?: string
+  clientId?: string,
+  baseUrl?: string
 ): Promise<AssistantResponse & { conversationId?: string }> => {
   const finalClientId = clientId || getClientSessionId();
+  const finalBaseUrl = baseUrl || API_BASE_URL;
   const body: any = { question: userQuestion, clientId: finalClientId };
   if (conversationId) {
     body.conversationId = conversationId;
   }
 
-  const response = await fetch(`${API_BASE_URL}/assistant/chat`, {
+  const response = await fetch(`${finalBaseUrl}/assistant/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -137,10 +139,11 @@ export interface AssistantHistoryMessage {
 /**
  * Récupère l'historique de conversation sauvegardé dans Redis pour la session en cours.
  */
-export const getAssistantHistory = async (sessionId?: string): Promise<AssistantHistoryMessage[]> => {
+export const getAssistantHistory = async (sessionId?: string, baseUrl?: string): Promise<AssistantHistoryMessage[]> => {
   const finalSessionId = sessionId || getClientSessionId();
+  const finalBaseUrl = baseUrl || API_BASE_URL;
   try {
-    const response = await fetch(`${API_BASE_URL}/assistant/history/${finalSessionId}`);
+    const response = await fetch(`${finalBaseUrl}/assistant/history/${finalSessionId}`);
     if (!response.ok) return [];
     const data = await response.json().catch(() => ({ history: [] }));
     return data.history || [];
@@ -154,10 +157,11 @@ export const getAssistantHistory = async (sessionId?: string): Promise<Assistant
 /**
  * Récupère la liste des conversations enregistrées pour le client courant.
  */
-export const getAssistantConversations = async (clientId?: string): Promise<AssistantConversation[]> => {
+export const getAssistantConversations = async (clientId?: string, baseUrl?: string): Promise<AssistantConversation[]> => {
   const finalClientId = clientId || getClientSessionId();
+  const finalBaseUrl = baseUrl || API_BASE_URL;
   try {
-    const response = await fetch(`${API_BASE_URL}/assistant/conversations/${finalClientId}`);
+    const response = await fetch(`${finalBaseUrl}/assistant/conversations/${finalClientId}`);
     if (!response.ok) return [];
     const data = await response.json().catch(() => ({ conversations: [] }));
     return data.conversations || [];
@@ -170,9 +174,10 @@ export const getAssistantConversations = async (clientId?: string): Promise<Assi
 /**
  * Supprime une conversation spécifique sans toucher aux autres.
  */
-export const deleteAssistantConversation = async (conversationId: string, clientId?: string): Promise<void> => {
+export const deleteAssistantConversation = async (conversationId: string, clientId?: string, baseUrl?: string): Promise<void> => {
   const finalClientId = clientId || getClientSessionId();
-  await fetch(`${API_BASE_URL}/assistant/conversation/${finalClientId}/${conversationId}`, {
+  const finalBaseUrl = baseUrl || API_BASE_URL;
+  await fetch(`${finalBaseUrl}/assistant/conversation/${finalClientId}/${conversationId}`, {
     method: 'DELETE'
   }).catch(err => console.error("Erreur suppression conversation :", err));
 };

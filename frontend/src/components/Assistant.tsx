@@ -24,6 +24,7 @@ interface Message {
 
 interface AssistantProps {
   isCompact?: boolean;
+  apiUrl?: string; // URL du backend — si absent, utilise VITE_API_BASE_URL du .env
 }
 
 const DEFAULT_WELCOME_MSG: Message = {
@@ -33,7 +34,7 @@ const DEFAULT_WELCOME_MSG: Message = {
   assistantData: { answer: '', keywords: [] }
 };
 
-export function Assistant({ isCompact = false }: AssistantProps = {}) {
+export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
   const clientId = getClientSessionId();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(() => {
@@ -66,7 +67,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
   const refreshConversations = async () => {
     setIsLoadingConvs(true);
     try {
-      const list = await getAssistantConversations(clientId);
+      const list = await getAssistantConversations(clientId, apiUrl);
       setConversations(list);
     } catch (err) {
       console.error('Erreur chargement liste conversations:', err);
@@ -88,7 +89,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
     }
     setIsLoadingMessages(true);
     try {
-      const history = await getAssistantHistory(convId);
+      const history = await getAssistantHistory(convId, apiUrl);
       if (history && history.length > 0) {
         const loadedMsgs = history.map((msg, index) => {
           let quote: string | null = msg.quote || null;
@@ -206,7 +207,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
 
   const handleDeleteConv = async (e: React.MouseEvent, convId: string) => {
     e.stopPropagation();
-    await deleteAssistantConversation(convId, clientId);
+    await deleteAssistantConversation(convId, clientId, apiUrl);
     setConversations(prev => prev.filter(c => c.id !== convId));
 
     if (activeConvId === convId) {
@@ -294,7 +295,7 @@ export function Assistant({ isCompact = false }: AssistantProps = {}) {
         ? `> "${userMsg.quote}"\n\n${userMsg.content}`
         : userMsg.content;
 
-      const response = await askQuestion(formattedQuestion, activeConvId, clientId);
+      const response = await askQuestion(formattedQuestion, activeConvId, clientId, apiUrl);
 
       if (response.conversationId && response.conversationId !== activeConvId) {
         setActiveConvId(response.conversationId);

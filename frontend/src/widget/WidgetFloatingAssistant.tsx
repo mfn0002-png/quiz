@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { Bot, Sparkles, X, Maximize2, Minimize2 } from 'lucide-react';
-import { WidgetAssistant } from './WidgetAssistant';
+import { Assistant } from '../components/Assistant';
 
 interface WidgetFloatingAssistantProps {
   apiUrl: string;
@@ -116,7 +116,7 @@ export function WidgetFloatingAssistant({
 
           {/* Corps : composant assistant */}
           <div className="noor-panel-body">
-            <WidgetAssistant
+            <Assistant
               apiUrl={apiUrl}
               isCompact={!isExpanded}
             />

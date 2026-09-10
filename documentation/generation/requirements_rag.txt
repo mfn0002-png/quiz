@@ -1,0 +1,7 @@
+# Dépendances pour le pipeline RAG Python
+google-generativeai>=0.7.0
+pypdf>=4.0.0
+numpy>=1.24.0
+python-dotenv>=1.0.0
+supabase>=2.0.0
+tqdm>=4.66.0
