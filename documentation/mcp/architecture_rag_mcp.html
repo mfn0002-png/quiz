@@ -954,6 +954,13 @@ sequenceDiagram
             Dans notre architecture, le Quiz Agent utilise les <strong>deux</strong> : MCP pour récupérer les données islamiques structurées, et RAG pour assembler le contexte avant de le soumettre à Gemini. C'est le meilleur des deux mondes.
           </div>
         </div>
+        <div class="callout callout-info" style="margin-top:0.75rem">
+          <div class="callout-icon">💡</div>
+          <div class="callout-text">
+            <strong>Agent + RAG : Pourquoi ce n'est pas duplicatif ?</strong>
+            Le RAG agit comme un simple outil de recherche vectorielle déterministe (0 LLM pour découper, 0 LLM pour chercher les similarités cosinus). L'Agent NoorQuiz reste l'unique cerveau de génération. Il n'y a donc <strong>aucun double emploi ni double facturation</strong> de tokens ! (Voir le détail complet dans la <a href="../rag/documentation_rag_nodejs.html#duplication" style="color:var(--accent-rag); text-decoration:underline;">Section 10 de la documentation RAG</a>).
+          </div>
+        </div>
       </div>
     </div>
   </div>

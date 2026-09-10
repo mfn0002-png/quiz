@@ -6,7 +6,7 @@
   <title>Architecture RAG Vectorielle de Bout en Bout — Guide Pratique Node.js</title>
   <meta name="description" content="Guide architectural et technique complet du RAG (Retrieval-Augmented Generation) de bout en bout en Node.js avec Google Gemini et Vector Store.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <style>
     :root {
       --bg: #0b0d14;
@@ -194,16 +194,53 @@
     .info-card-title { font-size: 0.98rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
     .info-card-desc { font-size: 0.85rem; color: var(--muted2); line-height: 1.6; }
 
-    /* ===== DIAGRAM BOX ===== */
+    /* ===== DIAGRAM BOX (FOND CLAIR HAUTE VISIBILITÉ PERMANENT) ===== */
     .mermaid-container {
-      background: #090b12;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.8rem;
-      margin: 1.5rem 0;
+      background: #ffffff;
+      border: 2px solid #38bdf8;
+      border-radius: 18px;
+      padding: 1.5rem 1.5rem 2.2rem;
+      margin: 1.8rem 0;
       overflow-x: auto;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+    .diagram-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .diagram-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .diagram-pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+    }
+    .diagram-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .mermaid {
+      width: 100%;
+      min-width: 950px;
       display: flex;
       justify-content: center;
+    }
+    .mermaid svg {
+      width: 100% !important;
+      min-width: 950px !important;
+      max-width: 1050px !important;
+      height: auto !important;
+      font-size: 15px !important;
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,0.06));
     }
 
     /* ===== STEP TIMELINE ===== */
@@ -367,6 +404,7 @@
     <a href="#prompt" class="nav-pill">7. Inférence & Zéro Hallucination</a>
     <a href="#code-complet" class="nav-pill">8. Script Node.js Clé en Main</a>
     <a href="#mcp-vs-rag" class="nav-pill">9. RAG vs MCP</a>
+    <a href="#duplication" class="nav-pill">10. Synergie RAG & Agent</a>
   </nav>
 
   <!-- SECTION 1 : THÉORIE -->
@@ -431,25 +469,44 @@
       <div class="section-body">
         <p>Un système RAG rigoureux sépare toujours l'ingestion de la recherche :</p>
 
-        <div class="mermaid-container">
+        <div class="mermaid-container" id="main-diagram-container">
+          <div class="diagram-bar">
+            <div class="diagram-title-wrap">
+              <span class="diagram-pulse"></span>
+              <span class="diagram-label">Architecture du Pipeline RAG (Node.js & Gemini) — Ingestion & Inférence Déterministe</span>
+            </div>
+          </div>
           <pre class="mermaid">
-flowchart TD
-  subgraph INGESTION ["📥 PHASE 1 : INGESTION (Hors-ligne / Asynchrone)"]
-    Doc[Document Source: PDF / Markdown] --> Parser[Node.js Document Parser]
-    Parser --> Splitter[Recursive Chunking: 800 chars + 150 overlap]
-    Splitter --> EmbedAPI[Gemini text-embedding-004]
-    EmbedAPI --> VectorDB[(Vector Store: PgVector / Supabase / In-Memory)]
-  end
+sequenceDiagram
+  autonumber
+  actor User as 👤 Utilisateur
+  participant Express as 🌐 Backend Node.js
+  participant RAG as ⚙️ ragVectorService.js
+  participant VectorDB as 💾 Vector Store (JSON)
+  participant Gemini as 🤖 Google Gemini API
 
-  subgraph INFERENCE ["⚡ PHASE 2 : INFERENCE & QUERY (Temps Réel)"]
-    User([Utilisateur: Pose une question]) --> QueryEmbed[Calcul Embedding de la question]
-    QueryEmbed --> CosineSearch[Recherche Cosinus Top-K]
-    VectorDB -.-> CosineSearch
-    CosineSearch --> ContextFilter[Sélection des Top-3 Chunks les plus pertinents]
-    ContextFilter --> AugmentedPrompt[Prompt Augmenté: Contexte + Question]
-    AugmentedPrompt --> LLM[Gemini 1.5 Flash: Synthèse Zero-Hallucination]
-    LLM --> Response([Réponse Finale avec Sources & Citations exactes])
+  Note over Express,RAG: --- ÉTAPE PRÉALABLE : INGESTION ---
+  Express->>RAG: ingestDocument("knowledge_base_noorquiz.pdf")
+  RAG->>RAG: pdf-parse (12 671 caractères)
+  RAG->>RAG: recursiveChunkText (22 chunks avec overlap 150)
+  loop Pour chaque chunk
+    RAG->>Gemini: embedContent(chunk, RETRIEVAL_DOCUMENT)
+    Gemini-->>RAG: Vecteur embedding (3072 floats)
   end
+  RAG->>VectorDB: Sauvegarde 22 vecteurs dans knowledge_vector_store.json
+
+  Note over User,Gemini: --- REQUÊTE TEMPS RÉEL (ZÉRO HALLUCINATION) ---
+  User->>Express: "Quel est le seuil du Nisab pour la Zakat ?"
+  Express->>RAG: queryRagPipeline(question)
+  RAG->>Gemini: embedContent(question, RETRIEVAL_QUERY)
+  Gemini-->>RAG: Query Vector
+  RAG->>VectorDB: Lecture des 22 vecteurs
+  RAG->>RAG: Calcul cosineSimilarity() sur les 22 vecteurs
+  RAG->>RAG: Filtre Top-3 (Meilleur score : 79.2%)
+  RAG->>Gemini: generateContent(Prompt augmenté + Contexte Top-3)
+  Gemini-->>RAG: Réponse certifiée avec citations
+  RAG-->>Express: { answer, sources }
+  Express-->>User: Réponse affichée avec sources exactes
           </pre>
         </div>
 
@@ -693,8 +750,8 @@ flowchart TD
         <!-- TAB 2 : SUPABASE PGVECTOR -->
         <div id="tab-supabase" class="tab-panel">
           <p>
-            Dans votre workflow n8n <code>RAG Practice.json</code>, le nœud Supabase utilisait exactement cette table
-            <code>documents</code> et cette fonction <code>match_documents</code>. Voici le schéma SQL officiel et son client Node.js :
+            Pour un stockage managé en production à grande échelle (millions de documents), <strong>Supabase (PostgreSQL avec l'extension pgvector)</strong>
+            est la solution de référence. Voici le schéma SQL officiel et son client Node.js complet :
           </p>
 
           <div class="code-box">
@@ -709,12 +766,12 @@ flowchart TD
             <div class="code-block"><span class="cmt">-- 1. Activer l'extension vectorielle</span>
 <span class="kw">CREATE EXTENSION IF NOT EXISTS</span> vector;
 
-<span class="cmt">-- 2. Table documents compatible n8n & LangChain</span>
+<span class="cmt">-- 2. Table documents (Adapter la taille au modèle : 768 pour text-embedding-004, 3072 pour gemini-embedding-001)</span>
 <span class="kw">CREATE TABLE IF NOT EXISTS</span> documents (
   id <span class="kw">BIGSERIAL PRIMARY KEY</span>,
   content <span class="kw">TEXT</span>,
   metadata <span class="kw">JSONB</span>,
-  embedding <span class="kw">VECTOR</span>(<span class="num">768</span>) <span class="cmt">-- 768 dimensions pour Gemini text-embedding-004</span>
+  embedding <span class="kw">VECTOR</span>(<span class="num">768</span>)
 );
 
 <span class="cmt">-- 3. Fonction RPC de recherche par similarité cosinus</span>
@@ -739,6 +796,57 @@ flowchart TD
   <span class="kw">LIMIT</span> match_count;
 <span class="kw">END</span>;
 $$;</div>
+          </div>
+
+          <h4 style="margin: 1.5rem 0 0.8rem; color: #fff;">Client Node.js Supabase (Insertion & Recherche Vectorielle) :</h4>
+
+          <div class="code-box">
+            <div class="code-header">
+              <div class="code-dot-group">
+                <div class="code-dot red"></div>
+                <div class="code-dot yellow"></div>
+                <div class="code-dot green"></div>
+              </div>
+              <span>supabaseVectorStore.js</span>
+            </div>
+            <div class="code-block"><span class="kw">import</span> { createClient } <span class="kw">from</span> <span class="str">'@supabase/supabase-js'</span>;
+
+<span class="kw">const</span> supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+<span class="cmt">/**
+ * 1. Insertion de chunks vectorisés dans Supabase
+ */</span>
+<span class="kw">export async function</span> <span class="fn">insertChunksToSupabase</span>(chunksWithEmbeddings) {
+  <span class="kw">const</span> rows = chunksWithEmbeddings.map(c =&gt; ({
+    content: c.content,
+    metadata: c.metadata,
+    embedding: c.embedding <span class="cmt">// Array de 768 (ou 3072) floats</span>
+  }));
+
+  <span class="kw">const</span> { data, error } = <span class="kw">await</span> supabase
+    .from(<span class="str">'documents'</span>)
+    .insert(rows);
+
+  <span class="kw">if</span> (error) <span class="kw">throw new</span> Error(<span class="str">`Erreur insertion: ${error.message}`</span>);
+  <span class="kw">return</span> data;
+}
+
+<span class="cmt">/**
+ * 2. Recherche par Similarité Cosinus via RPC match_documents
+ */</span>
+<span class="kw">export async function</span> <span class="fn">searchSimilarInSupabase</span>(queryEmbedding, matchCount = <span class="num">3</span>) {
+  <span class="kw">const</span> { data, error } = <span class="kw">await</span> supabase.rpc(<span class="str">'match_documents'</span>, {
+    query_embedding: queryEmbedding,
+    match_count: matchCount,
+    filter: {}
+  });
+
+  <span class="kw">if</span> (error) <span class="kw">throw new</span> Error(<span class="str">`Erreur recherche RPC: ${error.message}`</span>);
+  <span class="kw">return</span> data; <span class="cmt">// [{ id, content, metadata, similarity }, ...]</span>
+}</div>
           </div>
         </div>
       </div>
@@ -1059,6 +1167,148 @@ dotenv.config();
     </div>
   </div>
 
+  <!-- SECTION 10 : DE LA RECHERCHE DOCUMENTAIRE À L'AGENT AUTONOME -->
+  <div class="section-wrap" id="duplication">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number orange">10</div>
+        <div>
+          <div class="section-title">De la Recherche Documentaire à l'Agent Autonome : Le RAG comme Outil Déterministe</div>
+          <div class="section-desc">Séparation des responsabilités : découpler l'indexation du savoir et l'orchestration cognitive</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <p>
+          Dans une architecture d'IA moderne, la performance ne provient pas de l'accumulation de modèles génératifs en cascade, mais de la <strong>spécialisation stricte de chaque composant technique</strong>.
+        </p>
+        <p>
+          Si un pipeline RAG classique se limite traditionnellement à un schéma rigide <em>« Question ➔ Recherche ➔ Réponse figée »</em>, l'intégration agentique de NoorQuiz élève le RAG au rang de <strong>sens spécialisé (un outil d'extraction documentaire)</strong> piloté par un Agent central.
+        </p>
+        <p>
+          Ce découplage structurel répond à un enjeu clé de conception : <strong>comment allier la rigueur factuelle du RAG et l'intelligence adaptative de l'Agent sans redondance ?</strong>
+          La réponse repose sur la séparation claire des rôles : le RAG excelle dans le filtrage mathématique et l'extraction de preuves (sans jamais générer de texte), tandis que l'Agent gouverne le raisonnement, la mémoire de la session et la prise de décision.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-icon">✂️</div>
+            <div class="info-card-title">1. Chunking : Zéro LLM</div>
+            <div class="info-card-desc">
+              Le découpage du texte est 100% algorithmique en JavaScript (expressions régulières sur la ponctuation). Aucun modèle d'IA n'est sollicité.
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">📐</div>
+            <div class="info-card-title">2. Embeddings : Pas de génération</div>
+            <div class="info-card-desc">
+              Le modèle d'embedding (<code>text-embedding-004</code>) ne génère aucun texte. C'est une projection mathématique pure qui convertit des mots en 768 coordonnées.
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🔍</div>
+            <div class="info-card-title">3. Retrieval : Produit Scalaire</div>
+            <div class="info-card-desc">
+              La recherche des passages est un calcul géométrique de similarité cosinus. C'est instantané, déterministe et sans intelligence artificielle générative.
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🧠</div>
+            <div class="info-card-title">4. Un Seul et Unique LLM</div>
+            <div class="info-card-desc">
+              <strong>L'Agent est l'unique cerveau conversationnel.</strong> Le RAG lui transmet uniquement des extraits bruts. L'Agent lit ces extraits et rédige la réponse finale.
+            </div>
+          </div>
+        </div>
+
+        <!-- VISUAL COMPARISON CARDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+          <!-- CARD A : APPROCHE NAIVE -->
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 1.6rem; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+              <span style="font-size: 1.4rem;">❌</span>
+              <h4 style="color: #ef4444; margin: 0; font-size: 1.05rem; font-weight: 700;">Approche Naïve : Pipeline RAG Isolé (2 LLMs)</h4>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1.2rem; line-height: 1.6;">
+              Le RAG génère une réponse fermée avec son propre LLM, puis l'Agent réinjecte cette réponse dans un second LLM pour la reformuler.
+            </p>
+            <div style="background: #080b12; border-radius: 12px; padding: 1.1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.8; color: #94a3b8; border: 1px solid rgba(239,68,68,0.25);">
+              Utilisateur ➔ <span style="color:#ef4444; font-weight:bold;">LLM 1 (Agent)</span><br>
+              &nbsp;&nbsp;➔ Requête RAG<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;➔ <span style="color:#ef4444; font-weight:bold;">LLM 2 (RAG Génératif)</span> : Rédige réponse<br>
+              &nbsp;&nbsp;➔ Retour texte à l'Agent<br>
+              &nbsp;&nbsp;➔ <span style="color:#ef4444; font-weight:bold;">LLM 1 (Agent)</span> : Reformule la réponse<br>
+              <span style="color:#f87171; font-weight:bold;">⚠️ Bilan : 2 LLMs génératifs, Coût x2, Latence x2, Duplication !</span>
+            </div>
+          </div>
+
+          <!-- CARD B : NOTRE APPROCHE NOORQUIZ -->
+          <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.35); border-radius: 16px; padding: 1.6rem; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+              <span style="font-size: 1.4rem;">✅</span>
+              <h4 style="color: #22c55e; margin: 0; font-size: 1.05rem; font-weight: 700;">Notre Approche : RAG comme Outil (1 Seul LLM)</h4>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1.2rem; line-height: 1.6;">
+              Le RAG est un simple indexeur vectoriel sans génération (recherche pure). L'Agent NoorQuiz est l'unique cerveau de synthèse.
+            </p>
+            <div style="background: #080b12; border-radius: 12px; padding: 1.1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.8; color: #94a3b8; border: 1px solid rgba(34,197,94,0.25);">
+              Utilisateur ➔ <span style="color:#22c55e; font-weight:bold;">LLM Unique (Agent NoorQuiz)</span><br>
+              &nbsp;&nbsp;➔ Appel Outil <code>search_knowledge_base</code><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;➔ Calcul similarité cosinus (<strong style="color:#38bdf8;">0 LLM</strong>)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;➔ Renvoie 3 extraits bruts (<strong style="color:#38bdf8;">0 LLM</strong>)<br>
+              &nbsp;&nbsp;➔ <span style="color:#22c55e; font-weight:bold;">LLM Unique</span> : Synthèse certifiée finale<br>
+              <span style="color:#4ade80; font-weight:bold;">✨ Bilan : 1 Seul LLM, 0 Duplication, Vitesse & Précision maximales !</span>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin: 2rem 0 1rem; color: #fff;">Comparatif Approfondi des Deux Approches :</h4>
+
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Critère d'Évaluation</th>
+              <th>❌ Approche Naïve : Pipeline RAG Isolé</th>
+              <th>✅ Notre Approche : RAG comme Outil de l'Agent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Nombre de LLMs actifs</strong></td>
+              <td>2 LLMs (1 dans le RAG qui formule une réponse figée + 1 Agent qui la reformule).</td>
+              <td><strong>1 Seul LLM</strong> (L'Agent utilise le RAG comme un simple moteur de recherche documentaire).</td>
+            </tr>
+            <tr>
+              <td><strong>Coût et Latence API</strong></td>
+              <td>Doublés (deux générations complètes de tokens).</td>
+              <td><strong>Optimisés</strong> (une seule génération finale de texte).</td>
+            </tr>
+            <tr>
+              <td><strong>Gestion de l'Historique</strong></td>
+              <td>Le RAG isolé oublie la conversation précédente.</td>
+              <td>L'Agent intègre la mémoire Redis et le contexte global du joueur.</td>
+            </tr>
+            <tr>
+              <td><strong>Pertinence de l'Appel</strong></td>
+              <td>Le RAG s'exécute bêtement même pour un simple "Bonjour" ou "Merci".</td>
+              <td>L'Agent décide intelligemment <em>si</em> et <em>quand</em> interroger la base documentaire.</td>
+            </tr>
+            <tr>
+              <td><strong>Actions Multiples</strong></td>
+              <td>Incapable de proposer un quiz ou de calculer une zakat après la réponse.</td>
+              <td>L'Agent peut chaîner RAG + Calcul Zakat + Proposition de Quiz interactif.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout success">
+          <div class="callout-title">💡 La Métaphore de l'Avocat et de sa Bibliothèque :</div>
+          Considérez votre <strong>Agent</strong> comme un avocat expérimenté et le <strong>RAG</strong> comme sa bibliothèque juridique.
+          L'avocat ne récite pas tout de mémoire (sinon il risque d'halluciner). Quand vous lui posez une question pointue sur la Zakat, il se lève, consulte précisément les 3 pages de référence dans sa bibliothèque (RAG), puis revient vers vous pour vous expliquer la règle avec bienveillance et clarté.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <p>Architecture RAG Vectorielle &copy; NoorQuiz — Documentation Technique Node.js de Bout en Bout</p>
@@ -1066,19 +1316,45 @@ dotenv.config();
   </footer>
 
   <script>
-    // Initialisation Mermaid
+    // Initialisation Mermaid avec lisibilité et contraste maximum
     mermaid.initialize({
       startOnLoad: true,
-      theme: 'dark',
+      theme: 'base',
+      sequence: {
+        diagramMarginX: 35,
+        diagramMarginY: 25,
+        actorMargin: 70,
+        width: 175,
+        height: 52,
+        boxMargin: 12,
+        boxTextMargin: 8,
+        noteMargin: 14,
+        messageMargin: 38,
+        mirrorActors: false,
+        useMaxWidth: false
+      },
       themeVariables: {
-        darkMode: true,
-        background: '#090b12',
-        primaryColor: '#1e293b',
-        primaryTextColor: '#e2e8f0',
-        primaryBorderColor: '#38bdf8',
-        lineColor: '#64748b',
-        secondaryColor: '#1e1b4b',
-        tertiaryColor: '#0f172a'
+        background: '#ffffff',
+        primaryColor: '#f0f9ff',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#1e293b',
+        secondaryColor: '#fef3c7',
+        tertiaryColor: '#f8fafc',
+        actorBkg: '#f8fafc',
+        actorBorder: '#0284c7',
+        actorTextColor: '#0f172a',
+        actorLineColor: '#64748b',
+        signalColor: '#0f172a',
+        signalTextColor: '#0f172a',
+        labelBoxBkgColor: '#f8fafc',
+        labelBoxBorderColor: '#94a3b8',
+        labelTextColor: '#0f172a',
+        loopTextColor: '#0369a1',
+        noteBkgColor: '#fef3c7',
+        noteTextColor: '#92400e',
+        noteBorderColor: '#d97706',
+        fontSize: '15px'
       }
     });
 

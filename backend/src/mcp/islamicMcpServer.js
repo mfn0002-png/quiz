@@ -70,6 +70,17 @@ const toolRegistry = {
       },
       text: quizObj.text,
     };
+  },
+
+  search_knowledge_base: async ({ query }) => {
+    const { searchSimilarChunks } = await import('../services/ragVectorService.js');
+    const matches = await searchSimilarChunks(query, 3, 0.45);
+    if (!matches || matches.length === 0) {
+      return "Aucun extrait pertinent trouvé dans la base documentaire de référence.";
+    }
+    return matches.map((m, i) => 
+      `[Extrait ${i + 1} | Source: ${m.metadata.source} | Score: ${(m.similarity * 100).toFixed(1)}%]\n${m.content}`
+    ).join("\n\n");
   }
 };
 
@@ -146,6 +157,13 @@ mcpServer.tool(
     const res = await toolRegistry.generate_quiz_question(args);
     return { content: [{ type: 'text', text: res.text }] };
   }
+);
+
+mcpServer.tool(
+  'search_knowledge_base',
+  'Recherche dans la base documentaire officielle NoorQuiz (règles de foi, prière, zakat, coran, hadiths, piliers) par similarité vectorielle.',
+  { query: z.string().describe('La question ou le sujet précis à rechercher dans les documents officiels') },
+  async (args) => ({ content: [{ type: 'text', text: await toolRegistry.search_knowledge_base(args) }] })
 );
 
 if (process.argv[1] && process.argv[1].endsWith('islamicMcpServer.js')) {

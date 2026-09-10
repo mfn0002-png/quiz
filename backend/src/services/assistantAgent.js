@@ -179,6 +179,20 @@ const TOOLS = [
           required: [],
         },
       },
+      {
+        name: 'search_knowledge_base',
+        description: "Recherche dans la base de connaissances documentaire officielle NoorQuiz (règles de foi, prière, ablutions, zakat, jeûne, hadiths, coran, sira des prophètes). Utilise cet outil pour trouver les extraits canoniques certifiés avec leurs sources exactes.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            query: {
+              type: SchemaType.STRING,
+              description: "La question ou le sujet précis à rechercher dans les documents officiels.",
+            },
+          },
+          required: ['query'],
+        },
+      },
     ],
   },
 ];

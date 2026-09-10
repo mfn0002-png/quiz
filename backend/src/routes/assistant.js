@@ -88,4 +88,22 @@ router.delete('/conversation/:clientId/:conversationId', async (req, res) => {
   }
 });
 
+// POST /api/assistant/rag-query
+// Recherche RAG directe avec scores et sources
+router.post('/rag-query', async (req, res) => {
+  const { question, topK } = req.body;
+  if (!question || typeof question !== 'string') {
+    return res.status(400).json({ error: 'Le champ question (string) est requis.' });
+  }
+
+  try {
+    const { queryRagPipeline } = await import('../services/ragVectorService.js');
+    const result = await queryRagPipeline(question, topK || 3);
+    res.json(result);
+  } catch (error) {
+    console.error('Erreur endpoint RAG Query :', error);
+    res.status(500).json({ error: error.message || 'Erreur lors de la recherche RAG.' });
+  }
+});
+
 export default router;
