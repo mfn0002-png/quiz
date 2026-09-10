@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAG avec n8n — Théorie, technique et implémentation</title>
+<title>RAG avec n8n — Architecture et implémentation du pipeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -327,14 +327,14 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark">R</div>
-      <div class="brand-text">RAG · Baamtu&nbsp;DFS</div>
+      <div class="brand-text">RAG · n8n Pipeline</div>
     </div>
     <p class="brand-sub">Pipeline n8n</p>
 
     <nav>
-      <a href="#theorie" class="navlink"><span class="num">01</span> Théorie</a>
-      <a href="#technique" class="navlink"><span class="num">02</span> Technique</a>
-      <a href="#pratique" class="navlink"><span class="num">03</span> Pratique — le pipeline</a>
+      <a href="#theorie" class="navlink"><span class="num">01</span> Fondamentaux</a>
+      <a href="#technique" class="navlink"><span class="num">02</span> Architecture des pipelines</a>
+      <a href="#pratique" class="navlink"><span class="num">03</span> Le workflow n8n</a>
       <a href="#implementation" class="navlink"><span class="num">04</span> Implémentation</a>
       <a href="#avance" class="navlink"><span class="num">05</span> Aller plus loin</a>
       <a href="#ressources" class="navlink"><span class="num">06</span> Ressources</a>
@@ -366,9 +366,8 @@
         </div>
         <h1>Comprendre et implémenter un pipeline RAG</h1>
         <p class="lead">
-          Documentation technique du pipeline de Retrieval-Augmented Generation construit sur n8n
-          pour l'équipe DFS&nbsp;: pourquoi il existe, comment il fonctionne, comment le vôtre est
-          câblé, et comment le reproduire ou l'étendre.
+          Documentation technique et guide pratique du pipeline de Retrieval-Augmented Generation construit sur n8n&nbsp;:
+          pourquoi il existe, comment il fonctionne, comment il est câblé, et comment le reproduire ou l'étendre.
         </p>
       </div>
       <div class="hero-fig">
@@ -380,10 +379,10 @@
     <div class="content">
 
       <!-- ============================================================ -->
-      <!-- 01 THEORIE -->
+      <!-- 01 FONDAMENTAUX -->
       <!-- ============================================================ -->
       <section class="part" id="theorie">
-        <div class="part-head"><span class="part-num">01</span><h2>Théorie</h2></div>
+        <div class="part-head"><span class="part-num">01</span><h2>Fondamentaux &amp; Problématique</h2></div>
         <p class="part-kicker">
           Ce qu'un LLM seul ne sait pas faire, et le principe que le RAG utilise pour combler ce manque.
         </p>
@@ -479,10 +478,10 @@
       </section>
 
       <!-- ============================================================ -->
-      <!-- 02 TECHNIQUE -->
+      <!-- 02 ARCHITECTURE DES PIPELINES -->
       <!-- ============================================================ -->
       <section class="part" id="technique">
-        <div class="part-head"><span class="part-num">02</span><h2>Technique</h2></div>
+        <div class="part-head"><span class="part-num">02</span><h2>Architecture des pipelines</h2></div>
         <p class="part-kicker">
           Deux pipelines distincts composent un système RAG&nbsp;: l'indexation (hors ligne, une fois par
           document) et l'interrogation (à chaque question).
@@ -560,10 +559,10 @@
       </section>
 
       <!-- ============================================================ -->
-      <!-- 03 PRATIQUE -->
+      <!-- 03 WORKFLOW N8N -->
       <!-- ============================================================ -->
       <section class="part" id="pratique">
-        <div class="part-head"><span class="part-num">03</span><h2>Pratique — le pipeline réalisé</h2></div>
+        <div class="part-head"><span class="part-num">03</span><h2>Le workflow n8n en détail</h2></div>
         <p class="part-kicker">
           Lecture commentée du workflow n8n réellement construit, en deux moitiés&nbsp;: l'indexation des
           documents, et l'agent conversationnel qui les interroge.
@@ -829,7 +828,7 @@ spécifiques à l'entreprise ou à ses documents.</code></pre>
 }</code></pre>
         </div>
         <p style="font-size:13.5px; color:var(--ink-soft);">
-          Structure simplifiée, à but pédagogique — pour un partage d'équipe fidèle, préférez l'export
+          Structure simplifiée, à but pédagogique — pour sauvegarder ou exporter votre workflow complet, préférez l'export
           natif du canvas n8n (menu <span class="kbd">•••</span> → <span class="kbd">Download</span>).
         </p>
       </section>
@@ -906,7 +905,7 @@ spécifiques à l'entreprise ou à ses documents.</code></pre>
       </section>
 
       <footer>
-        Documentation interne — pipeline RAG, équipe DFS · Baamtu Technologique.
+        Documentation technique personnelle — Pipeline RAG &amp; Automatisation n8n.
       </footer>
 
     </div>
