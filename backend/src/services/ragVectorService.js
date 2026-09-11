@@ -245,33 +245,69 @@ export async function ingestDocument(filePath, storePath = DEFAULT_STORE_PATH) {
  * @returns {Promise<Array<{ content: string, metadata: object, similarity: number }>>}
  */
 export async function searchSimilarChunks(query, topK = 3, minScore = 0.50, storePath = DEFAULT_STORE_PATH) {
+  const storeFilename = path.basename(storePath);
+  console.log(`\n📚 ────────────── [RAG VECTOR SERVICE] ──────────────`);
+  console.log(`🔎 Question à rechercher : "${query}"`);
+  console.log(`📂 Base vectorielle : ${storeFilename} (Seuil: ${(minScore * 100).toFixed(0)}%, TopK: ${topK})`);
+
   let storeContent;
   try {
     storeContent = await fs.readFile(storePath, 'utf-8');
   } catch {
+    console.error(`❌ [RAG Vector] Fichier introuvable sur '${storePath}'`);
     throw new Error(`Base vectorielle introuvable sur '${storePath}'. Lancez d'abord l'ingestion !`);
   }
 
   const store = JSON.parse(storeContent);
   if (!store || store.length === 0) {
+    console.warn(`⚠️ [RAG Vector] La base vectorielle est vide !`);
+    console.log(`────────────────────────────────────────────────────\n`);
     return [];
   }
 
+  console.log(`📊 Chunks disponibles en mémoire : ${store.length} chunks`);
+
   // Calcul du vecteur pour la question
+  console.log(`🧠 Calcul du vecteur d'embedding via Gemini text-embedding-004...`);
+  const t0 = Date.now();
   const queryVec = await computeEmbedding(query, true);
+  console.log(`✓ Vecteur généré (768 dimensions) en ${Date.now() - t0}ms`);
 
   // Calcul des scores de similarité
-  const scored = store.map(item => ({
+  console.log(`📐 Calcul géométrique de la similarité cosinus sur les ${store.length} vecteurs...`);
+  const scored = store.map((item, idx) => ({
+    id: item.id || `chunk_${idx + 1}`,
     content: item.content,
-    metadata: item.metadata,
+    metadata: item.metadata || {},
     similarity: cosineSimilarity(queryVec, item.embedding)
   }));
 
-  // Tri décroissant et filtre
-  return scored
+  // Tri décroissant
+  const sorted = scored.sort((a, b) => b.similarity - a.similarity);
+  const bestScore = sorted.length > 0 ? (sorted[0].similarity * 100).toFixed(1) : 0;
+  console.log(`🎯 Meilleur score de similarité trouvé : ${bestScore}%`);
+
+  // Filtrage au seuil minimal
+  const matches = sorted
     .filter(item => item.similarity >= minScore)
-    .sort((a, b) => b.similarity - a.similarity)
     .slice(0, topK);
+
+  if (matches.length === 0) {
+    console.log(`⚠️ Aucun chunk n'atteint le seuil minimal de ${(minScore * 100).toFixed(0)}%.`);
+  } else {
+    console.log(`✅ ${matches.length} extrait(s) retenu(s) pour enrichir l'Agent :`);
+    matches.forEach((m, idx) => {
+      const src = m.metadata?.source || 'inconnue';
+      const pct = (m.similarity * 100).toFixed(1);
+      const preview = m.content.replace(/\s+/g, ' ').trim().slice(0, 110);
+      console.log(`   ${idx + 1}. [Score: ${pct}%] (Source: ${src})`);
+      console.log(`      ↳ "${preview}..."`);
+    });
+  }
+  console.log(`📤 Transmission des extraits bruts à l'Agent NoorQuiz`);
+  console.log(`────────────────────────────────────────────────────\n`);
+
+  return matches;
 }
 
 // ============================================================================

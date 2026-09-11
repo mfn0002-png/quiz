@@ -405,6 +405,7 @@
     <a href="#code-complet" class="nav-pill">8. Script Node.js Clé en Main</a>
     <a href="#mcp-vs-rag" class="nav-pill">9. RAG vs MCP</a>
     <a href="#duplication" class="nav-pill">10. Synergie RAG & Agent</a>
+    <a href="#crud-lifecycle" class="nav-pill">11. RAG en Production (CRUD Drive &amp; Supabase)</a>
   </nav>
 
   <!-- SECTION 1 : FONDAMENTAUX -->
@@ -414,7 +415,7 @@
         <div class="section-number">01</div>
         <div>
           <div class="section-title">Fondamentaux &amp; Problématique du RAG (Retrieval-Augmented Generation)</div>
-          <div class="section-desc">Pourquoi et comment transformer un LLM généraliste en expert de vos documents</div>
+          <div class="section-desc">Pourquoi et comment transformer un LLM généraliste en expert de nos documents</div>
         </div>
       </div>
       <div class="section-body">
@@ -435,7 +436,7 @@
             <div class="info-card-icon">📅</div>
             <div class="info-card-title">Date de Coupure (Cut-off)</div>
             <div class="info-card-desc">
-              Le modèle ne connaît ni vos documents internes récents, ni les derniers textes canoniques ajoutés à votre base.
+              Le modèle ne connaît ni nos documents internes récents, ni les derniers textes canoniques ajoutés à notre base.
             </div>
           </div>
           <div class="info-card">
@@ -991,13 +992,13 @@ ${userQuestion}`</span>;
         <div class="section-number green">08</div>
         <div>
           <div class="section-title">Pipeline Complet Node.js Clé en Main (ragPipeline.js)</div>
-          <div class="section-desc">Un script unique, autonome et modulaire prêt pour votre backend NoorQuiz</div>
+          <div class="section-desc">Un script unique, autonome et modulaire prêt pour notre backend NoorQuiz</div>
         </div>
       </div>
       <div class="section-body">
         <p>
           Voici le fichier complet qui orchestre l'ingestion, le stockage vectoriel local et le requêtage.
-          Vous pouvez le placer directement dans votre dossier <code>backend/src/services/ragPipeline.js</code> :
+          On peut le placer directement dans notre dossier <code>backend/src/services/ragPipeline.js</code> :
         </p>
 
         <div class="code-box">
@@ -1117,7 +1118,7 @@ dotenv.config();
         <div class="section-number purple">09</div>
         <div>
           <div class="section-title">Synergie d'Architecture : RAG vs MCP dans NoorQuiz</div>
-          <div class="section-desc">Comment ces deux technologies se complètent parfaitement dans votre plateforme</div>
+          <div class="section-desc">Comment ces deux technologies se complètent parfaitement dans notre plateforme</div>
         </div>
       </div>
       <div class="section-body">
@@ -1220,62 +1221,71 @@ dotenv.config();
           </div>
         </div>
 
+        <p style="margin-top: 1rem; color: #94a3b8; font-size: 0.95rem;">
+          <strong style="color: #38bdf8;">Précision architecturale importante :</strong> Notre système repose <strong>exclusivement sur une architecture à LLM unique</strong> (la base vectorielle agit comme un simple outil d'extraction). La cascade ci-dessous illustre l'erreur de conception classique qu'on évite :
+        </p>
+
         <!-- VISUAL COMPARISON CARDS -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-          <!-- CARD A : APPROCHE NAIVE -->
+          <!-- CARD A : PIÈGE ARCHITECTURAL -->
           <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 16px; padding: 1.6rem; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
-              <span style="font-size: 1.4rem;">❌</span>
-              <h4 style="color: #ef4444; margin: 0; font-size: 1.05rem; font-weight: 700;">Approche Naïve : Pipeline RAG Isolé (2 LLMs)</h4>
+              <span style="font-size: 1.4rem;">⚠️</span>
+              <h4 style="color: #f87171; margin: 0; font-size: 1.05rem; font-weight: 700;">Architecture en Cascade (Deux LLMs)</h4>
             </div>
             <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1.2rem; line-height: 1.6;">
-              Le RAG génère une réponse fermée avec son propre LLM, puis l'Agent réinjecte cette réponse dans un second LLM pour la reformuler.
+              Erreur classique où le RAG possède son propre LLM qui rédige une réponse fermée, puis un Agent réinjecte cette réponse dans un second LLM pour la reformuler.
             </p>
             <div style="background: #080b12; border-radius: 12px; padding: 1.1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.8; color: #94a3b8; border: 1px solid rgba(239,68,68,0.25);">
-              Utilisateur ➔ <span style="color:#ef4444; font-weight:bold;">LLM 1 (Agent)</span><br>
+              Utilisateur ➔ <span style="color:#f87171; font-weight:bold;">LLM 1 (Agent)</span><br>
               &nbsp;&nbsp;➔ Requête RAG<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;➔ <span style="color:#ef4444; font-weight:bold;">LLM 2 (RAG Génératif)</span> : Rédige réponse<br>
-              &nbsp;&nbsp;➔ Retour texte à l'Agent<br>
-              &nbsp;&nbsp;➔ <span style="color:#ef4444; font-weight:bold;">LLM 1 (Agent)</span> : Reformule la réponse<br>
-              <span style="color:#f87171; font-weight:bold;">⚠️ Bilan : 2 LLMs génératifs, Coût x2, Latence x2, Duplication !</span>
+              &nbsp;&nbsp;&nbsp;&nbsp;➔ <span style="color:#f87171; font-weight:bold;">LLM 2 (RAG Génératif)</span> : Rédige une réponse intermédiaire<br>
+              &nbsp;&nbsp;➔ Retour du texte rédigé à l'Agent<br>
+              &nbsp;&nbsp;➔ <span style="color:#f87171; font-weight:bold;">LLM 1 (Agent)</span> : Reformule la réponse finale<br>
+              <span style="color:#f87171; font-weight:bold;">⚖️ Bilan : 2 étapes de génération textuelle, latence doublée, surconsommation de tokens.</span>
             </div>
           </div>
 
-          <!-- CARD B : NOTRE APPROCHE NOORQUIZ -->
+          <!-- CARD B : ARCHITECTURE DÉCOUPLÉE -->
           <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.35); border-radius: 16px; padding: 1.6rem; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
-              <span style="font-size: 1.4rem;">✅</span>
-              <h4 style="color: #22c55e; margin: 0; font-size: 1.05rem; font-weight: 700;">Notre Approche : RAG comme Outil (1 Seul LLM)</h4>
+              <span style="font-size: 1.4rem;">⚡</span>
+              <h4 style="color: #4ade80; margin: 0; font-size: 1.05rem; font-weight: 700;">Architecture Découplée (LLM Unique)</h4>
             </div>
             <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1.2rem; line-height: 1.6;">
-              Le RAG est un simple indexeur vectoriel sans génération (recherche pure). L'Agent NoorQuiz est l'unique cerveau de synthèse.
+              Le RAG est un simple indexeur vectoriel sans génération (recherche pure de chunks). L'Agent est l'unique cerveau de synthèse.
             </p>
             <div style="background: #080b12; border-radius: 12px; padding: 1.1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.8; color: #94a3b8; border: 1px solid rgba(34,197,94,0.25);">
-              Utilisateur ➔ <span style="color:#22c55e; font-weight:bold;">LLM Unique (Agent NoorQuiz)</span><br>
+              Utilisateur ➔ <span style="color:#4ade80; font-weight:bold;">LLM Unique (Agent)</span><br>
               &nbsp;&nbsp;➔ Appel Outil <code>search_knowledge_base</code><br>
-              &nbsp;&nbsp;&nbsp;&nbsp;➔ Calcul similarité cosinus (<strong style="color:#38bdf8;">0 LLM</strong>)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;➔ Calcul similarité cosinus (<strong style="color:#38bdf8;">Recherche pure, 0 LLM</strong>)<br>
               &nbsp;&nbsp;&nbsp;&nbsp;➔ Renvoie 3 extraits bruts (<strong style="color:#38bdf8;">0 LLM</strong>)<br>
-              &nbsp;&nbsp;➔ <span style="color:#22c55e; font-weight:bold;">LLM Unique</span> : Synthèse certifiée finale<br>
-              <span style="color:#4ade80; font-weight:bold;">✨ Bilan : 1 Seul LLM, 0 Duplication, Vitesse & Précision maximales !</span>
+              &nbsp;&nbsp;➔ <span style="color:#4ade80; font-weight:bold;">LLM Unique</span> : Synthèse certifiée finale<br>
+              <span style="color:#4ade80; font-weight:bold;">✨ Bilan : 1 seule génération textuelle, zéro duplication, vitesse et précision maximales !</span>
             </div>
           </div>
         </div>
 
-        <h4 style="margin: 2rem 0 1rem; color: #fff;">Comparatif Approfondi des Deux Approches :</h4>
+        <h4 style="margin: 2rem 0 1rem; color: #fff;">Comparatif Technique des Deux Architectures :</h4>
 
         <table class="compare-table">
           <thead>
             <tr>
               <th>Critère d'Évaluation</th>
-              <th>❌ Approche Naïve : Pipeline RAG Isolé</th>
-              <th>✅ Notre Approche : RAG comme Outil de l'Agent</th>
+              <th>Architecture en Cascade (Deux LLMs)</th>
+              <th>Architecture Découplée (LLM Unique)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Nombre de LLMs actifs</strong></td>
-              <td>2 LLMs (1 dans le RAG qui formule une réponse figée + 1 Agent qui la reformule).</td>
-              <td><strong>1 Seul LLM</strong> (L'Agent utilise le RAG comme un simple moteur de recherche documentaire).</td>
+              <td><strong>Rôle du composant RAG</strong></td>
+              <td>Génère une réponse textuelle complète avec son propre modèle.</td>
+              <td><strong>Moteur de recherche pure</strong> : renvoie uniquement les extraits bruts.</td>
+            </tr>
+            <tr>
+              <td><strong>Nombre d'étapes de génération</strong></td>
+              <td>2 étapes successives (RAG puis Agent).</td>
+              <td><strong>1 seule étape</strong> (Synthèse directe par l'Agent).</td>
             </tr>
             <tr>
               <td><strong>Coût et Latence API</strong></td>
@@ -1284,26 +1294,172 @@ dotenv.config();
             </tr>
             <tr>
               <td><strong>Gestion de l'Historique</strong></td>
-              <td>Le RAG isolé oublie la conversation précédente.</td>
-              <td>L'Agent intègre la mémoire Redis et le contexte global du joueur.</td>
+              <td>Le RAG intermédiaire ne prend pas en compte la mémoire de session.</td>
+              <td>L'Agent intègre simultanément la mémoire Redis et les extraits bruts.</td>
             </tr>
             <tr>
               <td><strong>Pertinence de l'Appel</strong></td>
-              <td>Le RAG s'exécute bêtement même pour un simple "Bonjour" ou "Merci".</td>
+              <td>Le RAG s'exécute même pour une simple salutation.</td>
               <td>L'Agent décide intelligemment <em>si</em> et <em>quand</em> interroger la base documentaire.</td>
             </tr>
             <tr>
               <td><strong>Actions Multiples</strong></td>
-              <td>Incapable de proposer un quiz ou de calculer une zakat après la réponse.</td>
-              <td>L'Agent peut chaîner RAG + Calcul Zakat + Proposition de Quiz interactif.</td>
+              <td>Limité à la seule réponse textuelle prédéfinie.</td>
+              <td>L'Agent peut chaîner la recherche documentaire avec d'autres outils (ex: calcul, quiz).</td>
             </tr>
           </tbody>
         </table>
 
         <div class="callout success">
           <div class="callout-title">💡 La Métaphore de l'Avocat et de sa Bibliothèque :</div>
-          Considérez votre <strong>Agent</strong> comme un avocat expérimenté et le <strong>RAG</strong> comme sa bibliothèque juridique.
-          L'avocat ne récite pas tout de mémoire (sinon il risque d'halluciner). Quand vous lui posez une question pointue sur la Zakat, il se lève, consulte précisément les 3 pages de référence dans sa bibliothèque (RAG), puis revient vers vous pour vous expliquer la règle avec bienveillance et clarté.
+          On peut considérer notre <strong>Agent</strong> comme un avocat expérimenté et le <strong>RAG</strong> comme sa bibliothèque juridique.
+          L'avocat ne récite pas tout de mémoire (sinon il risque d'halluciner). Quand on lui pose une question pointue sur la Zakat, il se lève, consulte précisément les 3 pages de référence dans sa bibliothèque (RAG), puis revient pour nous expliquer la règle avec bienveillance et clarté.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 11 : LE RAG EN PRODUCTION — SYNCHRONISATION TEMPS RÉEL (CRUD GOOGLE DRIVE & SUPABASE) -->
+  <div class="section-wrap" id="crud-lifecycle">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">11</div>
+        <div>
+          <div class="section-title">Le RAG en Production : Synchronisation Temps Réel (CRUD Google Drive &amp; Supabase)</div>
+          <div class="section-desc">Automatiser l'ajout, la mise à jour sans doublon et la purge des documents supprimés en pur Node.js</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <p>
+          Dans un environnement réel, nos documents ne sont jamais figés : on ajoute de nouvelles procédures,
+          on corrige des textes ou on archive d'anciens PDF sur <strong>Google Drive</strong>.
+          Si notre pipeline RAG ne gère pas ce cycle de vie en temps réel, on fait face à trois fléaux majeurs :
+        </p>
+
+        <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr); margin: 1.5rem 0;">
+          <div class="card" style="border-top: 3px solid #ef4444;">
+            <div class="card-title">1. Pollution &amp; Doublons</div>
+            <p class="card-desc">Chaque ré-indexation sans purge préalable accumule les doublons, diluant la précision des recherches par similarité cosinus.</p>
+          </div>
+          <div class="card" style="border-top: 3px solid #f59e0b;">
+            <div class="card-title">2. Réponses Contradictoires</div>
+            <p class="card-desc">Si une règle change, le modèle récupère à la fois l'ancienne et la nouvelle version, et donne une réponse incohérente.</p>
+          </div>
+          <div class="card" style="border-top: 3px solid #6366f1;">
+            <div class="card-title">3. Fuite de Données Supprimées</div>
+            <p class="card-desc">Si un document est supprimé de Drive mais reste dans Supabase, l'Agent IA continue de le citer à tort.</p>
+          </div>
+        </div>
+
+        <h3>La Logique des 3 Opérations CRUD en Backend</h3>
+        <p>
+          Pour maintenir notre base vectorielle parfaitement fidèle à Google Drive, on implémente trois règles simples :
+        </p>
+
+        <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr); margin: 1.5rem 0;">
+          <div class="card">
+            <div class="card-title">🟦 Ajout (fileCreated)</div>
+            <p class="card-desc">On télécharge le nouveau fichier, on le découpe en chunks, on calcule les embeddings et on insère les lignes dans Supabase avec le <code>fileId</code>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🟩 Mise à jour (fileUpdated)</div>
+            <p class="card-desc"><strong>Règle d'or :</strong> On purge d'abord tous les anciens morceaux ayant ce <code>fileId</code>, puis on ré-indexe la nouvelle version. Zéro doublon garanti.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🟥 Suppression (fileDeleted)</div>
+            <p class="card-desc">On supprime immédiatement toutes les lignes associées à ce <code>fileId</code> dans Supabase. Le modèle cesse de le citer instantanément.</p>
+          </div>
+        </div>
+
+        <h3>La Clé de Voûte : Le <code>fileId</code> Unique dans Supabase</h3>
+        <p>
+          Quand un document volumineux (par exemple un PDF de 20 pages) est injecté dans notre base vectorielle, il est découpé en plusieurs dizaines de petits morceaux (chunks).
+          Pour ne jamais perdre le lien avec le document source, on attache l'identifiant unique Google Drive (<code>fileId</code>) dans la colonne des métadonnées de <strong>chaque morceau</strong> dans Supabase.
+        </p>
+        <p>
+          Grâce à cette clé commune, notre backend n'a jamais besoin de scanner ou recalculer toute la base : il sait instantanément retrouver, remplacer ou supprimer d'un seul coup l'intégralité des morceaux appartenant à un même fichier.
+        </p>
+
+        <h3>Comment Ça Se Passe Concrètement ? (Les 3 Scénarios du Cycle de Vie)</h3>
+        <p>
+          Voici le déroulement précis pour chacun des trois événements détectés sur notre dossier Google Drive :
+        </p>
+
+        <div class="steps-flow" style="margin: 1.5rem 0;">
+          <!-- Scénario A : Ajout -->
+          <div class="step-item">
+            <div class="step-num" style="background: var(--accent-rag); color: #fff;">1</div>
+            <div class="step-content">
+              <div class="step-label" style="color: var(--accent-rag);">Scénario A : Nouveau document déposé (Création)</div>
+              <div class="step-text">
+                <ol style="margin: 0.5rem 0 0 1.25rem; line-height: 1.8;">
+                  <li><strong>Signalement :</strong> Google Drive informe notre application qu'un nouveau fichier vient d'être ajouté dans le dossier partagé.</li>
+                  <li><strong>Extraction &amp; Découpage :</strong> Le serveur télécharge le contenu texte et le fractionne en petits blocs réguliers (chunks d'environ 500 caractères).</li>
+                  <li><strong>Vectorisation IA :</strong> Chaque bloc est envoyé au modèle d'embedding (Gemini <code>text-embedding-004</code>) pour obtenir sa signature mathématique à 768 dimensions.</li>
+                  <li><strong>Enregistrement dans Supabase :</strong> On insère tous les blocs dans la table vectorielle avec leur texte, leur vecteur et le <code>fileId</code> associé. Le document devient immédiatement disponible pour répondre aux questions.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scénario B : Modification -->
+          <div class="step-item">
+            <div class="step-num" style="background: #10b981; color: #fff;">2</div>
+            <div class="step-content">
+              <div class="step-label" style="color: #10b981;">Scénario B : Document modifié ou mis à jour — La Règle d'Or</div>
+              <div class="step-text">
+                <p style="margin-bottom: 0.5rem;">C'est l'étape charnière pour éviter toute réponse contradictoire ou doublon :</p>
+                <ol style="margin: 0.5rem 0 0 1.25rem; line-height: 1.8;">
+                  <li><strong>Étape 1 — Purge Préventive Immédiate :</strong> Dès que la modification est signalée, notre serveur supprime automatiquement dans Supabase <em>tous les anciens blocs</em> associés à ce <code>fileId</code>. Tous les résidus de l'ancienne version sont effacés d'un coup.</li>
+                  <li><strong>Étape 2 — Ré-indexation Neuve :</strong> Le serveur traite ensuite la nouvelle version du fichier comme un nouvel ajout (téléchargement, découpage, calcul des embeddings et réinsertion).</li>
+                  <li><strong>Bilan :</strong> Zéro doublon dans la base vectorielle, calcul de similarité toujours fiable et l'IA ne cite plus que la version la plus récente.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scénario C : Suppression -->
+          <div class="step-item">
+            <div class="step-num" style="background: #ef4444; color: #fff;">3</div>
+            <div class="step-content">
+              <div class="step-label" style="color: #ef4444;">Scénario C : Document supprimé ou mis à la corbeille</div>
+              <div class="step-text">
+                <ol style="margin: 0.5rem 0 0 1.25rem; line-height: 1.8;">
+                  <li><strong>Notification de suppression :</strong> Google Drive signale que le fichier ayant ce <code>fileId</code> a été supprimé ou archivé.</li>
+                  <li><strong>Nettoyage atomique :</strong> Notre serveur exécute instantanément la suppression de tous les enregistrements portant ce <code>fileId</code> dans Supabase.</li>
+                  <li><strong>Protection contre les données fantômes :</strong> L'Agent IA cesse instantanément de citer ce document ou de formuler des réponses sur la base de consignes abrogées.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Comment Notre Serveur Détecte les Événements Google Drive ?</h3>
+        <p>
+          Pour être averti des changements sur Google Drive sans intervention humaine, on peut choisir entre deux mécanismes selon notre environnement :
+        </p>
+
+        <div class="cards-grid" style="grid-template-columns: 1fr 1fr; margin: 1.5rem 0;">
+          <div class="card" style="border-left: 3px solid var(--accent-rag);">
+            <div class="card-title">Option A : Le Webhook Google Drive (Temps Réel)</div>
+            <p class="card-desc" style="line-height: 1.7;">
+              <strong>Le principe :</strong> On enregistre l'URL de notre API auprès de Google Drive. Dès qu'un fichier est créé, modifié ou supprimé, Google appelle directement notre serveur via une requête HTTP instantanée.<br><br>
+              <strong>Avantage :</strong> Traitement en temps réel (moins de 2 secondes). Idéal pour un serveur en production disposant d'un nom de domaine ou d'une IP publique.
+            </p>
+          </div>
+
+          <div class="card" style="border-left: 3px solid #f59e0b;">
+            <div class="card-title">Option B : Le Cron Job / Polling (Intervalles Réguliers)</div>
+            <p class="card-desc" style="line-height: 1.7;">
+              <strong>Le principe :</strong> Notre serveur interroge Google Drive à intervalles réguliers (par exemple toutes les 10 minutes) en demandant simplement : <em>« Quels fichiers ont changé depuis ma dernière vérification ? »</em>.<br><br>
+              <strong>Avantage :</strong> Fonctionne partout, même en développement local, sans avoir besoin d'exposer son poste sur Internet ou de configurer des certificats SSL.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">🎯 Synthèse de notre Architecture :</div>
+          En associant le <code>fileId</code> de Google Drive aux métadonnées vectorielles de Supabase et en appliquant rigoureusement la <strong>purge préventive avant toute ré-indexation</strong>, notre base de connaissances reste en parfaite cohérence avec nos documents réels, éliminant tout risque de pollution, de doublon ou d'hallucination.
         </div>
       </div>
     </div>
