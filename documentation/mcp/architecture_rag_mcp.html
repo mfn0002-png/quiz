@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Agentique MCP — Quiz & Assistant</title>
+  <meta name="description" content="Comprendre l'architecture MCP (Model Context Protocol) pour les agents IA — fonctionnement, cycle de vie, outils et intégration Gemini.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --bg2: #0f1117;
+      --card: #141726;
+      --card2: #1a1d2e;
+      --border: #242740;
+      --border2: #2e3150;
+      --text: #e4e6f0;
+      --muted: #7a7f9a;
+      --muted2: #a0a5be;
+      --accent-mcp: #2ecc71;
+      --accent-gemini: #a78bfa;
+      --accent-agent: #f87171;
+      --accent-rag: #4a9eff;
+      --accent-orange: #f39c12;
+      --accent-cyan: #22d3ee;
+      --accent-pink: #f472b6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(167,139,250,0.12) 0%, rgba(46,204,113,0.06) 50%, transparent 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-gemini);
+      background: rgba(167,139,250,0.08);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--accent-gemini) 0%, var(--accent-mcp) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+    .subtitle {
+      color: var(--muted2);
+      font-size: 1.05rem;
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* ===== NAV PILLS ===== */
+    .nav-pills {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0 2rem 3rem;
+    }
+    .nav-pill {
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: var(--card);
+      color: var(--muted2);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-pill:hover {
+      border-color: var(--accent-gemini);
+      color: var(--accent-gemini);
+      background: rgba(167,139,250,0.06);
+    }
+
+    /* ===== LEGEND ===== */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0 2rem 2.5rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--muted2);
+    }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ===== SECTION WRAPPER ===== */
+    .section-wrap {
+      max-width: 1100px;
+      margin: 0 auto 2.5rem;
+      padding: 0 1.5rem;
+      animation: fadeUp 0.5s ease both;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+      transition: box-shadow 0.3s;
+    }
+    .section:hover { box-shadow: 0 8px 48px rgba(0,0,0,0.5); }
+    .section-header {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-number {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+      color: #fff; flex-shrink: 0;
+    }
+    .section-title { font-size: 1.1rem; font-weight: 700; }
+    .section-desc { font-size: 0.83rem; color: var(--muted); margin-top: 0.2rem; }
+    .section-body { padding: 2rem 1.75rem; }
+
+    /* ===== MERMAID ===== */
+    .mermaid-container {
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .mermaid { width: 100%; }
+
+    /* ===== INFO CARDS ===== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .info-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .info-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+    .info-card-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+    .info-card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .info-card-desc { font-size: 0.83rem; color: var(--muted2); line-height: 1.6; }
+
+    /* ===== STEP FLOW ===== */
+    .step-flow { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; gap: 1.25rem; position: relative; }
+    .step-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 19px; top: 42px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--border2), transparent);
+    }
+    .step-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800;
+      flex-shrink: 0; position: relative; z-index: 1;
+      background: var(--card2);
+    }
+    .step-content { padding: 0.5rem 0 1.75rem; }
+    .step-label { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .step-text { font-size: 0.83rem; color: var(--muted2); line-height: 1.65; }
+
+    /* ===== CODE BLOCK ===== */
+    .code-block {
+      background: #090b12;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .kw  { color: #a78bfa; }
+    .str { color: #86efac; }
+    .num { color: #f9a8d4; }
+    .key { color: #67e8f9; }
+    .cmt { color: #4b5563; font-style: italic; }
+
+    /* ===== TABS ===== */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.83rem; font-weight: 600;
+      color: var(--muted);
+      border: none; background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--accent-gemini); border-bottom-color: var(--accent-gemini); }
+    .tab-btn:hover:not(.active) { color: var(--muted2); }
+    .tab-panel { display: none; padding: 1.75rem; }
+    .tab-panel.active { display: block; }
+
+    /* ===== COMPARE TABLE ===== */
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .compare-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: var(--bg2);
+      color: var(--muted2);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .compare-table td { padding: 0.75rem 1rem; border-top: 1px solid var(--border); vertical-align: top; }
+    .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .tag-green  { background: rgba(46,204,113,0.12); color: #2ecc71; }
+    .tag-blue   { background: rgba(74,158,255,0.12); color: #4a9eff; }
+    .tag-purple { background: rgba(167,139,250,0.12); color: #a78bfa; }
+
+    /* ===== CALLOUT ===== */
+    .callout {
+      display: flex; gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px; border: 1px solid;
+      margin: 1.25rem 0;
+    }
+    .callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .callout-text { font-size: 0.85rem; line-height: 1.6; }
+    .callout-text strong { display: block; margin-bottom: 0.25rem; font-weight: 700; }
+    .callout-info { background: rgba(74,158,255,0.06); border-color: rgba(74,158,255,0.25); }
+    .callout-info .callout-text strong { color: var(--accent-rag); }
+    .callout-tip  { background: rgba(46,204,113,0.06); border-color: rgba(46,204,113,0.25); }
+    .callout-tip  .callout-text strong { color: var(--accent-mcp); }
+    .callout-warn { background: rgba(243,156,18,0.06); border-color: rgba(243,156,18,0.25); }
+    .callout-warn .callout-text strong { color: var(--accent-orange); }
+
+    /* ===== PILL ===== */
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .pill { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; border: 1px solid; }
+    .pill-green  { color: #2ecc71; border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.06); }
+    .pill-blue   { color: #4a9eff; border-color: rgba(74,158,255,0.3); background: rgba(74,158,255,0.06); }
+    .pill-purple { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.06); }
+    .pill-cyan   { color: #22d3ee; border-color: rgba(34,211,238,0.3); background: rgba(34,211,238,0.06); }
+
+    /* ===== KEY POINT ===== */
+    .key-point {
+      max-width: 1100px;
+      margin: 0 auto 2.5rem;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, rgba(46,204,113,0.07), rgba(167,139,250,0.07));
+      border: 1px solid rgba(46,204,113,0.2);
+      border-radius: 16px;
+      text-align: center;
+    }
+    .key-point p { font-size: 1.05rem; line-height: 1.7; }
+    .key-point strong { color: var(--accent-mcp); }
+
+    /* ===== DIVIDER ===== */
+    .section-divider {
+      max-width: 1100px;
+      margin: 0 auto 2.5rem;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .section-divider hr { flex: 1; border: none; border-top: 1px solid var(--border); }
+    .section-divider span {
+      font-size: 0.78rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+    }
+
+    /* ===== ANIM ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .section-body, .tab-panel { padding: 1.25rem 1rem; }
+      .mermaid-container { padding: 1rem; }
+      .compare-table { font-size: 0.78rem; }
+      .compare-table th, .compare-table td { padding: 0.6rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">🔌 Model Context Protocol · Architecture Agentique</div>
+    <h1>Architecture Agentique Pure<br>Gemini + MCP</h1>
+    <p class="subtitle">
+      Comment le <strong>Model Context Protocol</strong> transforme un LLM en agent capable d'agir dans le monde réel — cycle de vie complet, outils, transports et intégration Gemini.
+    </p>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav-pills">
+    <a class="nav-pill" href="#what-is-mcp">C'est quoi MCP ?</a>
+    <a class="nav-pill" href="#how-it-works">Comment ça marche</a>
+    <a class="nav-pill" href="#primitives">Outils & Ressources</a>
+    <a class="nav-pill" href="#transports">Transports</a>
+    <a class="nav-pill" href="#lifecycle">Cycle de vie</a>
+    <a class="nav-pill" href="#assistant-agent">Assistant Agent</a>
+    <a class="nav-pill" href="#quiz-agent">Quiz Agent</a>
+    <a class="nav-pill" href="#vs-table">MCP vs RAG</a>
+  </nav>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-agent)"></div> Agent</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-gemini)"></div> Gemini</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-mcp)"></div> MCP Server</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange)"></div> Services Métier</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-rag)"></div> RAG</div>
+  </div>
+
+  <!-- ====================================================
+       0. QU'EST-CE QUE MCP ?
+  ===================================================== -->
+  <div id="what-is-mcp" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:linear-gradient(135deg,#a78bfa,#2ecc71)">0</div>
+        <div>
+          <div class="section-title">🔌 Qu'est-ce que le Model Context Protocol (MCP) ?</div>
+          <div class="section-desc">Le standard ouvert qui connecte les LLMs aux outils et données du monde réel</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="callout callout-info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-text">
+            <strong>Définition officielle (Anthropic, 2024)</strong>
+            MCP est un protocole ouvert standardisé qui définit comment une application hôte (l'agent) peut découvrir et appeler des <em>outils</em>, accéder à des <em>ressources</em> et utiliser des <em>prompts</em> fournis par un <em>serveur MCP</em> — sans rien coder en dur.
+          </div>
+        </div>
+        <div class="info-grid" style="margin-top:1.25rem">
+          <div class="info-card">
+            <div class="info-card-icon">🧩</div>
+            <div class="info-card-title">Protocole standardisé</div>
+            <div class="info-card-desc">Comme HTTP pour le web, MCP définit un contrat unique entre agents et outils. Un serveur MCP peut se connecter à n'importe quel client compatible (Gemini, Claude, GPT…).</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🔍</div>
+            <div class="info-card-title">Découverte dynamique</div>
+            <div class="info-card-desc">L'agent demande au serveur la liste des outils disponibles (<code>tools/list</code>) au démarrage. Le LLM peut alors choisir intelligemment quel outil appeler.</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🔒</div>
+            <div class="info-card-title">Isolation & sécurité</div>
+            <div class="info-card-desc">Le serveur MCP tourne en processus séparé. Le LLM ne touche jamais directement les APIs — il passe toujours par le serveur, ce qui limite la surface d'attaque.</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🌐</div>
+            <div class="info-card-title">Multi-transport</div>
+            <div class="info-card-desc">MCP supporte stdio (local), HTTP+SSE (réseau) et WebSocket. On peut déployer le serveur localement ou en cloud selon les besoins.</div>
+          </div>
+        </div>
+        <div class="callout callout-tip" style="margin-top:1.25rem">
+          <div class="callout-icon">🎯</div>
+          <div class="callout-text">
+            <strong>Analogie clé</strong>
+            MCP est au LLM ce que le <strong>driver JDBC</strong> est à une application Java : une couche d'abstraction standardisée qui permet de se connecter à n'importe quelle source sans changer le code applicatif.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       1. COMMENT ÇA MARCHE — VUE GLOBALE
+  ===================================================== -->
+  <div id="how-it-works" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-gemini)">1</div>
+        <div>
+          <div class="section-title">⚙️ Comment fonctionne MCP — Vue d'ensemble</div>
+          <div class="section-desc">Le flux complet : de la question utilisateur à l'action réelle, en 6 étapes</div>
+        </div>
+      </div>
+      <div class="mermaid-container">
+        <pre class="mermaid">
+flowchart TD
+    U([👤 Utilisateur]) --> APP
+
+    subgraph HOST ["🖥️ Application Hôte (Agent)"]
+        APP[Client MCP\nassistantAgent.js]
+        APP <-->|JSON-RPC 2.0| GEMINI
+        GEMINI["🧠 Gemini\n(raisonnement + sélection d'outil)"]
+    end
+
+    subgraph SERVER ["🔌 Serveur MCP (islamicMcpServer)"]
+        direction TB
+        ROUTER[Routeur d'outils]
+        T1["🤲 search_duas"]
+        T2["📖 search_quran"]
+        T3["📚 search_hadiths"]
+        T4["💰 calculate_zakat"]
+        T5["🕌 prayer_times"]
+        ROUTER --> T1 & T2 & T3 & T4 & T5
+    end
+
+    subgraph DATA ["💾 Sources de Données"]
+        D1[API Hisn al-Muslim]
+        D2[Base Coran]
+        D3[Base Hadiths]
+        D4[API Zakat]
+        D5[API Prières]
+    end
+
+    APP <-->|MCP Protocol stdio / HTTP+SSE| SERVER
+    T1 --> D1
+    T2 --> D2
+    T3 --> D3
+    T4 --> D4
+    T5 --> D5
+    APP --> U
+
+    style HOST fill:#1a1d2e,stroke:#a78bfa,color:#e4e6f0
+    style SERVER fill:#1a2e1f,stroke:#2ecc71,color:#e4e6f0
+    style DATA fill:#1a2040,stroke:#4a9eff,color:#e4e6f0
+        </pre>
+      </div>
+      <div class="section-body">
+        <div class="step-flow">
+          <div class="step-item">
+            <div class="step-num" style="border-color:#a78bfa;color:#a78bfa">1</div>
+            <div class="step-content">
+              <div class="step-label">Initialisation — Poignée de main (Handshake)</div>
+              <div class="step-text">Au démarrage, le client envoie un message <code>initialize</code> au serveur. Le serveur répond avec sa version, ses capacités et la liste complète des outils. Cette <em>découverte dynamique</em> est essentielle : le LLM apprend ce qu'il peut faire <strong>sans que le code soit modifié</strong>.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="border-color:#f87171;color:#f87171">2</div>
+            <div class="step-content">
+              <div class="step-label">Injection des outils dans le contexte Gemini</div>
+              <div class="step-text">Le client injecte les définitions JSON des outils MCP dans le contexte envoyé à Gemini (via <code>tools: [...]</code>). Chaque outil a un <code>name</code>, une <code>description</code> en langage naturel et un <code>inputSchema</code> JSON Schema.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="border-color:#2ecc71;color:#2ecc71">3</div>
+            <div class="step-content">
+              <div class="step-label">Raisonnement et sélection d'outil (Gemini)</div>
+              <div class="step-text">Gemini analyse la question et <strong>choisit de manière autonome</strong> quel outil appeler et avec quels arguments. Il renvoie un <code>function_call</code> — pas encore une réponse texte. C'est le cœur du comportement agentique.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="border-color:#4a9eff;color:#4a9eff">4</div>
+            <div class="step-content">
+              <div class="step-label">Exécution via le Serveur MCP</div>
+              <div class="step-text">Le client reçoit le <code>function_call</code> et appelle le serveur MCP via <code>tools/call</code> en JSON-RPC 2.0. Le serveur route vers le bon handler, exécute la logique métier (appel API, requête BDD…) et retourne le résultat structuré.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="border-color:#f39c12;color:#f39c12">5</div>
+            <div class="step-content">
+              <div class="step-label">Synthèse de la réponse finale</div>
+              <div class="step-text">Le client renvoie le résultat de l'outil à Gemini en tant que <code>function_response</code>. Gemini synthétise alors une réponse en langage naturel enrichie des données réelles.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="border-color:#22d3ee;color:#22d3ee">6</div>
+            <div class="step-content">
+              <div class="step-label">Réponse à l'utilisateur</div>
+              <div class="step-text">L'agent retourne la réponse finale, enrichie de données authentiques, à l'interface. Tout ce cycle se déroule en quelques centaines de millisecondes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       2. LES 3 PRIMITIVES MCP
+  ===================================================== -->
+  <div id="primitives" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-mcp)">2</div>
+        <div>
+          <div class="section-title">🔧 Les 3 primitives MCP : Outils, Ressources & Prompts</div>
+          <div class="section-desc">Ce qu'un serveur MCP peut exposer à l'agent</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('prim','tools',this)">🔧 Outils (Tools)</button>
+        <button class="tab-btn" onclick="switchTab('prim','resources',this)">📄 Ressources</button>
+        <button class="tab-btn" onclick="switchTab('prim','prompts',this)">💬 Prompts</button>
+        <button class="tab-btn" onclick="switchTab('prim','schema',this)">📐 JSON Schema</button>
+      </div>
+      <div id="prim-tools" class="tab-panel active">
+        <p style="margin-bottom:1rem;color:var(--muted2);font-size:0.88rem;">Les <strong>Tools</strong> sont des fonctions exécutables côté serveur. L'agent peut les invoquer pour <em>faire des choses</em> — appels API, calculs, écriture en base, etc.</p>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--accent-mcp)">search_duas</div>
+            <div class="info-card-desc">Recherche des invocations dans Hisn al-Muslim par thème. Retourne texte arabe, phonétique et traduction.</div>
+            <div class="pill-row"><span class="pill pill-green">GET</span><span class="pill pill-blue">lecture seule</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--accent-mcp)">search_quran</div>
+            <div class="info-card-desc">Recherche de versets par mot-clé, sourate ou thème. Retourne verset, référence et tafsir simplifié.</div>
+            <div class="pill-row"><span class="pill pill-green">GET</span><span class="pill pill-blue">lecture seule</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--accent-mcp)">calculate_zakat</div>
+            <div class="info-card-desc">Calcule la Zakat selon les données financières fournies. Retourne le montant et la méthode de calcul.</div>
+            <div class="pill-row"><span class="pill pill-purple">COMPUTE</span><span class="pill pill-cyan">avec effet</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--accent-mcp)">prayer_times</div>
+            <div class="info-card-desc">Horaires de prière pour une localisation et une date. Retourne Fajr, Dhuhr, Asr, Maghrib, Isha.</div>
+            <div class="pill-row"><span class="pill pill-green">GET</span><span class="pill pill-blue">temps réel</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="prim-resources" class="tab-panel">
+        <p style="margin-bottom:1rem;color:var(--muted2);font-size:0.88rem;">Les <strong>Resources</strong> sont des données accessibles en lecture — fichiers, corpus, entrées de base — que l'agent peut inclure dans son contexte.</p>
+        <div class="callout callout-info">
+          <div class="callout-icon">📄</div>
+          <div class="callout-text">
+            <strong>Différence clé : Resource vs Tool</strong>
+            Les Resources sont <em>passives</em> (l'agent lit). Les Tools sont <em>actifs</em> (l'agent agit). Dans notre architecture, les corpus Coran et Hadiths sont exposés comme Resources pour le Quiz Agent, tandis que search_quran est un Tool pour l'Assistant Agent.
+          </div>
+        </div>
+        <pre class="code-block"><span class="cmt">// Déclaration d'une Resource dans islamicMcpServer.js</span>
+server.<span class="kw">resource</span>(
+  <span class="str">"quran-corpus"</span>,
+  <span class="str">"islamic://quran/full"</span>,
+  <span class="kw">async</span> (uri) => ({
+    contents: [{
+      uri: uri.<span class="key">href</span>,
+      mimeType: <span class="str">"application/json"</span>,
+      text: <span class="kw">await</span> loadQuranCorpus()
+    }]
+  })
+);</pre>
+      </div>
+      <div id="prim-prompts" class="tab-panel">
+        <p style="margin-bottom:1rem;color:var(--muted2);font-size:0.88rem;">Les <strong>Prompts</strong> MCP sont des templates réutilisables exposés par le serveur. L'agent peut les appeler pour obtenir un prompt pré-construit adapté à une tâche.</p>
+        <div class="callout callout-tip">
+          <div class="callout-icon">💬</div>
+          <div class="callout-text">
+            <strong>Cas d'usage dans notre projet</strong>
+            Le Quiz Agent appelle le prompt MCP <code>generate_quiz_prompt</code> pour obtenir un template déjà formaté avec les instructions de sourcing islamique — évitant la duplication dans plusieurs agents.
+          </div>
+        </div>
+        <pre class="code-block"><span class="cmt">// Prompt MCP template pour la génération de quiz</span>
+server.<span class="kw">prompt</span>(
+  <span class="str">"generate_quiz_prompt"</span>,
+  { theme: z.string(), difficulty: z.string() },
+  ({ theme, difficulty }) => ({
+    messages: [{
+      role: <span class="str">"user"</span>,
+      content: {
+        type: <span class="str">"text"</span>,
+        text: `<span class="str">Génère 5 questions sur ${theme}
+(niveau ${difficulty}) basées uniquement
+sur le Coran et les hadiths authentiques.</span>`
+      }
+    }]
+  })
+);</pre>
+      </div>
+      <div id="prim-schema" class="tab-panel">
+        <p style="margin-bottom:1rem;color:var(--muted2);font-size:0.88rem;">Chaque outil MCP est décrit par un <strong>JSON Schema</strong>. C'est ce schéma que Gemini reçoit pour savoir comment appeler l'outil correctement.</p>
+        <pre class="code-block"><span class="cmt">// Définition complète d'un outil MCP (islamicMcpServer.js)</span>
+server.<span class="kw">tool</span>(
+  <span class="str">"search_duas"</span>,
+  <span class="str">"Recherche des invocations authentiques dans Hisn al-Muslim"</span>,
+  {
+    <span class="key">topic</span>: z.string().describe(<span class="str">"Thème en français ou arabe (ex: voyage, repas, sommeil)"</span>),
+    <span class="key">limit</span>: z.number().optional().describe(<span class="str">"Nombre max de résultats (défaut: 3)"</span>),
+    <span class="key">language</span>: z.enum([<span class="str">"fr"</span>, <span class="str">"ar"</span>, <span class="str">"both"</span>]).optional()
+  },
+  <span class="kw">async</span> ({ topic, limit = <span class="num">3</span>, language = <span class="str">"both"</span> }) => {
+    <span class="kw">const</span> results = <span class="kw">await</span> duasService.search(topic, limit, language);
+    <span class="kw">return</span> {
+      content: [{ type: <span class="str">"text"</span>, text: JSON.stringify(results) }]
+    };
+  }
+);</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       3. TRANSPORTS
+  ===================================================== -->
+  <div id="transports" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-cyan)">3</div>
+        <div>
+          <div class="section-title">🚌 Les Transports MCP — Comment client et serveur communiquent</div>
+          <div class="section-desc">MCP est agnostique au transport : stdio, HTTP+SSE ou WebSocket</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Transport</th>
+              <th>Description</th>
+              <th>Cas d'usage</th>
+              <th>Notre choix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>stdio</strong></td>
+              <td>
+                Le serveur tourne en sous-processus local. Client et serveur échangent via les flux standards (<code>stdin</code> / <code>stdout</code>). Chaque message JSON-RPC est délimité par un saut de ligne (<code>\n</code>).
+              </td>
+              <td>Développement local, outils CLI, extensions desktop, environnements sans réseau</td>
+              <td><span class="tag tag-green">✅ Dev local</span></td>
+            </tr>
+            <tr>
+              <td><strong>HTTP + SSE</strong></td>
+              <td>Le serveur expose un endpoint HTTP. Les réponses utilisent Server-Sent Events (SSE) pour le streaming temps réel.</td>
+              <td>Production, microservices, déploiement cloud, multi-clients</td>
+              <td><span class="tag tag-blue">✅ Production</span></td>
+            </tr>
+            <tr>
+              <td><strong>WebSocket</strong></td>
+              <td>Connexion bidirectionnelle persistante. Latence minimale pour les échanges haute fréquence.</td>
+              <td>Agents temps réel, streaming long, connexions durables</td>
+              <td><span class="tag tag-purple">Futur</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout-info" style="margin-top:1.25rem">
+          <div class="callout-icon">💡</div>
+          <div class="callout-text">
+            <strong>C'est quoi <code>stdio</code> (Standard Input / Output) ?</strong>
+            <strong>stdio</strong> désigne les mécanismes d'entrées-sorties standard du système d'exploitation permettant de lire des données et d'en afficher (popularisés par la bibliothèque standard C <code>&lt;stdio.h&gt;</code>).<br>
+            Dans le cadre de <strong>MCP</strong> et de la communication inter-processus (IPC) :
+            <ul style="margin: 0.4rem 0 0 1.2rem; line-height: 1.5;">
+              <li><strong>stdin</strong> (entrée standard) : le client envoie ses requêtes JSON-RPC au serveur MCP sous forme de texte.</li>
+              <li><strong>stdout</strong> (sortie standard) : le serveur MCP renvoie ses réponses JSON-RPC au client.</li>
+              <li><strong>stderr</strong> (erreur standard) : utilisé séparément pour les logs et le debug sans corrompre le flux de données.</li>
+            </ul>
+            Ce mode est extrêmement rapide, sécurisé (aucun port réseau exposé) et idéal pour exécuter des serveurs MCP en local.
+          </div>
+        </div>
+
+        <div class="callout callout-tip" style="margin-top:1.25rem">
+          <div class="callout-icon">🔄</div>
+          <div class="callout-text">
+            <strong>Protocole sous-jacent : JSON-RPC 2.0</strong>
+            Tous les messages MCP sont des objets JSON-RPC 2.0 — format léger, structuré, avec gestion native des erreurs. Chaque requête a un <code>id</code> unique, une <code>method</code> (<code>tools/list</code>, <code>tools/call</code>, <code>resources/read</code>…) et des <code>params</code>.
+          </div>
+        </div>
+        <pre class="code-block" style="margin-top:1.25rem"><span class="cmt">// Exemple de message JSON-RPC 2.0 envoyé au serveur MCP</span>
+{
+  <span class="key">"jsonrpc"</span>: <span class="str">"2.0"</span>,
+  <span class="key">"id"</span>: <span class="num">42</span>,
+  <span class="key">"method"</span>: <span class="str">"tools/call"</span>,
+  <span class="key">"params"</span>: {
+    <span class="key">"name"</span>: <span class="str">"search_duas"</span>,
+    <span class="key">"arguments"</span>: {
+      <span class="key">"topic"</span>: <span class="str">"voyage"</span>,
+      <span class="key">"limit"</span>: <span class="num">3</span>
+    }
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       4. CYCLE DE VIE COMPLET
+  ===================================================== -->
+  <div id="lifecycle" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-orange)">4</div>
+        <div>
+          <div class="section-title">🔄 Cycle de vie complet d'une invocation MCP</div>
+          <div class="section-desc">Du handshake initial à la réponse finale — chaque message du protocole</div>
+        </div>
+      </div>
+      <div class="mermaid-container">
+        <pre class="mermaid">
+sequenceDiagram
+    participant U as 👤 Utilisateur
+    participant C as 🖥️ Client MCP
+    participant S as 🔌 Serveur MCP
+    participant G as 🧠 Gemini API
+    participant API as 💾 Service Externe
+
+    Note over C,S: ① INITIALISATION (une seule fois au démarrage)
+    C->>S: initialize { protocolVersion, clientInfo }
+    S-->>C: { serverInfo, capabilities, tools: [...] }
+    C->>S: notifications/initialized
+    Note over C,S: Handshake terminé ✅
+
+    Note over C,G: ② TRAITEMENT DE LA REQUÊTE
+    U->>C: "Quelle doua réciter avant de dormir ?"
+    C->>G: generateContent({ contents, tools: [defs MCP] })
+
+    rect rgba(167, 139, 250, 0.12)
+    Note over G: Gemini raisonne :<br/>intention = invocation du sommeil<br/>outil = search_duas({ topic "sommeil" })
+    G-->>C: functionCall search_duas({ topic "sommeil" })
+    end
+
+    Note over C,S: ③ EXÉCUTION VIA MCP
+    rect rgba(46, 204, 113, 0.12)
+    C->>S: tools/call { name "search_duas", arguments {...} }
+    S->>API: GET /duas?topic=sommeil
+    API-->>S: [{ arabic, phonetic, translation, source }]
+    S-->>C: { content [{ type "text", text "..." }] }
+    end
+
+    Note over C,G: ④ SYNTHÈSE FINALE
+    C->>G: generateContent({ functionResponse résultat })
+    G-->>C: Réponse en langage naturel enrichie
+    C-->>U: ✅ "Voici la doua du soir : بِسْمِكَ اللَّهُمَّ..."
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="section-divider">
+    <hr><span>Application dans notre projet</span><hr>
+  </div>
+
+  <!-- ====================================================
+       5. ASSISTANT AGENT
+  ===================================================== -->
+  <div id="assistant-agent" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-gemini)">5</div>
+        <div>
+          <div class="section-title">🧠 Assistant Conversationnel — Agentic MCP Pur</div>
+          <div class="section-desc">Gemini analyse l'historique et la question pour choisir automatiquement le bon outil</div>
+        </div>
+      </div>
+      <div class="mermaid-container">
+        <pre class="mermaid">
+sequenceDiagram
+    participant U as Utilisateur
+    participant A as assistantAgent
+    participant G as Gemini
+    participant M as MCP Server (islamicMcpServer)
+    participant S as Services (Zakat, Coran, Hadiths, Duas...)
+
+    U->>A: "Donne-moi une doua pour le voyage"
+    A->>G: Envoie le message direct + historique + outils MCP
+
+    rect rgba(167, 139, 250, 0.15)
+    Note over G: Gemini comprend l'intention<br/>et choisit l'outil search_duas({ topic: 'voyage' })
+    G-->>A: functionCall: search_duas({ topic: 'voyage' })
+    end
+
+    rect rgba(46, 204, 113, 0.15)
+    A->>M: executeMcpTool("search_duas", { topic: "voyage" })
+    M->>S: fetchDuas("voyage")
+    S-->>M: Données de Hisn al-Muslim
+    M-->>A: Invocation authentique formatée
+    end
+
+    A-->>U: ✅ Réponse immédiate avec texte arabe, phonétique et traduction
+        </pre>
+      </div>
+      <div class="section-body">
+        <div class="callout callout-tip">
+          <div class="callout-icon">⚡</div>
+          <div class="callout-text">
+            <strong>Pourquoi "Agentic Pur" ?</strong>
+            Aucune logique de routage hardcodée. Il n'y a pas de <code>if (message.includes("doua")) callDuaService()</code>. C'est Gemini qui décide, à chaque requête, quel outil est pertinent. L'agent est entièrement piloté par le LLM.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       6. QUIZ AGENT
+  ===================================================== -->
+  <div id="quiz-agent" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-rag)">6</div>
+        <div>
+          <div class="section-title">📚 Quiz Agent — RAG par Thème + MCP</div>
+          <div class="section-desc">Le RAG enrichit le contexte ; MCP fournit les données sourcées</div>
+        </div>
+      </div>
+      <div class="mermaid-container">
+        <pre class="mermaid">
+sequenceDiagram
+    participant U as Utilisateur
+    participant Q as quizAgent
+    participant R as ragService
+    participant M as MCP Server
+    participant G as Gemini
+
+    U->>Q: "Génère un quiz sur le Hajj"
+    Q->>R: fetchIslamicRAGContext("Hajj")
+    R->>M: executeMcpTool(search_quran, search_hadiths, search_duas)
+    M-->>R: Versets et hadiths sur le Hajj
+    R-->>Q: Contexte documentaire enrichi
+    Q->>G: Prompt de génération de quiz avec sources fiables
+    G-->>Q: Question structurée (options, réponse, explication)
+    Q-->>U: ✅ Quiz interactif prêt
+        </pre>
+      </div>
+      <div class="section-body">
+        <div class="callout callout-info">
+          <div class="callout-icon">🔀</div>
+          <div class="callout-text">
+            <strong>Différence Quiz Agent vs Assistant Agent</strong>
+            Dans le Quiz Agent, le RAG <em>précède</em> Gemini : on collecte d'abord le contexte via MCP, puis on le fournit à Gemini pour la génération. Dans l'Assistant Agent, Gemini <em>décide</em> d'appeler MCP. Les deux patterns sont valides — le choix dépend du besoin de contrôle vs d'autonomie.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       7. MCP vs RAG vs API DIRECTE
+  ===================================================== -->
+  <div id="vs-table" class="section-wrap">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number" style="background:var(--accent-pink)">7</div>
+        <div>
+          <div class="section-title">⚖️ MCP vs RAG vs API directe — Quand utiliser quoi ?</div>
+          <div class="section-desc">Comparaison des trois approches d'accès aux données pour les agents IA</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Critère</th>
+              <th>🔌 MCP</th>
+              <th>📚 RAG</th>
+              <th>🔗 API Directe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sélection d'outil</strong></td>
+              <td>Autonome par le LLM</td>
+              <td>Hardcodée par le développeur</td>
+              <td>Hardcodée par le développeur</td>
+            </tr>
+            <tr>
+              <td><strong>Découverte des capacités</strong></td>
+              <td>Dynamique (tools/list)</td>
+              <td>Statique (corpus fixe)</td>
+              <td>Statique (endpoints fixes)</td>
+            </tr>
+            <tr>
+              <td><strong>Type de données</strong></td>
+              <td>Actions + données temps réel</td>
+              <td>Documents / corpus textuels</td>
+              <td>Données temps réel</td>
+            </tr>
+            <tr>
+              <td><strong>Format retourné</strong></td>
+              <td>Structuré (JSON typé)</td>
+              <td>Chunks de texte non structurés</td>
+              <td>JSON brut</td>
+            </tr>
+            <tr>
+              <td><strong>Sécurité</strong></td>
+              <td>Isolé (processus séparé)</td>
+              <td>Pas d'appels externes</td>
+              <td>Credentials dans le code agent</td>
+            </tr>
+            <tr>
+              <td><strong>Évolutivité</strong></td>
+              <td>Ajouter un outil = 0 changement client</td>
+              <td>Mettre à jour le corpus</td>
+              <td>Modifier le code à chaque API</td>
+            </tr>
+            <tr>
+              <td><strong>Idéal pour</strong></td>
+              <td>Agents autonomes, actions métier</td>
+              <td>Recherche dans des docs / corpus</td>
+              <td>Intégration simple point-à-point</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout-warn" style="margin-top:1.25rem">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-text">
+            <strong>MCP et RAG sont complémentaires, pas concurrents</strong>
+            Dans notre architecture, le Quiz Agent utilise les <strong>deux</strong> : MCP pour récupérer les données islamiques structurées, et RAG pour assembler le contexte avant de le soumettre à Gemini. C'est le meilleur des deux mondes.
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin-top:0.75rem">
+          <div class="callout-icon">💡</div>
+          <div class="callout-text">
+            <strong>Agent + RAG : Pourquoi ce n'est pas duplicatif ?</strong>
+            Le RAG agit comme un simple outil de recherche vectorielle déterministe (0 LLM pour découper, 0 LLM pour chercher les similarités cosinus). L'Agent NoorQuiz reste l'unique cerveau de génération. Il n'y a donc <strong>aucun double emploi ni double facturation</strong> de tokens ! (Voir le détail complet dans la <a href="../rag/documentation_rag_nodejs.html#duplication" style="color:var(--accent-rag); text-decoration:underline;">Section 10 de la documentation RAG</a>).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY POINT -->
+  <div style="padding:0 1.5rem">
+    <div class="key-point">
+      <p>
+        ✨ <strong>Architecture 100% Propre :</strong><br>
+        • <strong>MCP</strong> : protocole standardisé — l'agent découvre et appelle les outils dynamiquement, sans logique hardcodée.<br>
+        • <strong>Assistant</strong> : Gemini décide directement des actions (zéro appel aveugle, zéro regex bricolée).<br>
+        • <strong>Quiz</strong> : Le RAG enrichit les thèmes de questions de manière ciblée via les outils MCP.<br>
+        • <strong>MCP Server</strong> : Couche universelle, isolée et unique d'accès aux services islamiques.
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1a2d4e',
+        primaryTextColor: '#e4e6f0',
+        primaryBorderColor: '#4a9eff',
+        lineColor: '#4a9eff',
+        secondaryColor: '#1a3a2e',
+        tertiaryColor: '#2a1a3a',
+        noteBkgColor: '#2a2d3e',
+        noteTextColor: '#e4e6f0',
+        noteBorderColor: '#4a9eff',
+        actorBkg: '#1a2d4e',
+        actorBorder: '#4a9eff',
+        actorTextColor: '#e4e6f0',
+        signalColor: '#e4e6f0',
+        signalTextColor: '#e4e6f0',
+        fontSize: '14px',
+      }
+    });
+
+    function switchTab(group, tab, btn) {
+      document.querySelectorAll('[id^="' + group + '-"]').forEach(p => p.classList.remove('active'));
+      btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(group + '-' + tab).classList.add('active');
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>

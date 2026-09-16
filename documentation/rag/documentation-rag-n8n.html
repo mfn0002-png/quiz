@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline RAG avec n8n — Guide Pratique &amp; Architecture Complète</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #0B0F17;
+    --paper-card: #131A26;
+    --paper-card-border: #232D3F;
+    --ink: #F1F5F9;
+    --ink-soft: #94A3B8;
+    --ink-muted: #64748B;
+    --line: #1E293B;
+    --primary: #38BDF8;
+    --primary-soft: rgba(56, 189, 248, 0.1);
+    --emerald: #10B981;
+    --emerald-soft: rgba(16, 185, 129, 0.12);
+    --coral: #F43F5E;
+    --coral-soft: rgba(244, 63, 94, 0.12);
+    --amber: #F59E0B;
+    --amber-soft: rgba(245, 158, 11, 0.12);
+    --indigo: #6366F1;
+    --indigo-soft: rgba(99, 102, 241, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    line-height: 1.65;
+    font-size: 15px;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  aside.sidebar {
+    width: 290px;
+    background: #080C14;
+    border-right: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #38BDF8, #6366F1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 16px;
+  }
+  .brand-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .brand-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  nav.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: auto;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: #fff;
+    background: var(--paper-card);
+  }
+  .nav-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .sidebar-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  /* MAIN CONTENT */
+  main.main-content {
+    flex: 1;
+    max-width: 1080px;
+    padding: 3rem 4rem 6rem;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header.doc-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .badges-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+  }
+  .badge.blue { background: rgba(56, 189, 248, 0.1); color: #38BDF8; border-color: rgba(56, 189, 248, 0.25); }
+  .badge.green { background: rgba(16, 185, 129, 0.1); color: #34D399; border-color: rgba(16, 185, 129, 0.25); }
+  .badge.purple { background: rgba(168, 85, 247, 0.1); color: #C084FC; border-color: rgba(168, 85, 247, 0.25); }
+  .badge.orange { background: rgba(245, 158, 11, 0.1); color: #FBBF24; border-color: rgba(245, 158, 11, 0.25); }
+
+  h1.title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.3rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #fff;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+  }
+  p.lead {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    max-width: 860px;
+  }
+
+  /* SECTIONS */
+  section.part {
+    margin-bottom: 4rem;
+    scroll-margin-top: 2rem;
+  }
+  .part-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .part-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--primary);
+    color: #040811;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  h2.part-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  h3.sub-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #E2E8F0;
+    margin: 2rem 0 1rem;
+  }
+
+  p { margin-bottom: 1.25rem; color: #CBD5E1; }
+  strong { color: #fff; }
+
+  /* CARDS & GRIDS */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+  }
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--paper-card-border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* IMAGE FIGURES */
+  figure.figure-box {
+    background: var(--paper-card);
+    border: 1px solid var(--paper-card-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 2rem 0;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  figure.figure-box img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+    background: #fff;
+  }
+  figcaption {
+    margin-top: 0.85rem;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 4px solid var(--primary);
+    background: var(--paper-card);
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+  }
+  .callout.green { border-color: var(--emerald); }
+  .callout.amber { border-color: var(--amber); }
+  .callout.coral { border-color: var(--coral); }
+  .callout-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .callout-text {
+    font-size: 14px;
+    color: #CBD5E1;
+    margin: 0;
+  }
+
+  /* CODE BLOCKS */
+  pre.code-block {
+    background: #06090F;
+    border: 1px solid #1E293B;
+    border-radius: 8px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: #38BDF8;
+    line-height: 1.5;
+    margin: 1.5rem 0;
+  }
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #1E293B;
+    color: #38BDF8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  /* STEPS LIST */
+  .steps-list {
+    list-style: none;
+    counter-reset: step-counter;
+    margin: 1.5rem 0;
+  }
+  .steps-list li {
+    counter-increment: step-counter;
+    position: relative;
+    padding-left: 42px;
+    margin-bottom: 1.5rem;
+  }
+  .steps-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: #040811;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  footer.doc-footer {
+    padding-top: 3rem;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">R</div>
+    <div>
+      <div class="brand-text">RAG · n8n Pipeline</div>
+      <span class="brand-badge">Documentation Perso</span>
+    </div>
+  </div>
+
+  <nav class="nav-menu">
+    <a href="#theorie" class="nav-item">
+      <span class="nav-num">01</span> Fondamentaux RAG
+    </a>
+    <a href="#pipelines" class="nav-item">
+      <span class="nav-num">02</span> Les 2 Pipelines (Chunk/Embed/Vectorize)
+    </a>
+    <a href="#workflow-n8n" class="nav-item">
+      <span class="nav-num">03</span> Câblage n8n Pas à Pas
+    </a>
+    <a href="#crud-lifecycle" class="nav-item">
+      <span class="nav-num">04</span> RAG en Production (CRUD Drive &amp; Supabase)
+    </a>
+    <a href="#best-practices" class="nav-item">
+      <span class="nav-num">05</span> Pièges &amp; Bonnes Pratiques
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <strong>Stack Technique :</strong><br>
+    n8n · Supabase (pgvector) · Google Gemini 1.5 · text-embedding-004 · Google Drive
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="badges-row">
+      <span class="badge blue">n8n Workflow</span>
+      <span class="badge green">Supabase pgvector</span>
+      <span class="badge purple">Google Gemini</span>
+      <span class="badge orange">Synchronisation Google Drive</span>
+    </div>
+    <h1 class="title">Pipeline RAG avec n8n : Du Concept à la Production</h1>
+    <p class="lead">
+      Guide complet d'architecture et de mise en œuvre d'un système de <strong>Retrieval-Augmented Generation (RAG)</strong>.
+      Comprendre les représentations vectorielles, construire le workflow n8n et synchroniser automatiquement les documents en temps réel sans doublon ni hallucination.
+    </p>
+  </header>
+
+  <!-- SECTION 01 -->
+  <section class="part" id="theorie">
+    <div class="part-header">
+      <span class="part-tag">01</span>
+      <h2 class="part-title">Fondamentaux RAG &amp; Architecture Sémantique</h2>
+    </div>
+
+    <h3 class="sub-title">Le Problème : Pourquoi un LLM seul ne suffit pas ?</h3>
+    <p>
+      Un modèle de langage (LLM comme Google Gemini ou OpenAI) est entraîné une fois pour toutes sur des téraoctets de données publiques du web. 
+      Cependant, dès qu'on souhaite l'exploiter sur des cas concrets d'entreprise ou personnels, trois limites apparaissent immédiatement :
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">⚠️ Manque de Connaissance Privée</div>
+        <p class="card-p">Le modèle ne connaît aucun de nos documents internes (nos fichiers Google Drive, nos procédures, nos notes de synthèse, nos PDF).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">❌ Hallucination Sémantique</div>
+        <p class="card-p">Plutôt que d'avouer son ignorance sur une clause spécifique, le LLM génère une réponse vraisemblable mais complètement inventée.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-title">La Solution RAG : Récupération Augmentée par la Recherche</h3>
+    <p>
+      Le principe fondamental du RAG consiste à <strong>intercaler une étape de recherche documentaire automatique</strong> entre la question posée par l'utilisateur et l'inférence du modèle :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/04_schema_boucle_utilisateur.png" alt="Boucle d'interaction RAG">
+      <figcaption>Figure 1.1 — Schéma d'interaction complet : L'utilisateur questionne le moteur, qui va chercher les sources exactes dans la base de connaissance avant de transmettre le prompt enrichi au LLM.</figcaption>
+    </figure>
+
+    <p>
+      Le flux de données se résume en une chaîne déterministe très élégante :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/03_schema_vectoriel_fr.png" alt="Architecture vectorielle RAG">
+      <figcaption>Figure 1.2 — Décomposition du flux sémantique : Documents séparés en morceaux ➔ Génération des vecteurs ➔ Base vectorielle ➔ Récupération du contexte pertinent ➔ Prompt + Contexte ➔ LLM.</figcaption>
+    </figure>
+
+    <div class="callout green">
+      <div class="callout-title">💡 La Règle d'Or du RAG</div>
+      <div class="callout-text">
+        Le modèle ne récite pas sa mémoire interne : il agit comme un <strong>analyste de synthèse</strong> auquel on fournit la question et les photocopies des 3 meilleures pages nécessaires pour répondre.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 02 -->
+  <section class="part" id="pipelines">
+    <div class="part-header">
+      <span class="part-tag">02</span>
+      <h2 class="part-title">Les Deux Pipelines : Chunk ➔ Embed ➔ Vectorize</h2>
+    </div>
+
+    <p>
+      Tout système RAG opérationnel repose sur la stricte séparation de deux flux :
+      l'<strong>indexation</strong> (hors ligne, une fois par document) et l'<strong>interrogation</strong> (en direct, à chaque message utilisateur).
+    </p>
+
+    <h3 class="sub-title">1. Le Pipeline d'Indexation (Ingestion Documentaire)</h3>
+    <p>
+      On ne peut pas transformer un livre de 300 pages en un seul vecteur sans diluer son sens. Le document source suit donc 3 étapes indispensables :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/01_rag_pipeline_chunk_embed.png" alt="RAG Pipeline Chunk Embed Vectorize">
+      <figcaption>Figure 2.1 — Le Pipeline d'Indexation : Découpage du document en Chunks ➔ Passage dans le Modèle d'Embedding ➔ Projection géométrique dans l'Espace Vectoriel.</figcaption>
+    </figure>
+
+    <ul class="steps-list">
+      <li>
+        <strong>Chunking (Découpage en morceaux) :</strong> Le document est fractionné en petits blocs (ex: 500 caractères) avec un léger chevauchement (50 caractères d'overlap) pour ne pas casser de phrases.
+      </li>
+      <li>
+        <strong>Embedding Model (Modèle sémantique) :</strong> Chaque chunk est converti par Google Gemini (<code>text-embedding-004</code>) en un vecteur mathématique de 768 dimensions.
+      </li>
+      <li>
+        <strong>Vectorize &amp; Store (Espace vectoriel) :</strong> Les chunks qui partagent le même sujet (ex: <em>Company</em>, <em>Finances</em>, <em>Marketing</em> sur le schéma ci-dessus) se retrouvent regroupés géométriquement dans l'espace.
+      </li>
+    </ul>
+
+    <h3 class="sub-title">2. Le Pipeline d'Interrogation (L'Agent RAG)</h3>
+    <p>
+      Quand l'utilisateur pose sa question, l'Agent autonome applique exactement la symétrie de ce processus :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/02_rag_agent_query_embed.png" alt="RAG Agent Query Embed Vectorize Generate">
+      <figcaption>Figure 2.2 — L'Agent RAG : La question (Query) est convertie en vecteur pour retrouver le contenu (Content) le plus proche, avant génération de la réponse finale par le LLM.</figcaption>
+    </figure>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🔍 Retrieval (Similarité Cosinus)</div>
+        <p class="card-p">La question est projetée dans le même espace 3D/768-D. La base calcule la proximité géométrique pour extraire le texte exact qui s'en rapproche le plus.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🤖 Inférence Déterministe</div>
+        <p class="card-p">Le LLM reçoit l'extrait de contenu retrouvé + la question initiale et rédige une réponse factuelle, sans risque d'erreur.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-title">3. Le Choix de la Base de Données Vectorielle</h3>
+    <p>
+      Plusieurs technologies permettent de stocker et d'indexer des millions de vecteurs pour effectuer des recherches de similarité ultra-rapides :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/05_vector_databases.png" alt="Bases vectorielles : Pinecone, Qdrant, Supabase">
+      <figcaption>Figure 2.3 — Les moteurs de stockage vectoriel de référence : Pinecone, Qdrant et Supabase.</figcaption>
+    </figure>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">🌲 Pinecone</div>
+        <p class="card-p">Solution SaaS 100% cloud dédiée aux vecteurs. Très rapide et managée, mais payante et fermée.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📦 Qdrant</div>
+        <p class="card-p">Moteur vectoriel open-source écrit en Rust. Idéal pour le filtrage complexe de métadonnées et l'on-premise.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Supabase (pgvector)</div>
+        <p class="card-p"><strong>Le choix recommandé :</strong> PostgreSQL natif avec l'extension <code>vector</code>. Permet de joindre nos tables SQL et nos vecteurs au même endroit.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 03 -->
+  <section class="part" id="workflow-n8n">
+    <div class="part-header">
+      <span class="part-tag">03</span>
+      <h2 class="part-title">Câblage Visuel du Workflow n8n Pas à Pas</h2>
+    </div>
+
+    <p>
+      Voyons maintenant comment ce pipeline s'implémente concrètement dans l'interface visuelle de <strong>n8n</strong>.
+    </p>
+
+    <h3 class="sub-title">Étape 1 : Le Déclencheur et le Téléchargement Google Drive</h3>
+    <p>
+      Le workflow commence par la récupération du fichier source stocké sur Google Drive :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/06_n8n_trigger_download.png" alt="n8n Download File Trigger">
+      <figcaption>Figure 3.1 — Nœuds de déclenchement : 'When clicking Execute workflow' relié au nœud Google Drive configuré en action 'Download file'.</figcaption>
+    </figure>
+
+    <h3 class="sub-title">Étape 2 : L'Usine d'Indexation Supabase</h3>
+    <p>
+      Le fichier téléchargé est envoyé au nœud <code>Supabase Vector Store</code>, qui s'appuie sur deux sous-nœuds spécialisés :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/07_n8n_ingestion_supabase.png" alt="n8n Ingestion Supabase Vector Store">
+      <figcaption>Figure 3.2 — Le pipeline d'ingestion complet : Le fichier est extrait par le 'Default Data Loader', transformé en 70 vecteurs par 'Embeddings Google Gemini' et sauvegardé dans Supabase.</figcaption>
+    </figure>
+
+    <div class="callout amber">
+      <div class="callout-title">⚠️ Attention au Piège des Dimensions (768 vs 3072)</div>
+      <div class="callout-text">
+        Si on utilise <code>models/text-embedding-004</code>, la dimension est de <strong>768</strong>.<br>
+        Notre colonne SQL Supabase doit être déclarée : <code>embedding vector(768)</code>.<br>
+        Si on utilise <code>gemini-embedding-001</code> (3072 dimensions), Supabase lèvera une erreur <code>expected 1536/768, not 3072</code> si la colonne n'a pas la même taille !
+      </div>
+    </div>
+
+    <h3 class="sub-title">Étape 3 : Le Canvas n8n Complet (Ingestion + Agent)</h3>
+    <p>
+      Voici la vue globale du workflow sur le canvas n8n, montrant les deux moitiés qui travaillent de concert :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/08_n8n_full_workflow_canvas.png" alt="Canvas n8n complet">
+      <figcaption>Figure 3.3 — Vue d'ensemble du Canvas n8n : En bas, le circuit d'ingestion des documents. En haut, l'Agent conversationnel équipé de sa mémoire et de son outil de recherche documentaire.</figcaption>
+    </figure>
+
+    <h3 class="sub-title">Étape 4 : Exécution Réussie en Conditions Réelles</h3>
+    <p>
+      Lors du test en direct, n8n affiche les coches vertes de validation et le nombre d'éléments transférés entre chaque nœud :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/09_n8n_execution_success.png" alt="Exécution validée dans n8n">
+      <figcaption>Figure 3.4 — Résultat de l'exécution : L'Agent a reçu le message, a sollicité 'Supabase Vector Store1' pour récupérer 4 extraits pertinents, et a formulé la réponse finale avec Gemini.</figcaption>
+    </figure>
+  </section>
+
+  <!-- SECTION 04 -->
+  <section class="part" id="crud-lifecycle">
+    <div class="part-header">
+      <span class="part-tag">04</span>
+      <h2 class="part-title">Le RAG en Production : Synchronisation Temps Réel (CRUD)</h2>
+    </div>
+
+    <p>
+      Dans un vrai environnement professionnel, les documents ne sont pas figés : on ajoute un fichier, on en modifie un autre, ou on en supprime un troisième sur Google Drive.
+      Si notre RAG ne synchronise pas ces changements, on aura des <strong>doublons</strong>, des <strong>réponses périmées</strong> et des <strong>hallucinations</strong>.
+    </p>
+
+    <p>
+      Voici l'architecture industrielle complète à 4 panneaux qui résout définitivement ce défi :
+    </p>
+
+    <figure class="figure-box">
+      <img src="./assets/10_n8n_lifecycle_crud_production.png" alt="Workflow n8n CRUD complet">
+      <figcaption>Figure 4.1 — Le Workflow RAG Industriel : Les 4 panneaux de gestion complète du cycle de vie documentaire (New Docs, File Updated, Delete Docs, RAG Agent).</figcaption>
+    </figure>
+
+    <h3 class="sub-title">Analyse Détaillée des 4 Panneaux :</h3>
+
+    <div class="grid-2">
+      <div class="card" style="border-left: 4px solid #38BDF8;">
+        <div class="card-title">🟦 1. Panneau "New Docs" (Ajout)</div>
+        <p class="card-p">
+          <strong>Déclencheur :</strong> <code>Google Drive Trigger (fileCreated)</code>.<br>
+          Dès qu'un nouveau document est déposé dans le dossier partagé, n8n le télécharge, le découpe en chunks et l'insère dans Supabase avec son <code>fileId</code> dans les métadonnées.
+        </p>
+      </div>
+
+      <div class="card" style="border-left: 4px solid #10B981;">
+        <div class="card-title">🟩 2. Panneau "File Updated" (Mise à jour)</div>
+        <p class="card-p">
+          <strong>Déclencheur :</strong> <code>Google Drive Trigger (fileUpdated)</code>.<br>
+          <strong>L'astuce essentielle :</strong> n8n commence par exécuter <code>Delete a row</code> dans Supabase pour purger tous les anciens chunks du fichier, puis télécharge et ré-indexe la nouvelle version. Zéro doublon !
+        </p>
+      </div>
+
+      <div class="card" style="border-left: 4px solid #F43F5E;">
+        <div class="card-title">🟥 3. Panneau "Delete Docs" (Suppression)</div>
+        <p class="card-p">
+          <strong>Déclencheur :</strong> <code>Google Drive Trigger (fileDeleted)</code>.<br>
+          Quand un fichier est mis à la corbeille, n8n récupère son <code>File ID</code> et supprime instantanément toutes ses lignes dans Supabase. Le modèle ne citera plus jamais une information supprimée.
+        </p>
+      </div>
+
+      <div class="card" style="border-left: 4px solid #F59E0B;">
+        <div class="card-title">🟨 4. Panneau "RAG Agent" (Chat)</div>
+        <p class="card-p">
+          L'Agent conversationnel écoute les messages utilisateurs et interroge la table Supabase toujours parfaitement à jour, garantissant une précision à 100%.
+        </p>
+      </div>
+    </div>
+
+    <h3 class="sub-title">Guide Pas à Pas pour mettre en place ce Workflow dans n8n :</h3>
+    <ul class="steps-list">
+      <li>
+        <strong>Configurer le nœud Google Drive Trigger :</strong> On crée 3 triggers distincts pointant sur notre dossier Google Drive avec les événements respectifs : <code>fileCreated</code>, <code>fileUpdated</code>, et <code>fileDeleted</code>.
+      </li>
+      <li>
+        <strong>Enregistrer le <code>fileId</code> dans Supabase :</strong> Dans le nœud Supabase (Upload), on va dans les métadonnées et on ajoute le champ : <code>{"fileId": "={{ $json.id }}", "fileName": "={{ $json.name }}"}</code>.
+      </li>
+      <li>
+        <strong>Configurer le nœud Supabase 'Delete a row' :</strong> Dans le mode Suppression, on cible la table <code>documents</code> avec le filtre : <code>metadata->>fileId = {{ $json.id }}</code>.
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECTION 05 -->
+  <section class="part" id="best-practices">
+    <div class="part-header">
+      <span class="part-tag">05</span>
+      <h2 class="part-title">Checklist Anti-Pièges &amp; Bonnes Pratiques</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">1. Taille de Chunk Idéale</div>
+        <p class="card-p">Ni trop grand (perte de pertinence), ni trop court (perte de contexte). Entre <strong>400 et 800 caractères</strong> avec <strong>10% d'overlap</strong> est la zone optimale.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">2. Consistance des Modèles d'Embedding</div>
+        <p class="card-p">Utilisez impérativement <strong>le même modèle</strong> pour l'indexation des documents et pour la question utilisateur (<code>text-embedding-004</code> dans les deux cas).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">3. Prompt Système Anti-Hallucination</div>
+        <p class="card-p">Exigez dans les instructions de l'Agent : <em>« Si l'information ne figure pas textuellement dans les documents récupérés, réponds simplement : 'Je n'ai pas cette information'. N'invente rien. »</em></p>
+      </div>
+      <div class="card">
+        <div class="card-title">4. Métadonnées Riches</div>
+        <p class="card-p">Ajoutez systématiquement le nom du fichier, le numéro de page ou le paragraphe dans les métadonnées. L'agent pourra ainsi citer précisément ses sources.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="doc-footer">
+    Documentation technique personnelle — Pipeline RAG &amp; Automatisation n8n · Architectures Modernes.
+  </footer>
+
+</main>
+
+</body>
+</html>

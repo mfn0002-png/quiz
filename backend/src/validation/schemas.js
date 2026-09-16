@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const DIFFICULTIES = ["Débutant", "Intermédiaire", "Expert", "Auto"];
+const DIFFICULTIES = ["Débutant", "Intermédiaire", "Expert", "Avancé", "Auto"];
 
 const sessionIdSchema = z
   .string()
@@ -9,7 +9,11 @@ const sessionIdSchema = z
   .regex(/^[a-zA-Z0-9_-]+$/, "sessionId invalide.");
 
 export const generateQuizSchema = z.object({
-  difficulty: z.enum(DIFFICULTIES, { errorMap: () => ({ message: "Difficulty invalide." }) }).optional().default("Débutant"),
+  difficulty: z
+    .enum(DIFFICULTIES, { errorMap: () => ({ message: "Difficulty invalide." }) })
+    .transform((val) => (val === "Avancé" ? "Expert" : val))
+    .optional()
+    .default("Débutant"),
   topic: z
     .string({ message: "Thème invalide." })
     .min(1, "Thème requis.")

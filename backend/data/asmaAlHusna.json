@@ -1,0 +1,893 @@
+[
+  {
+    "number": 1,
+    "arabic": "الرَّحْمَنُ",
+    "transliteration": "Ar Rahmaan",
+    "meaningEn": "The Beneficent",
+    "meaningFr": "Le Tout-Miséricordieux",
+    "explanationFr": "Sa miséricorde infinie et absolue embrasse toutes les créatures de l'univers.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 2,
+    "arabic": "الرَّحِيمُ",
+    "transliteration": "Ar Raheem",
+    "meaningEn": "The Merciful",
+    "meaningFr": "Le Très-Miséricordieux",
+    "explanationFr": "Celui qui accorde une miséricorde particulière et éternelle aux croyants.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 3,
+    "arabic": "الْمَلِكُ",
+    "transliteration": "Al Malik",
+    "meaningEn": "The King / Eternal Lord",
+    "meaningFr": "Le Souverain, Le Roi",
+    "explanationFr": "Le Maître absolu de toute la création, sans associé ni égal.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 4,
+    "arabic": "الْقُدُّوسُ",
+    "transliteration": "Al Quddus",
+    "meaningEn": "The Purest",
+    "meaningFr": "Le Sanctifié, Le Pur",
+    "explanationFr": "Exempt de toute imperfection, défaut, ressemblance ou limitation.",
+    "category": "Pureté & Perfection"
+  },
+  {
+    "number": 5,
+    "arabic": "السَّلاَمُ",
+    "transliteration": "As Salaam",
+    "meaningEn": "The Source of Peace",
+    "meaningFr": "La Paix, Le Pacifique",
+    "explanationFr": "La Source de toute sécurité, paix intérieure et sérénité.",
+    "category": "Paix & Protection"
+  },
+  {
+    "number": 6,
+    "arabic": "الْمُؤْمِنُ",
+    "transliteration": "Al Mu'min",
+    "meaningEn": "The inspirer of faith",
+    "meaningFr": "Le Rassurant, Le Garant",
+    "explanationFr": "Celui qui accorde la sécurité et confirme la sincérité de Ses serviteurs.",
+    "category": "Paix & Protection"
+  },
+  {
+    "number": 7,
+    "arabic": "الْمُهَيْمِنُ",
+    "transliteration": "Al Muhaymin",
+    "meaningEn": "The Guardian",
+    "meaningFr": "Le Préservateur, Le Témoin",
+    "explanationFr": "Le Gardien suprême qui veille avec vigilance sur toutes Ses créatures.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 8,
+    "arabic": "الْعَزِيزُ",
+    "transliteration": "Al Azeez",
+    "meaningEn": "The Precious / The Most Mighty",
+    "meaningFr": "Le Tout-Puissant, Le Noble",
+    "explanationFr": "L'Invincible que rien ne peut vaincre ni affaiblir.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 9,
+    "arabic": "الْجَبَّارُ",
+    "transliteration": "Al Jabbaar",
+    "meaningEn": "The Compeller",
+    "meaningFr": "Le Contraignant, Le Réparateur",
+    "explanationFr": "Celui dont la volonté s'impose et qui répare les cœurs brisés.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 10,
+    "arabic": "الْمُتَكَبِّرُ",
+    "transliteration": "Al Mutakabbir",
+    "meaningEn": "The Greatest",
+    "meaningFr": "Le Superbe, Le Majestueux",
+    "explanationFr": "Celui à qui appartient la grandeur suprême et la transcendance.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 11,
+    "arabic": "الْخَالِقُ",
+    "transliteration": "Al Khaaliq",
+    "meaningEn": "The Creator",
+    "meaningFr": "Le Créateur",
+    "explanationFr": "Celui qui donne l'existence à partir du néant selon Sa détermination parfaite.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 12,
+    "arabic": "الْبَارِئُ",
+    "transliteration": "Al Baari",
+    "meaningEn": "The Maker of Order",
+    "meaningFr": "Le Créateur distinct, Le Novateur",
+    "explanationFr": "Celui qui fait passer la création du néant à l'existence sans modèle préalable.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 13,
+    "arabic": "الْمُصَوِّرُ",
+    "transliteration": "Al Musawwir",
+    "meaningEn": "The Shaper of Beauty",
+    "meaningFr": "Le Formateur, Le Façonneur",
+    "explanationFr": "Celui qui donne à chaque créature sa forme, son harmonie et son unicité.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 14,
+    "arabic": "الْغَفَّارُ",
+    "transliteration": "Al Ghaffaar",
+    "meaningEn": "The Forgiving",
+    "meaningFr": "Le Tout-Pardonneur",
+    "explanationFr": "Celui qui pardonne inlassablement et efface les fautes de Ses serviteurs.",
+    "category": "Pardon & Clémence"
+  },
+  {
+    "number": 15,
+    "arabic": "الْقَهَّارُ",
+    "transliteration": "Al Qahhaar",
+    "meaningEn": "The Subduer",
+    "meaningFr": "Le Dominateur suprême",
+    "explanationFr": "Celui devant la souveraineté duquel toute la création est soumise.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 16,
+    "arabic": "الْوَهَّابُ",
+    "transliteration": "Al Wahhaab",
+    "meaningEn": "The Giver of All",
+    "meaningFr": "Le Dispensateur suprême",
+    "explanationFr": "Le Donateur généreux qui offre Ses bienfaits sans rien attendre en retour.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 17,
+    "arabic": "الرَّزَّاقُ",
+    "transliteration": "Ar Razzaaq",
+    "meaningEn": "The Sustainer",
+    "meaningFr": "Le Grand Pourvoyeur",
+    "explanationFr": "Celui qui accorde la subsistance matérielle et spirituelle à toute vie.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 18,
+    "arabic": "الْفَتَّاحُ",
+    "transliteration": "Al Fattaah",
+    "meaningEn": "The Opener",
+    "meaningFr": "Le Grand Décideur, Celui qui ouvre",
+    "explanationFr": "Celui qui ouvre les portes de la miséricorde et tranche en toute justice.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 19,
+    "arabic": "اَلْعَلِيْمُ",
+    "transliteration": "Al 'Aleem",
+    "meaningEn": "The Knower of all",
+    "meaningFr": "L'Omniscient",
+    "explanationFr": "Sa science infinie embrasse le visible et l'invisible, le passé, le présent et le futur.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 20,
+    "arabic": "الْقَابِضُ",
+    "transliteration": "Al Qaabid",
+    "meaningEn": "The Constrictor",
+    "meaningFr": "Celui qui restreint",
+    "explanationFr": "Celui qui retient et mesure la subsistance et les épreuves avec sagesse.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 21,
+    "arabic": "الْبَاسِطُ",
+    "transliteration": "Al Baasit",
+    "meaningEn": "The Reliever",
+    "meaningFr": "Celui qui accorde largement",
+    "explanationFr": "Celui qui dilate les cœurs et répand Ses bienfaits avec abondance.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 22,
+    "arabic": "الْخَافِضُ",
+    "transliteration": "Al Khaafid",
+    "meaningEn": "The Abaser",
+    "meaningFr": "Celui qui abaisse",
+    "explanationFr": "Celui qui abaisse les orgueilleux et les transgresseurs.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 23,
+    "arabic": "الرَّافِعُ",
+    "transliteration": "Ar Raafi'",
+    "meaningEn": "The Exalter",
+    "meaningFr": "Celui qui élève",
+    "explanationFr": "Celui qui élève en rang Ses serviteurs pieux et véridiques.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 24,
+    "arabic": "الْمُعِزُّ",
+    "transliteration": "Al Mu'iz",
+    "meaningEn": "The Bestower of Honour",
+    "meaningFr": "Celui qui rend puissant",
+    "explanationFr": "Celui qui accorde honneur, dignité et victoire à qui Il veut.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 25,
+    "arabic": "المُذِلُّ",
+    "transliteration": "Al Mudhil",
+    "meaningEn": "The Humiliator",
+    "meaningFr": "Celui qui humilie",
+    "explanationFr": "Celui qui prive de soutien ceux qui s'enflent d'orgueil.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 26,
+    "arabic": "السَّمِيعُ",
+    "transliteration": "As Samee'",
+    "meaningEn": "The Hearer of all",
+    "meaningFr": "L'Audient",
+    "explanationFr": "Celui qui entend tout murmure, prière et pensée dans les cœurs.",
+    "category": "Attributs d'Écoute & Vision"
+  },
+  {
+    "number": 27,
+    "arabic": "الْبَصِيرُ",
+    "transliteration": "Al Baseer",
+    "meaningEn": "The Seer of all",
+    "meaningFr": "Le Clairvoyant",
+    "explanationFr": "Celui dont le regard parfait embrasse chaque détail de l'univers.",
+    "category": "Attributs d'Écoute & Vision"
+  },
+  {
+    "number": 28,
+    "arabic": "الْحَكَمُ",
+    "transliteration": "Al Hakam",
+    "meaningEn": "The Judge",
+    "meaningFr": "L'Arbitre suprême, Le Juge",
+    "explanationFr": "Le Juge suprême dont les décrets sont d'une absolue équité.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 29,
+    "arabic": "الْعَدْلُ",
+    "transliteration": "Al 'Adl",
+    "meaningEn": "The Just",
+    "meaningFr": "Le Juste absolu",
+    "explanationFr": "L'Équitable parfait qui n'opprime aucune de Ses créatures.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 30,
+    "arabic": "اللَّطِيفُ",
+    "transliteration": "Al Lateef",
+    "meaningEn": "The Subtle One",
+    "meaningFr": "Le Subtil, Le Bienveillant",
+    "explanationFr": "Celui qui agit avec délicatesse et bienveillance imperceptible.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 31,
+    "arabic": "الْخَبِيرُ",
+    "transliteration": "Al Khabeer",
+    "meaningEn": "The All Aware",
+    "meaningFr": "Le Parfaitement Informé",
+    "explanationFr": "Celui qui connaît les secrets les plus intimes et la réalité profonde des choses.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 32,
+    "arabic": "الْحَلِيمُ",
+    "transliteration": "Al Haleem",
+    "meaningEn": "The Forebearing",
+    "meaningFr": "Le Très-Indulgent, Le Patient",
+    "explanationFr": "Celui qui ne se hâte pas de châtier et patiente envers les fautes.",
+    "category": "Pardon & Clémence"
+  },
+  {
+    "number": 33,
+    "arabic": "الْعَظِيمُ",
+    "transliteration": "Al 'Azeem",
+    "meaningEn": "The Maginificent",
+    "meaningFr": "L'Immense, Le Magnifique",
+    "explanationFr": "Celui dont la grandeur dépasse toute compréhension humaine.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 34,
+    "arabic": "الْغَفُورُ",
+    "transliteration": "Al Ghafoor",
+    "meaningEn": "The Great Forgiver",
+    "meaningFr": "Le Très-Pardonneur",
+    "explanationFr": "Celui qui voile les péchés et pardonne avec une immense indulgence.",
+    "category": "Pardon & Clémence"
+  },
+  {
+    "number": 35,
+    "arabic": "الشَّكُورُ",
+    "transliteration": "Ash Shakoor",
+    "meaningEn": "The Rewarder of Thankfulness",
+    "meaningFr": "Le Très-Reconnaissant",
+    "explanationFr": "Celui qui rétribue abondamment le moindre acte sincère.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 36,
+    "arabic": "الْعَلِيُّ",
+    "transliteration": "Al 'Aliyy",
+    "meaningEn": "The Highest",
+    "meaningFr": "Le Très-Haut",
+    "explanationFr": "Celui qui est au-dessus de toute création par Son essence et Ses attributs.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 37,
+    "arabic": "الْكَبِيرُ",
+    "transliteration": "Al Kabeer",
+    "meaningEn": "The Greatest",
+    "meaningFr": "L'Infiniment Grand",
+    "explanationFr": "Le Plus Grand, devant Lequel toute grandeur s'efface.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 38,
+    "arabic": "الْحَفِيظُ",
+    "transliteration": "Al Hafeez",
+    "meaningEn": "The Preserver",
+    "meaningFr": "Le Gardien suprême",
+    "explanationFr": "Celui qui préserve l'ordre de l'univers et protège Ses serviteurs.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 39,
+    "arabic": "المُقيِت",
+    "transliteration": "Al Muqeet",
+    "meaningEn": "The Nourisher",
+    "meaningFr": "Le Nourricier, Le Témoin vigilant",
+    "explanationFr": "Celui qui dispense subsistance et veille à chaque besoin vital.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 40,
+    "arabic": "الْحسِيبُ",
+    "transliteration": "Al Haseeb",
+    "meaningEn": "The Reckoner",
+    "meaningFr": "Le Suffisant, Celui qui tient compte",
+    "explanationFr": "Celui qui suffit à Ses serviteurs et compte chaque acte avec exactitude.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 41,
+    "arabic": "الْجَلِيلُ",
+    "transliteration": "Al Jaleel",
+    "meaningEn": "The Majestic",
+    "meaningFr": "Le Majestueux",
+    "explanationFr": "L'Être digne de majesté, de respect et de louange éternelle.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 42,
+    "arabic": "الْكَرِيمُ",
+    "transliteration": "Al Kareem",
+    "meaningEn": "The Generous",
+    "meaningFr": "Le Tout-Généreux",
+    "explanationFr": "Celui dont la noblesse et les dons sont inépuisables.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 43,
+    "arabic": "الرَّقِيبُ",
+    "transliteration": "Ar Raqeeb",
+    "meaningEn": "The Watchful One",
+    "meaningFr": "Le Surveillant suprême",
+    "explanationFr": "Celui qui observe tout et à qui rien n'échappe.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 44,
+    "arabic": "الْمُجِيبُ",
+    "transliteration": "Al Mujeeb ",
+    "meaningEn": "The Responder to Prayer",
+    "meaningFr": "Celui qui exauce",
+    "explanationFr": "Celui qui répond toujours aux invocations et aux prières des cœurs sincères.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 45,
+    "arabic": "الْوَاسِعُ",
+    "transliteration": "Al Waasi'",
+    "meaningEn": "The All Comprehending",
+    "meaningFr": "L'Immense, Celui qui embrasse tout",
+    "explanationFr": "Son savoir, Sa miséricorde et Ses bienfaits englobent toute existence.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 46,
+    "arabic": "الْحَكِيمُ",
+    "transliteration": "Al Hakeem",
+    "meaningEn": "The Perfectly Wise",
+    "meaningFr": "Le Très-Sage",
+    "explanationFr": "Celui qui place chaque chose à sa juste place avec une sagesse absolue.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 47,
+    "arabic": "الْوَدُودُ",
+    "transliteration": "Al Wudood",
+    "meaningEn": "The Loving One",
+    "meaningFr": "Le Bien-Aimant",
+    "explanationFr": "Celui qui aime Ses créatures pieuses et se fait aimer d'elles par Ses bienfaits.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 48,
+    "arabic": "الْمَجِيدُ",
+    "transliteration": "Al Majeed",
+    "meaningEn": "The Most Glorious One",
+    "meaningFr": "Le Glorieux",
+    "explanationFr": "Le Maître de gloire, d'honneur éclatant et de magnificence.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 49,
+    "arabic": "الْبَاعِثُ",
+    "transliteration": "Al Baa'ith",
+    "meaningEn": "The Resurrector",
+    "meaningFr": "Celui qui ressuscite",
+    "explanationFr": "Celui qui ramènera les morts à la vie pour le Jour du Jugement.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 50,
+    "arabic": "الشَّهِيدُ",
+    "transliteration": "Ash Shaheed",
+    "meaningEn": "The Witness",
+    "meaningFr": "Le Témoin parfait",
+    "explanationFr": "Celui devant qui toute vérité est dévoilée et constatée.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 51,
+    "arabic": "الْحَقُّ",
+    "transliteration": "Al Haqq",
+    "meaningEn": "The Truth",
+    "meaningFr": "La Vérité suprême",
+    "explanationFr": "L'Être réel et indéniable dont les promesses et paroles sont la vérité même.",
+    "category": "Pureté & Perfection"
+  },
+  {
+    "number": 52,
+    "arabic": "الْوَكِيلُ",
+    "transliteration": "Al Wakeel",
+    "meaningEn": "The Trustee",
+    "meaningFr": "Le Tuteur digne de confiance",
+    "explanationFr": "Le Garant parfait à qui l'on peut s'en remettre en toute quiétude.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 53,
+    "arabic": "الْقَوِيُّ",
+    "transliteration": "Al Qawiyy",
+    "meaningEn": "The Possessor of all strength",
+    "meaningFr": "Le Fort, Le Puissant",
+    "explanationFr": "Celui qui possède une force absolue exempte de toute faiblesse.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 54,
+    "arabic": "الْمَتِينُ",
+    "transliteration": "Al Mateen",
+    "meaningEn": "The Forceful",
+    "meaningFr": "L'Inébranlable, Le Robuste",
+    "explanationFr": "Sa fermeté et Sa puissance sont indestructibles.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 55,
+    "arabic": "الْوَلِيُّ",
+    "transliteration": "Al Waliyy",
+    "meaningEn": "The Protector",
+    "meaningFr": "Le Protecteur, L'Ami intime",
+    "explanationFr": "L'Allié fidèle qui soutient, protège et guide les croyants.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 56,
+    "arabic": "الْحَمِيدُ",
+    "transliteration": "Al Hameed",
+    "meaningEn": "The Praised",
+    "meaningFr": "Le Digne de Louange",
+    "explanationFr": "L'Unique qui mérite d'être glorifié et loué en toute circonstance.",
+    "category": "Pureté & Perfection"
+  },
+  {
+    "number": 57,
+    "arabic": "الْمُحْصِي",
+    "transliteration": "Al Muhsi",
+    "meaningEn": "The Appraiser",
+    "meaningFr": "Celui qui dénombre et connaît tout",
+    "explanationFr": "Celui dont la science compte avec précision chaque grain de l'univers.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 58,
+    "arabic": "الْمُبْدِئُ",
+    "transliteration": "Al Mubdi",
+    "meaningEn": "The Originator",
+    "meaningFr": "L'Initiateur premier",
+    "explanationFr": "Celui qui a créé l'univers pour la première fois sans exemple précédent.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 59,
+    "arabic": "الْمُعِيدُ",
+    "transliteration": "Al Mu'eed",
+    "meaningEn": "The Restorer",
+    "meaningFr": "Celui qui réintègre et répète la création",
+    "explanationFr": "Celui qui renouvelle la vie et ramène toute création après sa fin.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 60,
+    "arabic": "الْمُحْيِي",
+    "transliteration": "Al Muhiy",
+    "meaningEn": "The Giver of life",
+    "meaningFr": "Celui qui donne la vie",
+    "explanationFr": "La Source de toute vie physique, biologique et spirituelle.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 61,
+    "arabic": "اَلْمُمِيتُ",
+    "transliteration": "Al Mumeet",
+    "meaningEn": "The Taker of life",
+    "meaningFr": "Celui qui donne la mort",
+    "explanationFr": "Celui qui décrète le terme de chaque être vivant avec justice.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 62,
+    "arabic": "الْحَيُّ",
+    "transliteration": "Al Haiyy",
+    "meaningEn": "The Ever Living",
+    "meaningFr": "Le Vivant éternel",
+    "explanationFr": "L'Éternel qui ne meurt jamais, d'une vie sans début ni fin.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 63,
+    "arabic": "الْقَيُّومُ",
+    "transliteration": "Al Qayyoom",
+    "meaningEn": "The Self Existing",
+    "meaningFr": "L'Auto-Suffisant qui maintient tout",
+    "explanationFr": "Celui qui subsiste par Lui-même et assure la pérennité des cieux et de la terre.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 64,
+    "arabic": "الْوَاجِدُ",
+    "transliteration": "Al Waajid",
+    "meaningEn": "The Finder",
+    "meaningFr": "L'Opulent, Celui qui trouve tout",
+    "explanationFr": "Celui qui ne manque de rien et détient toutes les richesses.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 65,
+    "arabic": "الْمَاجِدُ",
+    "transliteration": "Al Maajid",
+    "meaningEn": "The Glorious",
+    "meaningFr": "Le Noble, Le Majestueux",
+    "explanationFr": "L'Être illustre dont la noblesse est incomparable.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 66,
+    "arabic": "الْواحِدُ",
+    "transliteration": "Al Waahid",
+    "meaningEn": "The Only One",
+    "meaningFr": "L'Unique sans égal",
+    "explanationFr": "L'Unique dans Son essence, Ses attributs et Ses actes.",
+    "category": "Unicité (Tawhid)"
+  },
+  {
+    "number": 67,
+    "arabic": "اَلاَحَدُ",
+    "transliteration": "Al Ahad",
+    "meaningEn": "The One",
+    "meaningFr": "L'Indivisible",
+    "explanationFr": "L'Unique qui n'a ni associé, ni semblable, ni pair.",
+    "category": "Unicité (Tawhid)"
+  },
+  {
+    "number": 68,
+    "arabic": "الصَّمَدُ",
+    "transliteration": "As Samad",
+    "meaningEn": "The Supreme Provider",
+    "meaningFr": "Le Refuge suprême, L'Impénétrable",
+    "explanationFr": "Celui vers qui toutes les créatures se tournent pour leurs besoins.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 69,
+    "arabic": "الْقَادِرُ",
+    "transliteration": "Al Qaadir",
+    "meaningEn": "The Powerful",
+    "meaningFr": "Le Tout-Puissant",
+    "explanationFr": "Celui qui a le pouvoir complet d'accomplir tout ce qu'Il veut.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 70,
+    "arabic": "الْمُقْتَدِرُ",
+    "transliteration": "Al Muqtadir",
+    "meaningEn": "The Creator of all power",
+    "meaningFr": "Le Déterminateur suprême",
+    "explanationFr": "Celui qui applique Sa puissance selon une mesure et un décret parfaits.",
+    "category": "Puissance & Grandeur"
+  },
+  {
+    "number": 71,
+    "arabic": "الْمُقَدِّمُ",
+    "transliteration": "Al Muqaddim",
+    "meaningEn": "The Expediter",
+    "meaningFr": "Celui qui avance",
+    "explanationFr": "Celui qui accorde la préséance et avance les choses selon Sa volonté.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 72,
+    "arabic": "الْمُؤَخِّرُ",
+    "transliteration": "Al Mu’akhir",
+    "meaningEn": "The Delayer",
+    "meaningFr": "Celui qui retarde",
+    "explanationFr": "Celui qui diffère les événements et les décrets jusqu'au moment opportun.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 73,
+    "arabic": "الأوَّلُ",
+    "transliteration": "Al Awwal",
+    "meaningEn": "The First",
+    "meaningFr": "Le Premier sans commencement",
+    "explanationFr": "Celui qui existait avant toute chose créée.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 74,
+    "arabic": "الآخِرُ",
+    "transliteration": "Al Aakhir",
+    "meaningEn": "The Last",
+    "meaningFr": "Le Dernier sans fin",
+    "explanationFr": "Celui qui subsistera éternellement après la fin de toute chose.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 75,
+    "arabic": "الظَّاهِرُ",
+    "transliteration": "Az Zaahir",
+    "meaningEn": "The Manifest",
+    "meaningFr": "Le Manifeste, L'Apparent",
+    "explanationFr": "Celui dont les signes et les preuves de l'existence éclatent partout.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 76,
+    "arabic": "الْبَاطِنُ",
+    "transliteration": "Al Baatin",
+    "meaningEn": "The Hidden",
+    "meaningFr": "Le Caché, Le Mystérieux",
+    "explanationFr": "Celui que les regards ne peuvent saisir dans Sa réalité profonde.",
+    "category": "Science & Connaissance"
+  },
+  {
+    "number": 77,
+    "arabic": "الْوَالِي",
+    "transliteration": "Al Waali",
+    "meaningEn": "The Governor",
+    "meaningFr": "Le Maître régent",
+    "explanationFr": "Celui qui administre et gouverne toute la création avec autorité.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 78,
+    "arabic": "الْمُتَعَالِي",
+    "transliteration": "Al Muta’ali",
+    "meaningEn": "The Supreme One",
+    "meaningFr": "Le Très-Exalté",
+    "explanationFr": "Celui qui transcende toute pensée, attribut imparfait ou défaut.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 79,
+    "arabic": "الْبَرُّ",
+    "transliteration": "Al Barr",
+    "meaningEn": "The Doer of Good",
+    "meaningFr": "Le Bienfaisant, La Source de bonté",
+    "explanationFr": "Celui dont la bonté, la douceur et la bienveillance sont incommensurables.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 80,
+    "arabic": "التَّوَابُ",
+    "transliteration": "At Tawwaab",
+    "meaningEn": "The Guide to Repentence",
+    "meaningFr": "L'Accueillant au repentir",
+    "explanationFr": "Celui qui accepte sans cesse le retour sincère de Ses serviteurs.",
+    "category": "Pardon & Clémence"
+  },
+  {
+    "number": 81,
+    "arabic": "الْمُنْتَقِمُ",
+    "transliteration": "Al Muntaqim",
+    "meaningEn": "The Avenger",
+    "meaningFr": "Le Vengeur légitime",
+    "explanationFr": "Celui qui rétribue justement les tyrans et les oppresseurs impénitents.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 82,
+    "arabic": "العَفُوُّ",
+    "transliteration": "Al Afuww",
+    "meaningEn": "The Forgiver",
+    "meaningFr": "L'Indulgent qui efface",
+    "explanationFr": "Celui qui efface complètement les péchés comme s'ils n'avaient jamais existé.",
+    "category": "Pardon & Clémence"
+  },
+  {
+    "number": 83,
+    "arabic": "الرَّؤُوفُ",
+    "transliteration": "Ar Ra’oof",
+    "meaningEn": "The Clement",
+    "meaningFr": "Le Très-Compatissant",
+    "explanationFr": "D'une tendresse et d'une pitié infinies envers Ses créatures.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 84,
+    "arabic": "مَالِكُ الْمُلْكِ",
+    "transliteration": "Maalik Ul Mulk",
+    "meaningEn": "The Owner / Soverign of All",
+    "meaningFr": "Le Maître du Royaume",
+    "explanationFr": "Le Propriétaire souverain de tout l'univers et de tout ce qu'il renferme.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 85,
+    "arabic": "ذُوالْجَلاَلِ وَالإكْرَامِ",
+    "transliteration": "Dhu Al Jalaali Wa Al Ikraam",
+    "meaningEn": "Possessor of Majesty and Bounty",
+    "meaningFr": "Le Détenteur de Majesté et de Noblesse",
+    "explanationFr": "Le Seul digne de vénération, d'honneur suprême et d'adoration.",
+    "category": "Souveraineté & Majesté"
+  },
+  {
+    "number": 86,
+    "arabic": "الْمُقْسِطُ",
+    "transliteration": "Al Muqsit",
+    "meaningEn": "The Equitable One",
+    "meaningFr": "L'Équitable suprême",
+    "explanationFr": "Celui qui rend justice à l'opprimé face à l'oppresseur.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 87,
+    "arabic": "الْجَامِعُ",
+    "transliteration": "Al Jaami'",
+    "meaningEn": "The Gatherer",
+    "meaningFr": "Le Rassembleur",
+    "explanationFr": "Celui qui rassemblera toute l'humanité pour le Jour sans doute.",
+    "category": "Justice & Équité"
+  },
+  {
+    "number": 88,
+    "arabic": "الْغَنِيُّ",
+    "transliteration": "Al Ghaniyy",
+    "meaningEn": "The Rich One",
+    "meaningFr": "Le Riche absolu",
+    "explanationFr": "Celui qui se suffit à Lui-même et n'a besoin d'aucune créature.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 89,
+    "arabic": "الْمُغْنِي",
+    "transliteration": "Al Mughi",
+    "meaningEn": "The Enricher",
+    "meaningFr": "Celui qui enrichit",
+    "explanationFr": "Celui qui comble Ses serviteurs de richesses matérielles et spirituelles.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 90,
+    "arabic": "اَلْمَانِعُ",
+    "transliteration": "Al Maani'",
+    "meaningEn": "The Preventer of harm",
+    "meaningFr": "Le Défenseur, Celui qui empêche",
+    "explanationFr": "Celui qui préserve du mal et retient ce qui pourrait nuire selon Sa sagesse.",
+    "category": "Protection & Vigilance"
+  },
+  {
+    "number": 91,
+    "arabic": "الضَّارَّ",
+    "transliteration": "Ad Daaarr",
+    "meaningEn": "The Creator of the harmful",
+    "meaningFr": "Celui qui permet l'adversité",
+    "explanationFr": "Celui qui décrète les épreuves pour éprouver, purifier et enseigner la patience.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 92,
+    "arabic": "النَّافِعُ",
+    "transliteration": "An Naafi’",
+    "meaningEn": "The Bestower of Benefits",
+    "meaningFr": "L'Auteur du profit et du bien",
+    "explanationFr": "La Source de tout bénéfice, guérison et utilité dans l'existence.",
+    "category": "Générosité & Bienfaits"
+  },
+  {
+    "number": 93,
+    "arabic": "النُّورُ",
+    "transliteration": "An Noor",
+    "meaningEn": "The Light",
+    "meaningFr": "La Lumière",
+    "explanationFr": "Celui qui illumine les cieux, la terre et les cœurs des croyants.",
+    "category": "Pureté & Perfection"
+  },
+  {
+    "number": 94,
+    "arabic": "الْهَادِي",
+    "transliteration": "Al Haadi",
+    "meaningEn": "The Guider",
+    "meaningFr": "Le Guide",
+    "explanationFr": "Celui qui guide les âmes vers la vérité, la droiture et la paix.",
+    "category": "Miséricorde & Bienveillance"
+  },
+  {
+    "number": 95,
+    "arabic": "الْبَدِيعُ",
+    "transliteration": "Al Badi'",
+    "meaningEn": "The Originator",
+    "meaningFr": "Le Créateur admirable et incomparable",
+    "explanationFr": "Celui qui a conçu l'univers avec une créativité et une harmonie sans égales.",
+    "category": "Création & Puissance"
+  },
+  {
+    "number": 96,
+    "arabic": "اَلْبَاقِي",
+    "transliteration": "Al Baaqi",
+    "meaningEn": "The Everlasting One",
+    "meaningFr": "Le Permanent, L'Éternel",
+    "explanationFr": "Celui dont l'existence ne connaît aucune fin ni altération.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 97,
+    "arabic": "الْوَارِثُ",
+    "transliteration": "Al Waarith",
+    "meaningEn": "The Inhertior",
+    "meaningFr": "L'Héritier de tout",
+    "explanationFr": "Celui à qui reviendra tout le cosmos lorsque la création aura disparu.",
+    "category": "Éternité & Subsistance"
+  },
+  {
+    "number": 98,
+    "arabic": "الرَّشِيدُ",
+    "transliteration": "Ar Rasheed",
+    "meaningEn": "The Most Righteous Guide",
+    "meaningFr": "Le Guide droit, Le Parfaitement avisé",
+    "explanationFr": "Celui dont tous les actes et décrets conduisent infailliblement au bien.",
+    "category": "Justice & Sagesse"
+  },
+  {
+    "number": 99,
+    "arabic": "الصَّبُورُ",
+    "transliteration": "As Saboor",
+    "meaningEn": "The Patient One",
+    "meaningFr": "Le Très-Patient",
+    "explanationFr": "Celui dont la patience infinie embrasse la création sans précipitation.",
+    "category": "Pardon & Clémence"
+  }
+]

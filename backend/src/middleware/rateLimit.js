@@ -46,3 +46,14 @@ export function createChatRateLimiter() {
     },
   });
 }
+
+/** Créer un rate-limiter avec des options personnalisées. */
+export function createRateLimiter({ windowMs = 60_000, max = 60 } = {}) {
+  return rateLimit({
+    windowMs,
+    limit: max,
+    standardHeaders,
+    legacyHeaders,
+    message: { error: 'Trop de requêtes. Réessayez plus tard.', retryAfter: Math.ceil(windowMs / 1000) },
+  });
+}

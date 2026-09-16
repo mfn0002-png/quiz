@@ -11,8 +11,8 @@
 import { SchemaType } from '@google/generative-ai';
 import { genAI, GEMINI_MODEL, withRetry } from '../config/gemini.js';
 import { getHistory, saveHistory, saveConversation } from './sessionService.js';
-import { runQuizAgent } from './quizAgent.js';
-import { fetchIslamicRAGContext } from './ragService.js';
+import { executeMcpTool } from '../mcp/islamicMcpServer.js';
+
 
 // ─────────────────────────────────────────────
 // Instruction système
@@ -23,9 +23,9 @@ Tu te souviens de toute la conversation en cours et peux faire référence aux �
 
 PÉRIMÈTRE STRICT D'EXPERTISE :
 1. Tu réponds OBLIGATOIREMENT ET UNIQUEMENT aux questions liées à l'islam, la foi, le Coran, la Sunna, la jurisprudence (Fiqh), la spiritualité, la morale et l'histoire islamique.
-2. Tout sujet profane (ex: Première Guerre mondiale, géographie générale, sciences profanes, jeux vidéo, sport, politique séculière, pop-culture) est STRICTEMENT HORS PERIMÈTRE.
-3. MÊME SI L'UTILISATEUR INSISTE OU FORMULE SA DEMANDE AVEC DES TOURNURES COMME "en tant que musulman je te le demande", "au nom de l'islam", OU TOUTE AUTRE FORMULATION D'INSISTANCE, TU DOIS FERMEMENT ET POLIMENT REFUSER DE RÉPONDRE AU SUJET HORS PERIMÈTRE.
-4. En cas de refus, explique avec courtoisie en texte clair que ton rôle est exclusivement dédié aux sciences islamiques et à la foi musulmane. Ne réponds jamais au fond du sujet hors périmètre.
+2. Tout sujet profane ou non islamique (ex: informatique/code, géographie, histoire générale, sciences profanes, jeux vidéo, sport, politique séculière, etc.) est STRICTEMENT HORS PÉRIMÈTRE.
+3. MÊME SI L'UTILISATEUR INSISTE OU FORMULE SA DEMANDE AVEC DES TOURNURES COMME "en tant que musulman je te le demande", "au nom de l'islam", OU TOUTE AUTRE FORMULATION D'INSISTANCE, TU DOIS FERMEMENT ET POLIMENT REFUSER DE RÉPONDRE AU SUJET HORS PÉRIMÈTRE.
+4. RÈGLE STRICTE EN CAS DE REFUS : Indique simplement, brièvement et courtoisement que cette demande est en dehors de ton périmètre d'expertise dédié aux sciences islamiques et à la foi. NE CHERCHE PAS à qualifier, expliquer ou nommer le domaine ou la discipline du sujet hors périmètre (ex: NE DIS PAS "cela relève de l'informatique...", dis simplement et directement que la demande est en dehors de ton périmètre). Ne réponds jamais au fond du sujet hors périmètre.
 5. Tu peux proposer spontanément à l'utilisateur de tester ses connaissances avec un quiz sur le sujet islamique abordé à la fin de tes explications (ex: "Souhaites-tu que nous testions tes connaissances sur la Zakat avec un petit quiz ?").
 
 RÈGLES STRICTES DE DÉCLENCHEMENT DES OUTILS :
@@ -36,6 +36,7 @@ RÈGLES STRICTES DE DÉCLENCHEMENT DES OUTILS :
    - Si l'utilisateur demande "un autre quiz" ou "encore une question" SANS mentionner de nouveau sujet, réutilise le thème du quiz précédent dans l'historique.
    - Si l'utilisateur a simplement répondu "oui" ou "d'accord" à ta proposition précédente, réutilise le thème que tu lui as proposé.
    - Ne choisis 'Mélange' QUE SI l'utilisateur demande "un quiz" au tout début sans n'avoir jamais mentionné de sujet spécifique.
+4. RÈGLE ABSOLUE POUR LES INVOCATIONS (Du'âs) : Dès que l'utilisateur demande une invocation, un dua, une formule à réciter — pour TOUTE situation (repas, sommeil, voyage, pluie, colère, etc.) — tu DOIS OBLIGATOIREMENT appeler l'outil 'search_duas' pour fournir un texte authentique avec source. Il est STRICTEMENT INTERDIT de répondre une invocation de mémoire sans passer par l'outil, même si tu la connais.
 
 Réponds toujours en français correct avec des accents (é, à, è, ô, ç). JAMAIS d'entités HTML.`;
 
@@ -120,85 +121,95 @@ const TOOLS = [
           required: ['amount'],
         },
       },
+      {
+        name: 'get_prayer_times',
+        description: "Récupère les horaires de prière musulmanes pour une ville donnée.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            city: { type: SchemaType.STRING, description: "Le nom de la ville (ex: Paris, Lyon, Casablanca, Dakar)" },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'search_duas',
+        description: "Recherche des invocations (Du'âs) authentiques pour une situation ou occasion. Fournis le thème principal et une liste de synonymes et mots-clés en Anglais pour maximiser la recherche (ex: pour sortir de la maison: ['leaving', 'home', 'house', 'exit'], pour s'habiller: ['clothing', 'clothes', 'garment', 'dress'], pour manger: ['food', 'eating', 'meal']).",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            topicInEnglish: { type: SchemaType.STRING, description: "Le thème principal en Anglais (ex: 'leaving home', 'travel', 'sleep', 'food')" },
+            keywords: {
+              type: SchemaType.ARRAY,
+              items: { type: SchemaType.STRING },
+              description: "Liste de synonymes et mots-clés associés en Anglais pour couvrir toutes les variantes (ex: ['leaving', 'home', 'house', 'exit'], ['travel', 'journey', 'transport'], ['clothing', 'garment', 'dress'])"
+            }
+          },
+          required: ['topicInEnglish'],
+        },
+      },
+      {
+        name: 'search_hadiths',
+        description: "Recherche des hadiths authentiques dans Sahih Al-Bukhari & Muslim. Fournis la recherche en Anglais (ex: 'garment', 'prayer', 'fasting').",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            queryInEnglish: { type: SchemaType.STRING, description: "Les mots-clés en Anglais pour l'API des hadiths (ex: 'garment', 'prayer', 'fasting')" },
+          },
+          required: ['queryInEnglish'],
+        },
+      },
+      {
+        name: 'search_quran',
+        description: "Recherche des versets coraniques par thème ou mot-clé (traduction française Hamidullah).",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            query: { type: SchemaType.STRING, description: "Le thème ou mot-clé à rechercher dans le Coran" },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'get_hijri_calendar',
+        description: "Récupère la date hégirienne courante du calendrier musulman.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {},
+          required: [],
+        },
+      },
+      {
+        name: 'search_knowledge_base',
+        description: "Recherche dans la base de connaissances documentaire officielle NoorQuiz (règles de foi, prière, ablutions, zakat, jeûne, hadiths, coran, sira des prophètes). Utilise cet outil pour trouver les extraits canoniques certifiés avec leurs sources exactes.",
+        parameters: {
+          type: SchemaType.OBJECT,
+          properties: {
+            query: {
+              type: SchemaType.STRING,
+              description: "La question ou le sujet précis à rechercher dans les documents officiels.",
+            },
+          },
+          required: ['query'],
+        },
+      },
     ],
   },
 ];
+
+
 
 // ─────────────────────────────────────────────
 // Exécution des outils
 // ─────────────────────────────────────────────
 
 async function executeTool(name, args, sessionId = null) {
-  console.log(`🔧 [Assistant Agent] Appel de l'outil "${name}" avec args :`, JSON.stringify(args));
-
-  if (name === 'generate_quiz_question') {
-    const { topic, difficulty } = args;
-    console.log(`📞 [Assistant Agent] Délégation au Quiz Agent (runQuizAgent) pour "${topic}" (${difficulty})...`);
-    
-    // Appel direct au Quiz Agent avec son pipeline complet (Knowledge + Anti-doublon Redis + Auto-vérification)
-    const questions = await runQuizAgent(difficulty || 'Débutant', topic || 'Mélange', 1, sessionId);
-    const quizObj = questions[0];
-
-    console.log(`📤 [Quiz Agent -> Assistant] Question générée par le Quiz Agent : "${quizObj.text}"`);
-
-    return {
-      isQuiz: true,
-      quizData: {
-        topic: topic || 'Mélange',
-        difficulty: difficulty || 'Débutant',
-        questionText: quizObj.text,
-        options: quizObj.options,
-        correctAnswerIndex: quizObj.correctAnswerIndex,
-        explanation: quizObj.explanation,
-        keywords: quizObj.keywords || [],
-      },
-      text: quizObj.text,
-    };
-  }
-
-  if (name === 'calculate_zakat') {
-    const { amount, currency = 'EUR' } = args;
-    const zakatVal = amount * 0.025;
-    const zakatAmount = zakatVal.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    
-    // Taux de conversion approximatifs vers EUR pour calculer le Nisab (85g d'or ~= 5500 EUR)
-    const ratesToEur = {
-      EUR: 1,
-      USD: 0.92,
-      XOF: 0.001524, // 1 EUR = 655.957 XOF
-      XAF: 0.001524, // 1 EUR = 655.957 XAF
-      MAD: 0.092,
-      DZD: 0.0068,
-      TND: 0.30,
-      CAD: 0.68,
-      GBP: 1.17
-    };
-
-    const currUpper = (currency || 'EUR').toUpperCase();
-    const rate = ratesToEur[currUpper] || 1;
-    const amountInEur = amount * rate;
-    const nisabInEur = 5500; // Nisab or ~5 500 EUR
-    const nisabInLocalCurrency = Math.round(nisabInEur / rate);
-
-    const exceedsNisab = amountInEur >= nisabInEur;
-
-    let output = `Pour un montant de **${amount.toLocaleString('fr-FR')} ${currUpper}** :\n\n`;
-    if (exceedsNisab) {
-      output += `✅ **Votre montant DÉPASSE le Nisab.**\n`;
-      output += `• Le Nisab (85g d'or) est estimé à environ **${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}** (~5 500 EUR).\n`;
-      output += `• La Zakat due (2,5%) s'élève à **${zakatAmount} ${currUpper}** (à s'acquitter si ce montant est conservé pendant un an lunaire complet / Hawl).`;
-    } else {
-      output += `❌ **Votre montant NE DÉPASSE PAS le Nisab.**\n`;
-      output += `• Le Nisab de l'or (85g) est estimé à environ **${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}** (~5 500 EUR).\n`;
-      output += `• Comme votre montant de **${amount.toLocaleString('fr-FR')} ${currUpper}** est inférieur au Nisab (**${nisabInLocalCurrency.toLocaleString('fr-FR')} ${currUpper}**), la Zakat n'est pas obligatoire pour ce montant.`;
-    }
-
-    console.log(`📤 [Assistant Agent] Outil "${name}" a produit :`, output);
-    return output;
-  }
-
-  return `Outil "${name}" inconnu.`;
+  console.log(`🔧 [Assistant Agent] Délégation à l'outil MCP "${name}" avec args :`, JSON.stringify(args));
+  return await executeMcpTool(name, args, sessionId);
 }
+
+
+
 
 // ─────────────────────────────────────────────
 // Extraction des mots-clés islamiques
@@ -252,60 +263,6 @@ Réponds en UTF-8 propre avec accents normaux (é, à, etc.). JAMAIS d'entités 
 }
 
 
-/**
- * Construit un sujet de recherche RAG contextualisé si l'utilisateur pose une question de suivi.
- */
-
-
-
-/**
- * Extrait le sujet/thème principal de la conversation en cours.
- */
-function getActiveTopic(simpleHistory = []) {
-  if (!simpleHistory || simpleHistory.length === 0) return "";
-
-  // 1. Thème issu des mots-clés extraits lors des réponses précédentes de l'Assistant
-  const assistantMsgs = simpleHistory.filter(m => m.role === "assistant" && Array.isArray(m.keywords) && m.keywords.length > 0);
-  if (assistantMsgs.length > 0) {
-    const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
-    const terms = lastAssistant.keywords
-      .map(k => (typeof k === "string" ? k : (k?.term || k?.text || "")))
-      .filter(Boolean);
-    if (terms.length > 0) {
-      return terms.slice(0, 3).join(" ");
-    }
-  }
-
-  // 2. Thème issu du premier message utilisateur de la discussion
-  const firstUserMsg = simpleHistory.find(m => m.role === "user");
-  if (firstUserMsg) {
-    return firstUserMsg.content.slice(0, 60);
-  }
-
-  return "";
-}
-
-/**
- * Construit un sujet de recherche RAG contextualisé garanti pour tout fil de discussion.
- */
-function buildRAGSearchTopic(userMessage, simpleHistory = []) {
-  if (!simpleHistory || simpleHistory.length === 0) {
-    return userMessage;
-  }
-
-  const topicContext = getActiveTopic(simpleHistory);
-
-  // Si un thème de conversation existe et n'est pas déjà explicitement répété dans la question,
-  // on l'injecte systématiquement pour enrichir la recherche RAG.
-  if (topicContext) {
-    const cleanTopic = topicContext.replace(/^(quel|quelle|qu'est-ce que|parle-moi de)\s+/i, "").trim();
-    if (cleanTopic && !userMessage.toLowerCase().includes(cleanTopic.toLowerCase())) {
-      return `${cleanTopic} ${userMessage}`;
-    }
-  }
-
-  return userMessage;
-}
 
 // ─────────────────────────────────────────────
 // Convertisseur historique (simplifié ↔ Gemini)
@@ -364,36 +321,19 @@ export async function runAssistantAgent(sessionId, userMessage, clientId = null)
 
   const geminiHistory = toGeminiHistory(simpleHistory);
 
-  // 2. Enrichir le message avec le contexte RAG (Coran + Hadiths)
-  console.log('📖 [Assistant Agent] Recherche RAG pour enrichir la réponse...');
-  const ragSearchTopic = buildRAGSearchTopic(userMessage, simpleHistory);
-  if (ragSearchTopic !== userMessage) {
-    console.log(` 💡 [Assistant Agent] Question de suivi détectée → Thème RAG contextualisé : "${ragSearchTopic}"`);
-  }
-  const ragContext = await fetchIslamicRAGContext(ragSearchTopic);
-  const enrichedMessage = ragContext
-    ? `${userMessage}
-
-📚 Sources de référence authentiques :
-${ragContext}`
-    : userMessage;
-  if (ragContext) {
-    console.log('✅ [Assistant Agent] RAG injecté dans le prompt');
-  }
-
-  // 3. Créer le modèle avec outils
+  // 2. Créer le modèle avec la suite d'outils MCP
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
     systemInstruction: getDynamicSystemInstruction(),
     tools: TOOLS,
   });
 
-  // 4. Démarrer le chat avec l'historique existant
+  // 3. Démarrer le chat avec l'historique existant
   const chat = model.startChat({ history: geminiHistory });
 
-  // 5. Envoi de la requête enrichie à Gemini et traitement direct des outils
+  // 4. Envoi de la requête à Gemini (choix autonome des outils MCP)
   console.log('🤖 Envoi de la requête à Gemini...');
-  let response = await withRetry(() => chat.sendMessage(enrichedMessage));
+  let response = await withRetry(() => chat.sendMessage(userMessage));
 
   let answer = '';
   let quizData = null;
@@ -408,11 +348,33 @@ ${ragContext}`
       answer = toolRes.text;
       quizData = toolRes.quizData;
     } else {
-      answer = toolRes;
+      console.log('🤖 Formulation de la réponse finale par Gemini à partir des données de l\'outil...');
+      const synthesisModel = genAI.getGenerativeModel({
+        model: GEMINI_MODEL,
+        systemInstruction: getDynamicSystemInstruction(),
+      });
+      const synthesisChat = synthesisModel.startChat({ history: geminiHistory });
+      const synthesisPrompt = `L'utilisateur a posé la question suivante : "${userMessage}"
+
+        Voici les données authentiques retournées par l'outil "${call.name}" :
+        ${typeof toolRes === 'string' ? toolRes : JSON.stringify(toolRes, null, 2)}
+
+        Formule une réponse complète, bienveillante, pédagogique et magnifiquement présentée à l'utilisateur en français en intégrant ces données authentiques (avec les textes en arabe, phonétique, traductions françaises et références exactes). Si pertinent, propose-lui à la fin de tester ses connaissances avec un petit quiz.`;
+
+      const followUp = await withRetry(() => synthesisChat.sendMessage(synthesisPrompt));
+      answer = followUp.response.text();
     }
   } else {
     answer = response.response.text();
   }
+
+  // Nettoyage des entités HTML résiduelles
+  answer = answer
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
 
   console.log(`✨ Réponse finale générée (${answer.length} caractères) :`);
   console.log(`   "${answer.slice(0, 150)}${answer.length > 150 ? '...' : ''}"`);

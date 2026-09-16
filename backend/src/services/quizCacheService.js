@@ -33,7 +33,12 @@ export async function saveQuestionsToPool(questions, difficulty, topic) {
 
   let existing = [];
   if (redis) {
-    existing = (await redis.get(key)) || [];
+    try {
+      existing = (await redis.get(key)) || [];
+    } catch (err) {
+      console.warn(`⚠️ [Quiz Cache Redis get error, fallback memoryStore] ${err.message}`);
+      existing = memoryStore.get(key) || [];
+    }
   } else {
     existing = memoryStore.get(key) || [];
   }
@@ -45,7 +50,12 @@ export async function saveQuestionsToPool(questions, difficulty, topic) {
   const updatedPool = [...existing, ...newQuestions].slice(-100); // Conserver jusqu'à 100 questions par catégorie
 
   if (redis) {
-    await redis.set(key, updatedPool, { ex: TTL_CACHE_POOL });
+    try {
+      await redis.set(key, updatedPool, { ex: TTL_CACHE_POOL });
+    } catch (err) {
+      console.warn(`⚠️ [Quiz Cache Redis set error, fallback memoryStore] ${err.message}`);
+      memoryStore.set(key, updatedPool);
+    }
   } else {
     memoryStore.set(key, updatedPool);
   }
@@ -64,7 +74,12 @@ export async function getQuestionsFromPool(difficulty, topic, count = 5) {
 
   let pool = [];
   if (redis) {
-    pool = (await redis.get(key)) || (await redis.get(fallbackKey)) || [];
+    try {
+      pool = (await redis.get(key)) || (await redis.get(fallbackKey)) || [];
+    } catch (err) {
+      console.warn(`⚠️ [Quiz Cache Redis get pool error, fallback memoryStore] ${err.message}`);
+      pool = memoryStore.get(key) || memoryStore.get(fallbackKey) || [];
+    }
   } else {
     pool = memoryStore.get(key) || memoryStore.get(fallbackKey) || [];
   }

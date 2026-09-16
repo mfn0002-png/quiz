@@ -22,6 +22,11 @@ interface Message {
   assistantData?: AssistantResponse;
 }
 
+interface AssistantProps {
+  isCompact?: boolean;
+  apiUrl?: string; // URL du backend — si absent, utilise VITE_API_BASE_URL du .env
+}
+
 const DEFAULT_WELCOME_MSG: Message = {
   id: 0,
   role: 'assistant',
@@ -29,7 +34,7 @@ const DEFAULT_WELCOME_MSG: Message = {
   assistantData: { answer: '', keywords: [] }
 };
 
-export function Assistant() {
+export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
   const clientId = getClientSessionId();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(() => {
@@ -37,6 +42,9 @@ export function Assistant() {
   });
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
   const [isLoadingConvs, setIsLoadingConvs] = useState<boolean>(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(() => {
+    return !!localStorage.getItem('quiz_active_conv_id');
+  });
   const [showHistoryDrawer, setShowHistoryDrawer] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<Message[]>([DEFAULT_WELCOME_MSG]);
@@ -59,7 +67,7 @@ export function Assistant() {
   const refreshConversations = async () => {
     setIsLoadingConvs(true);
     try {
-      const list = await getAssistantConversations(clientId);
+      const list = await getAssistantConversations(clientId, apiUrl);
       setConversations(list);
     } catch (err) {
       console.error('Erreur chargement liste conversations:', err);
@@ -76,10 +84,12 @@ export function Assistant() {
   const loadConversationMessages = async (convId: string | null) => {
     if (!convId) {
       setMessages([DEFAULT_WELCOME_MSG]);
+      setIsLoadingMessages(false);
       return;
     }
+    setIsLoadingMessages(true);
     try {
-      const history = await getAssistantHistory(convId);
+      const history = await getAssistantHistory(convId, apiUrl);
       if (history && history.length > 0) {
         const loadedMsgs = history.map((msg, index) => {
           let quote: string | null = msg.quote || null;
@@ -113,6 +123,8 @@ export function Assistant() {
     } catch (err) {
       console.error("Erreur chargement historique :", err);
       setMessages([DEFAULT_WELCOME_MSG]);
+    } finally {
+      setIsLoadingMessages(false);
     }
   };
 
@@ -174,6 +186,11 @@ export function Assistant() {
   }, [messages, loading]);
 
   const handleSelectConv = (convId: string) => {
+    if (convId === activeConvId) {
+      setShowHistoryDrawer(false);
+      return;
+    }
+    setIsLoadingMessages(true);
     setActiveConvId(convId);
     localStorage.setItem('quiz_active_conv_id', convId);
     setShowHistoryDrawer(false);
@@ -183,13 +200,14 @@ export function Assistant() {
     setActiveConvId(null);
     localStorage.removeItem('quiz_active_conv_id');
     setMessages([DEFAULT_WELCOME_MSG]);
+    setIsLoadingMessages(false);
     setShowHistoryDrawer(false);
     setErrorBanner(null);
   };
 
   const handleDeleteConv = async (e: React.MouseEvent, convId: string) => {
     e.stopPropagation();
-    await deleteAssistantConversation(convId, clientId);
+    await deleteAssistantConversation(convId, clientId, apiUrl);
     setConversations(prev => prev.filter(c => c.id !== convId));
 
     if (activeConvId === convId) {
@@ -277,7 +295,7 @@ export function Assistant() {
         ? `> "${userMsg.quote}"\n\n${userMsg.content}`
         : userMsg.content;
 
-      const response = await askQuestion(formattedQuestion, activeConvId, clientId);
+      const response = await askQuestion(formattedQuestion, activeConvId, clientId, apiUrl);
 
       if (response.conversationId && response.conversationId !== activeConvId) {
         setActiveConvId(response.conversationId);
@@ -322,22 +340,29 @@ export function Assistant() {
 
   return (
     <div style={{
-      maxWidth: '900px',
+      maxWidth: isCompact ? '100%' : '960px',
+      width: '100%',
       margin: '0 auto',
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100vh - 140px)',
+      height: '100%',
+      flex: 1,
+      minHeight: 0,
       position: 'relative',
+      overflow: 'hidden',
+      padding: isCompact ? '0.5rem' : '0.85rem 1.25rem 0.65rem 1.25rem',
+      boxSizing: 'border-box',
     }}>
       {errorBanner && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           border: '1px solid rgba(239, 68, 68, 0.3)',
           color: 'var(--error-color)',
-          padding: '0.75rem 1rem',
+          padding: isCompact ? '0.5rem 0.75rem' : '0.75rem 1rem',
           borderRadius: '12px',
-          marginBottom: '0.75rem',
-          fontSize: '0.9rem',
+          marginBottom: isCompact ? '0.4rem' : '0.65rem',
+          fontSize: isCompact ? '0.82rem' : '0.9rem',
+          flexShrink: 0,
         }}>
           <strong>⚠️ {errorBanner.message}</strong>
           {errorBanner.detail && <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.8 }}>{errorBanner.detail}</div>}
@@ -348,37 +373,49 @@ export function Assistant() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0.75rem 1rem',
+        padding: isCompact ? '0.4rem 0.65rem' : '0.65rem 1rem',
         backgroundColor: 'var(--surface-color)',
         border: '1px solid rgba(0,0,0,0.08)',
-        borderRadius: '16px',
-        marginBottom: '0.75rem',
+        borderRadius: isCompact ? '12px' : '16px',
+        marginBottom: isCompact ? '0.45rem' : '0.65rem',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isCompact ? '0.4rem' : '0.6rem', minWidth: 0, flex: 1 }}>
           <button
             onClick={() => setShowHistoryDrawer(!showHistoryDrawer)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '10px',
+              gap: '0.35rem',
+              padding: isCompact ? '0.35rem 0.6rem' : '0.5rem 0.85rem',
+              borderRadius: isCompact ? '8px' : '10px',
               border: '1px solid rgba(0,0,0,0.12)',
               backgroundColor: showHistoryDrawer ? 'var(--primary-color)' : 'var(--background-color)',
               color: showHistoryDrawer ? 'white' : 'var(--text-primary)',
-              fontSize: '0.88rem',
+              fontSize: isCompact ? '0.78rem' : '0.88rem',
               fontWeight: 600,
               cursor: 'pointer',
+              flexShrink: 0,
               transition: 'all 150ms',
             }}
             title="Afficher l'historique des discussions"
           >
-            <History size={16} className={isLoadingConvs ? 'spin' : ''} />
-            <span>{isLoadingConvs ? 'Chargement...' : `Historique (${conversations.length})`}</span>
+            <History size={isCompact ? 14 : 16} className={isLoadingConvs ? 'spin' : ''} />
+            <span>{isLoadingConvs ? '...' : isCompact ? `Historique (${conversations.length})` : `Historique (${conversations.length})`}</span>
           </button>
 
-          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px' }}>
+          <div style={{
+            fontSize: isCompact ? '0.78rem' : '0.88rem',
+            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+            minWidth: 0,
+            paddingRight: '0.5rem'
+          }}>
             {activeConv ? activeConv.title : 'Discussion en cours'}
           </div>
         </div>
@@ -388,21 +425,22 @@ export function Assistant() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.5rem 0.9rem',
-            borderRadius: '10px',
+            gap: '0.35rem',
+            padding: isCompact ? '0.35rem 0.65rem' : '0.5rem 0.9rem',
+            borderRadius: isCompact ? '8px' : '10px',
             border: 'none',
             backgroundColor: 'var(--primary-color)',
             color: 'white',
-            fontSize: '0.88rem',
+            fontSize: isCompact ? '0.78rem' : '0.88rem',
             fontWeight: 600,
             cursor: 'pointer',
+            flexShrink: 0,
             boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
             transition: 'all 150ms',
           }}
         >
-          <Plus size={16} />
-          <span>Nouvelle conversation</span>
+          <Plus size={isCompact ? 14 : 16} />
+          <span>{isCompact ? 'Nouveau' : 'Nouvelle conversation'}</span>
         </button>
       </div>
 
@@ -440,21 +478,35 @@ export function Assistant() {
       )}
 
       {/* Conteneur principal avec volet latéral d'historique */}
-      <div style={{ display: 'flex', flex: 1, gap: '0.75rem', minHeight: 0, position: 'relative' }}>
+      <div style={{
+        display: 'flex',
+        flex: 1,
+        gap: isCompact ? '0.4rem' : '0.75rem',
+        minHeight: 0,
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
 
         {/* Volet latéral (Sidebar / Drawer des conversations) */}
         {showHistoryDrawer && (
           <div style={{
-            width: '280px',
+            position: isCompact ? 'absolute' : 'relative',
+            top: isCompact ? 0 : undefined,
+            left: isCompact ? 0 : undefined,
+            right: isCompact ? 0 : undefined,
+            bottom: isCompact ? 0 : undefined,
+            width: isCompact ? '100%' : '280px',
+            height: '100%',
             flexShrink: 0,
             backgroundColor: 'var(--surface-color)',
             border: '1px solid rgba(0,0,0,0.08)',
-            borderRadius: '16px',
+            borderRadius: isCompact ? '12px' : '16px',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-            zIndex: 20,
+            boxShadow: isCompact ? '0 8px 30px rgba(0,0,0,0.2)' : '0 4px 16px rgba(0,0,0,0.08)',
+            zIndex: 30,
           }}>
             <div style={{
               padding: '0.85rem 1rem',
@@ -464,6 +516,7 @@ export function Assistant() {
               justifyContent: 'space-between',
               fontWeight: 700,
               fontSize: '0.92rem',
+              flexShrink: 0,
             }}>
               <span>📜 Discussions passées</span>
               <button
@@ -474,7 +527,7 @@ export function Assistant() {
               </button>
             </div>
 
-            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0.5rem' }}>
               {isLoadingConvs ? (
                 <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
                   ⏳ Chargement des discussions...
@@ -506,7 +559,7 @@ export function Assistant() {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-        justifyContent: 'space-between',
+                        justifyContent: 'space-between',
                         transition: 'all 150ms',
                       }}
                     >
@@ -557,157 +610,246 @@ export function Assistant() {
           style={{
             flex: 1,
             backgroundColor: 'var(--surface-color)',
-            borderRadius: '16px',
+            borderRadius: isCompact ? '12px' : '16px',
             border: '1px solid rgba(0,0,0,0.08)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
+            minHeight: 0,
+            height: '100%',
             boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
           }}
         >
-          {/* Zone des messages */}
-          <div className="custom-scrollbar" style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-          }}>
-            {messages.map((msg) => {
-              const isMsgHighlighted = msg.id === highlightedMsgId;
+          {isLoadingMessages ? (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              gap: '1.25rem',
+            }}>
+              <div style={{
+                width: '68px',
+                height: '68px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15))',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary-color)',
+                boxShadow: '0 4px 20px rgba(59, 130, 246, 0.12)',
+              }}>
+                <Bot size={36} />
+              </div>
 
-              return (
-                <div
-                  key={msg.id}
-                  data-msg-id={msg.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    backgroundColor: isMsgHighlighted ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
-                    borderRadius: '12px',
-                    padding: isMsgHighlighted ? '0.5rem' : '0',
-                    transition: 'background-color 300ms ease-in-out',
-                  }}
-                >
-                  {/* Ligne de citation au-dessus de la bulle utilisateur */}
-                  {msg.role === 'user' && msg.quote && (
-                    <div
-                      onClick={() => navigateToQuote(msg.quote!, msg.quoteMsgId)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        fontSize: '0.85rem',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '0.35rem',
-                        maxWidth: '80%',
-                        marginLeft: 'auto',
-                        justifyContent: 'flex-end',
-                        cursor: 'pointer',
-                        transition: 'opacity 150ms',
-                      }}
-                      title="Cliquer pour voir le passage d'origine dans la conversation"
-                    >
-                      <span style={{ fontSize: '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
-                      <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '350px' }}>
-                        "{msg.quote}"
-                      </span>
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '0.75rem',
-                      alignItems: 'flex-start',
-                      flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                    }}
-                  >
-                    {/* Avatar */}
-                    <div style={{
-                      width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                      backgroundColor: msg.role === 'user' ? 'var(--secondary-color)' : 'var(--primary-color)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {msg.role === 'user'
-                        ? <User size={18} color="white" />
-                        : <Bot size={18} color="white" />
-                      }
-                    </div>
-
-                    {/* Bulle */}
-                    <div style={{
-                      maxWidth: '80%',
-                      backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--background-color)',
-                      color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
-                      padding: '0.875rem 1.1rem',
-                      borderRadius: msg.role === 'user' ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      fontSize: '1rem',
-                      lineHeight: 1.7,
-                      border: msg.role === 'assistant' ? '1px solid rgba(0,0,0,0.06)' : 'none',
-                      whiteSpace: 'pre-wrap',
-                      transition: 'all 300ms ease-in-out',
-                    }}>
-                      {msg.role === 'assistant' && msg.assistantData?.quizData ? (
-                        <ChatQuizCard quizData={msg.assistantData.quizData} sessionId={clientId} msgId={msg.id} />
-                      ) : msg.role === 'assistant' && msg.assistantData && msg.id !== 0 ? (
-                        <>
-                          <KeywordText
-                            text={msg.content}
-                            keywords={msg.assistantData.keywords}
-                            highlightPassage={isMsgHighlighted ? highlightedPassage : null}
-                          />
-                          {msg.assistantData.keywords.length > 0 && (
-                            <div className="no-quote" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0' }}>
-                                ✨ Cliquez sur les mots surlignés pour leur définition
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        msg.content
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {loading && (
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%',
-                  backgroundColor: 'var(--primary-color)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+              <div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.45rem',
+                  lineHeight: 1.4,
                 }}>
-                  <Bot size={18} color="white" />
-                </div>
-                <div style={{
-                  backgroundColor: 'var(--background-color)',
-                  padding: '0.875rem 1.1rem',
-                  borderRadius: '4px 18px 18px 18px',
+                  Assalamu Alaykoum wa Rahmatullahi wa Barakatuh 🌙
+                </h3>
+                <p style={{
+                  fontSize: '0.92rem',
+                  color: 'var(--text-secondary)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  margin: 0,
                 }}>
-                  <Loader2 size={18} className="spin" style={{ color: 'var(--primary-color)' }} />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>L'assistant réfléchit...</span>
-                </div>
+                  <Loader2 size={16} className="spin" style={{ color: 'var(--primary-color)' }} />
+                  <span>Chargement de votre discussion en cours...</span>
+                </p>
               </div>
-            )}
 
-            <div ref={bottomRef} />
-          </div>
+              {/* Skeleton placeholders */}
+              <div style={{
+                width: '100%',
+                maxWidth: '440px',
+                marginTop: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                opacity: 0.6,
+              }}>
+                <div style={{
+                  alignSelf: 'flex-end',
+                  width: '55%',
+                  height: '40px',
+                  borderRadius: '16px 16px 4px 16px',
+                  backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                }} />
+                <div style={{
+                  alignSelf: 'flex-start',
+                  width: '80%',
+                  height: '60px',
+                  borderRadius: '16px 16px 16px 4px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                }} />
+              </div>
+            </div>
+          ) : (
+            /* Zone des messages */
+            <div className="custom-scrollbar" style={{
+              flex: 1,
+              overflowY: 'auto',
+              minHeight: 0,
+              padding: isCompact ? '0.75rem 0.65rem' : '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: isCompact ? '0.75rem' : '1.25rem',
+            }}>
+              {messages.map((msg) => {
+                const isMsgHighlighted = msg.id === highlightedMsgId;
+
+                return (
+                  <div
+                    key={msg.id}
+                    data-msg-id={msg.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                      backgroundColor: isMsgHighlighted ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                      borderRadius: '12px',
+                      padding: isMsgHighlighted ? (isCompact ? '0.35rem' : '0.5rem') : '0',
+                      transition: 'background-color 300ms ease-in-out',
+                    }}
+                  >
+                    {/* Ligne de citation au-dessus de la bulle utilisateur */}
+                    {msg.role === 'user' && msg.quote && (
+                      <div
+                        onClick={() => navigateToQuote(msg.quote!, msg.quoteMsgId)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          fontSize: isCompact ? '0.75rem' : '0.85rem',
+                          color: 'var(--text-secondary)',
+                          marginBottom: '0.25rem',
+                          maxWidth: isCompact ? '90%' : '80%',
+                          marginLeft: 'auto',
+                          justifyContent: 'flex-end',
+                          cursor: 'pointer',
+                          transition: 'opacity 150ms',
+                        }}
+                        title="Cliquer pour voir le passage d'origine dans la conversation"
+                      >
+                        <span style={{ fontSize: isCompact ? '0.95rem' : '1.1rem', lineHeight: 1, color: 'var(--primary-color)' }}>↳</span>
+                        <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: isCompact ? '220px' : '350px' }}>
+                          "{msg.quote}"
+                        </span>
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: isCompact ? '0.45rem' : '0.75rem',
+                        alignItems: 'flex-start',
+                        flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
+                      }}
+                    >
+                      {/* Avatar */}
+                      <div style={{
+                        width: isCompact ? '28px' : '36px',
+                        height: isCompact ? '28px' : '36px',
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        backgroundColor: msg.role === 'user' ? 'var(--secondary-color)' : 'var(--primary-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        {msg.role === 'user'
+                          ? <User size={isCompact ? 14 : 18} color="white" />
+                          : <Bot size={isCompact ? 14 : 18} color="white" />
+                        }
+                      </div>
+
+                      {/* Bulle */}
+                      <div style={{
+                        maxWidth: isCompact ? '88%' : '80%',
+                        backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--background-color)',
+                        color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
+                        padding: isCompact ? '0.55rem 0.8rem' : '0.875rem 1.1rem',
+                        borderRadius: msg.role === 'user' ? '14px 3px 14px 14px' : '3px 14px 14px 14px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        fontSize: isCompact ? '0.85rem' : '1rem',
+                        lineHeight: isCompact ? 1.5 : 1.7,
+                        border: msg.role === 'assistant' ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                        whiteSpace: 'pre-wrap',
+                        transition: 'all 300ms ease-in-out',
+                      }}>
+                        {msg.role === 'assistant' && msg.assistantData?.quizData ? (
+                          <ChatQuizCard quizData={msg.assistantData.quizData} sessionId={clientId} msgId={msg.id} />
+                        ) : msg.role === 'assistant' && msg.assistantData && msg.id !== 0 ? (
+                          <>
+                            <KeywordText
+                              text={msg.content}
+                              keywords={msg.assistantData.keywords}
+                              highlightPassage={isMsgHighlighted ? highlightedPassage : null}
+                            />
+                            {msg.assistantData.keywords.length > 0 && (
+                              <div className="no-quote" style={{ marginTop: isCompact ? '0.4rem' : '0.75rem', paddingTop: isCompact ? '0.4rem' : '0.75rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                                <p style={{ fontSize: isCompact ? '0.72rem' : '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.35rem 0' }}>
+                                  ✨ Cliquez sur les mots surlignés pour leur définition
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          msg.content
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {loading && (
+                <div style={{ display: 'flex', gap: isCompact ? '0.45rem' : '0.75rem', alignItems: 'center' }}>
+                  <div style={{
+                    width: isCompact ? '28px' : '36px',
+                    height: isCompact ? '28px' : '36px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--primary-color)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <Bot size={isCompact ? 14 : 18} color="white" />
+                  </div>
+                  <div style={{
+                    backgroundColor: 'var(--background-color)',
+                    padding: isCompact ? '0.55rem 0.8rem' : '0.875rem 1.1rem',
+                    borderRadius: '3px 14px 14px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}>
+                    <Loader2 size={isCompact ? 15 : 18} className="spin" style={{ color: 'var(--primary-color)' }} />
+                    <span style={{ color: 'var(--text-secondary)', fontSize: isCompact ? '0.82rem' : '0.95rem' }}>L'assistant réfléchit...</span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={bottomRef} />
+            </div>
+          )}
 
           {/* Formulaire de saisie */}
           <div style={{
-            padding: '1rem',
+            padding: isCompact ? '0.55rem 0.65rem' : '1rem',
             borderTop: '1px solid rgba(0,0,0,0.08)',
             backgroundColor: 'var(--surface-color)',
+            flexShrink: 0,
           }}>
             {/* Aperçu de la citation sélectionnée */}
             {quotedText && (
@@ -717,13 +859,13 @@ export function Assistant() {
                 justifyContent: 'space-between',
                 backgroundColor: 'rgba(56, 189, 248, 0.1)',
                 borderLeft: '4px solid #38bdf8',
-                padding: '0.5rem 0.85rem',
+                padding: isCompact ? '0.35rem 0.65rem' : '0.5rem 0.85rem',
                 borderRadius: '0 8px 8px 0',
-                marginBottom: '0.65rem',
-                fontSize: '0.88rem',
+                marginBottom: isCompact ? '0.45rem' : '0.65rem',
+                fontSize: isCompact ? '0.78rem' : '0.88rem',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden', flex: 1 }}>
-                  <MessageSquareQuote size={16} style={{ color: '#0284c7', flexShrink: 0 }} />
+                  <MessageSquareQuote size={isCompact ? 14 : 16} style={{ color: '#0284c7', flexShrink: 0 }} />
                   <span style={{ fontStyle: 'italic', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                     "{quotedText}"
                   </span>
@@ -741,32 +883,32 @@ export function Assistant() {
                   }}
                   title="Annuler la citation"
                 >
-                  <X size={15} />
+                  <X size={14} />
                 </button>
               </div>
             )}
 
-            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-end' }}>
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Posez votre question sur l'Islam (ex: Qu'est-ce que la Zakat ?)..."
+                placeholder="Posez votre question sur l'Islam..."
                 rows={1}
                 disabled={loading}
                 style={{
                   flex: 1,
-                  padding: '0.75rem 1rem',
+                  padding: isCompact ? '0.5rem 0.75rem' : '0.75rem 1rem',
                   borderRadius: '12px',
                   border: '1px solid rgba(0,0,0,0.15)',
                   backgroundColor: 'var(--background-color)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.95rem',
+                  fontSize: isCompact ? '0.85rem' : '0.95rem',
                   resize: 'none',
                   outline: 'none',
                   fontFamily: 'inherit',
-                  minHeight: '44px',
+                  minHeight: isCompact ? '38px' : '44px',
                   maxHeight: '120px',
                 }}
               />
@@ -774,8 +916,8 @@ export function Assistant() {
                 type="submit"
                 disabled={loading || !input.trim()}
                 style={{
-                  width: '44px',
-                  height: '44px',
+                  width: isCompact ? '38px' : '44px',
+                  height: isCompact ? '38px' : '44px',
                   borderRadius: '12px',
                   border: 'none',
                   backgroundColor: 'var(--primary-color)',
@@ -789,7 +931,7 @@ export function Assistant() {
                   transition: 'all 150ms',
                 }}
               >
-                {loading ? <Loader2 size={18} className="spin" /> : <Send size={18} />}
+                {loading ? <Loader2 size={isCompact ? 15 : 18} className="spin" /> : <Send size={isCompact ? 15 : 18} />}
               </button>
             </form>
           </div>

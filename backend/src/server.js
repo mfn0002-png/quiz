@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 
 import quizRouter from './routes/quiz.js';
 import assistantRouter from './routes/assistant.js';
+import sourcesRouter from './routes/sources.js';
+import learningRouter from './routes/learning.js';
 import {
   createAppRateLimiter,
   createGenerateRateLimiter,
@@ -37,6 +39,8 @@ app.use('/api/assistant/chat', createChatRateLimiter());
 // Routes
 app.use('/api/quiz', quizRouter);
 app.use('/api/assistant', assistantRouter);
+app.use('/api/sources', sourcesRouter);
+app.use('/api/learning', learningRouter);
 
 // Healthcheck
 app.get('/api/health', (req, res) => {

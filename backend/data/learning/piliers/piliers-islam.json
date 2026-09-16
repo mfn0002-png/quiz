@@ -1,0 +1,74 @@
+{
+  "id": "piliers-islam",
+  "format": "fiche",
+  "title": "Les 5 Piliers de l'Islam",
+  "subtitle": "Les fondements pratiques essentiels de la vie du musulman",
+  "category": "piliers",
+  "icon": "🕌",
+  "gradient": "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+  "badge": "Fondamental",
+  "summary": "L'Islam repose sur cinq actes fondamentaux d'adoration qui structurent la foi et les actions quotidiennes.",
+  "quizCategoryTarget": "Piliers de l'Islam",
+  "revision": 1,
+  "published": true,
+  "order": 1,
+  "sections": [
+    {
+      "id": "shahada",
+      "heading": "1. La Shahada (L'attestation de foi)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا ٱللَّٰهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ ٱللَّٰهِ",
+          "phonetic": "Ach-hadou an lâ ilâha ill-Allâh, wa ach-hadou anna Muhammadan rasûl-Allâh",
+          "translation": "« J'atteste qu'il n'y a de divinité digne d'adoration qu'Allah et j'atteste que Muhammad est Son serviteur et messager. »",
+          "citation": "Attestation de foi"
+        },
+        {
+          "type": "text",
+          "value": "C'est le témoignage qu'il n'y a de divinité digne d'adoration qu'Allah et que Muhammad est Son serviteur et messager. Elle constitue la clé d'entrée dans l'Islam."
+        }
+      ]
+    },
+    {
+      "id": "salat",
+      "heading": "2. La Salat (La prière rituelle)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Cinq prières quotidiennes obligatoires (Fajr, Dhuhr, Asr, Maghrib, Isha) qui maintiennent le lien permanent entre le croyant et son Créateur."
+        }
+      ]
+    },
+    {
+      "id": "zakat",
+      "heading": "3. La Zakat (L'aumône purificatrice)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Un prélèvement annuel de 2,5% sur l'épargne excédant le seuil (Nissab), destiné aux nécessiteux pour purifier les biens et instaurer la solidarité."
+        }
+      ]
+    },
+    {
+      "id": "sawm",
+      "heading": "4. Le Sawm (Le jeûne du mois de Ramadan)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "L'abstinence de nourriture, boisson et désirs de l'aube au coucher du soleil durant le 9ème mois lunaire, développant la piété et la maîtrise de soi."
+        }
+      ]
+    },
+    {
+      "id": "hajj",
+      "heading": "5. Le Hajj (Le grand pèlerinage à La Mecque)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Obligatoire au moins une fois dans sa vie pour toute personne ayant la capacité physique et financière requise."
+        }
+      ]
+    }
+  ]
+}

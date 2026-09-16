@@ -63,17 +63,17 @@ describe('useQuiz', () => {
     }));
   });
 
-  it('n\'active pas le minuteur de vies quand le quiz n\'est pas démarré', async () => {
+  it('rafraîchit continuellement l\'état des vies pour la navbar', async () => {
     vi.useFakeTimers();
     try {
       const { result } = renderHook(() => useQuiz(null));
-      expect(mocks.getGlobalLivesState).toHaveBeenCalledTimes(1); // init uniquement
+      expect(mocks.getGlobalLivesState).toHaveBeenCalledTimes(1); // init
 
       await act(async () => {
         vi.advanceTimersByTime(3000);
       });
-      // Toujours 1 appel : aucun timer de vies ne tourne hors quiz
-      expect(mocks.getGlobalLivesState).toHaveBeenCalledTimes(1);
+      // 1 appel init + 3 ticks du timer
+      expect(mocks.getGlobalLivesState).toHaveBeenCalledTimes(4);
 
       expect(result.current.started).toBe(false);
     } finally {

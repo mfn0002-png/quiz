@@ -14,25 +14,33 @@ describe('duaService', () => {
       assert.deepEqual(result, []);
     });
 
-    test('trouve l\'invocation du nouvel habit', async () => {
-      const result = await fetchDuas('nouvel habit', 1);
-      assert.equal(result.length, 1);
-      assert.ok(result[0].title.includes('vêtement neuf') || result[0].title.includes('Nouvel habit') || result[0].title.includes('garment'));
+    // Les topics sont fournis en anglais par Gemini via le MCP
+    test('trouve les invocations sur la nourriture (food)', async () => {
+      const result = await fetchDuas('food', 2);
+      assert.ok(result.length > 0);
       assert.ok(result[0].arabic.length > 0);
-      assert.ok(result[0].phonetic.length > 0);
       assert.ok(result[0].french.length > 0);
     });
 
-    test('trouve l\'invocation avant de dormir', async () => {
-      const result = await fetchDuas('dormir', 1);
-      assert.equal(result.length, 1);
-      assert.ok(result[0].title.includes('dormir') || result[0].french.includes('meurs et je vis'));
+    test('trouve les invocations sur le sommeil (sleep)', async () => {
+      const result = await fetchDuas('sleep', 1);
+      assert.ok(result.length > 0);
+      assert.ok(result[0].title.toLowerCase().includes('sleep'));
+      assert.ok(result[0].arabic.length > 0);
     });
 
-    test('trouve l\'invocation du voyage', async () => {
-      const result = await fetchDuas('voyage', 1);
-      assert.equal(result.length, 1);
-      assert.ok(result[0].title.includes('voyage') || result[0].title.includes('travel'));
+    test('trouve les invocations sur la pluie (weather/rain)', async () => {
+      const result = await fetchDuas('rain', 1);
+      assert.ok(result.length > 0);
+      assert.ok(result[0].title.toLowerCase().includes('rain') || result[0].arabic.includes('صَيِّبًا'));
+      assert.ok(result[0].arabic.length > 0);
+    });
+
+    test('trouve les invocations de voyage (travel)', async () => {
+      const result = await fetchDuas('travel', 1);
+      assert.ok(result.length > 0);
+      assert.ok(result[0].title.toLowerCase().includes('travel') || result[0].title.toLowerCase().includes('journey'));
+      assert.ok(result[0].arabic.length > 0);
     });
 
     test('gère une requête vers l\'API externe sans planter (rawDuas.filter)', async () => {

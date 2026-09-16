@@ -1,0 +1,182 @@
+{
+  "id": "prophet-idriss",
+  "format": "recit",
+  "title": "Idriss (عليه السلام)",
+  "subtitle": "Le véridique élevé à un haut rang",
+  "category": "prophetes",
+  "icon": "✒️",
+  "gradient": "linear-gradient(135deg, #6366f1 0%, #818cf8 100%)",
+  "badge": "Prophète",
+  "summary": "Qualifié par Allah de « véridique et prophète », Idriss fut élevé à un rang éminent. Son histoire, brève dans le Coran, enseigne que la constance silencieuse dans la vérité suffit à être honoré par Allah.",
+  "quizCategoryTarget": "Prophètes",
+  "revision": 1,
+  "estimatedMinutes": 5,
+  "chapters": [
+    {
+      "id": "idriss-siddiq",
+      "label": "Le véridique",
+      "title": "Un homme véridique et un prophète",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Allah ﷻ ordonne au Prophète Muhammad ﷺ de mentionner Idriss dans le Livre (le Coran), puis le qualifie avec deux titres éminents : « siddîq » (véridique) et « nabiyy » (prophète). Le titre de « siddîq » est l'un des plus élevés dans la hiérarchie spirituelle de l'Islam — il désigne celui dont la parole, la croyance et les actes sont en parfaite cohérence. Idriss n'est pas simplement un homme pieux : il est certifié par Allah Lui-même comme un modèle de vérité."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 19,
+            "ayah": 56
+          },
+          "note": "« Et mentionne Idriss dans le Livre. C'était un véridique et un prophète. »"
+        },
+        {
+          "type": "text",
+          "value": "La tradition islamique le situe entre Adam et Noé dans la chronologie prophétique et lui attribue d'avoir été le premier à écrire avec le calame (la plume), bien que cette information ne vienne pas directement du Coran."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Siddîq",
+          "definition": "Le véridique, le très sincère. Titre donné à ceux dont la foi, la parole et les actes sont en parfaite harmonie. C'est le rang juste en dessous de la prophétie.",
+          "arabic": "صديق"
+        },
+        {
+          "term": "Nabiyy",
+          "definition": "Prophète. Celui qui reçoit la révélation d'Allah pour guider un peuple ou transmettre un message.",
+          "arabic": "نبي"
+        }
+      ],
+      "checkpoint": {
+        "question": "Quels sont les deux titres qu'Allah accorde à Idriss dans le Coran ?",
+        "options": [
+          "Khalîl et Nabiyy",
+          "Siddîq et Nabiyy",
+          "Rasûl et Kalîm",
+          "Habîb et Siddîq"
+        ],
+        "correctIndex": 1,
+        "explanation": "« C'était un véridique (siddîq) et un prophète (nabiyy) » (19:56). Ces deux titres résument sa stature spirituelle."
+      }
+    },
+    {
+      "id": "idriss-elevation",
+      "label": "L'élévation",
+      "title": "Élevé à un rang éminent",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Après avoir qualifié Idriss, Allah ajoute : « Et Nous l'avons élevé à un haut rang. » Les exégètes du Coran ont proposé deux interprétations principales : une élévation spirituelle (en rang, en honneur et en proximité divine) et une élévation physique (certains mentionnent qu'Idriss fut élevé au quatrième ciel lors de l'Isrâ'). Le Coran, dans sa sagesse, laisse cette formulation ouverte."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 19,
+            "ayah": 57
+          },
+          "note": "« Et Nous l'avons élevé à un haut rang. »"
+        },
+        {
+          "type": "text",
+          "value": "Le passage d'Al-Anbiyâ' confirme un autre trait : Idriss fait partie des « endurants » (sâbirîn), aux côtés d'Ismaël et de Dhul-Kifl. Allah les fait tous entrer dans Sa miséricorde."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 21,
+            "ayah": 85
+          },
+          "note": "« Et Ismaël, et Idriss, et Dhul-Kifl — tous faisaient partie des endurants. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 21,
+            "ayah": 86
+          },
+          "note": "« Et Nous les fîmes entrer dans Notre miséricorde. »"
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Makânan 'aliyyâ",
+          "definition": "« Un haut rang / un lieu élevé ». Expression coranique désignant l'honneur accordé par Allah à Idriss.",
+          "arabic": "مكانا عليا"
+        },
+        {
+          "term": "As-Sâbirîn",
+          "definition": "Les endurants, les patients. Ceux qui persévèrent dans l'obéissance à Allah malgré les épreuves.",
+          "arabic": "الصابرين"
+        },
+        {
+          "term": "Rahmah",
+          "definition": "La miséricorde d'Allah, dans laquelle Il fait entrer Ses serviteurs fidèles.",
+          "arabic": "رحمة"
+        }
+      ],
+      "checkpoint": {
+        "question": "Que dit le Coran sur le rang d'Idriss ?",
+        "options": [
+          "Qu'il était le plus riche des prophètes",
+          "Qu'Allah l'a élevé à un haut rang",
+          "Qu'il a vécu 950 ans",
+          "Qu'il a construit la Kaaba"
+        ],
+        "correctIndex": 1,
+        "explanation": "« Et Nous l'avons élevé à un haut rang (makânan 'aliyyâ) » (19:57). C'est un honneur divin accordé pour sa sincérité."
+      }
+    },
+    {
+      "id": "idriss-lecons",
+      "label": "Les leçons",
+      "title": "Les leçons d'une mention brève",
+      "ambient": "linear-gradient(180deg, rgba(99, 102, 241, 0.06) 0%, var(--surface-color) 100%)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Pourquoi le Coran mentionne-t-il Idriss en si peu de mots ? Cette brièveté est elle-même une leçon. Le Coran n'est pas un livre d'histoire : il sélectionne ce qui est utile pour la guidée. D'Idriss, Allah retient trois qualités essentielles :"
+        },
+        {
+          "type": "list",
+          "items": [
+            "La véracité (sidq) — être en accord avec ce qu'on professe",
+            "La patience (sabr) — endurer les épreuves du chemin de la foi",
+            "L'élévation par la piété — ce n'est ni la richesse ni la lignée qui élèvent, mais la sincérité envers Allah"
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Ces trois qualités sont accessibles à tout croyant. Idriss nous rappelle qu'on n'a pas besoin d'un récit spectaculaire pour être honoré par Allah — la constance silencieuse dans la vérité suffit."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Sidq",
+          "definition": "La véracité, la sincérité dans la parole, les actes et les intentions.",
+          "arabic": "صدق"
+        },
+        {
+          "term": "Sabr",
+          "definition": "La patience et l'endurance. L'une des qualités les plus louées dans le Coran.",
+          "arabic": "صبر"
+        }
+      ],
+      "checkpoint": {
+        "question": "Avec quels autres prophètes Idriss est-il mentionné dans la sourate Al-Anbiyâ' ?",
+        "options": [
+          "Adam et Noé",
+          "Moïse et Aaron",
+          "Ismaël et Dhul-Kifl",
+          "Abraham et Lot"
+        ],
+        "correctIndex": 2,
+        "explanation": "« Et Ismaël, et Idriss, et Dhul-Kifl — tous faisaient partie des endurants » (21:85). Ces trois prophètes partagent le titre d'endurants."
+      }
+    }
+  ],
+  "order": 5,
+  "published": true
+}

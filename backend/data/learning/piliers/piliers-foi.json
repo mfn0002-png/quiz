@@ -1,0 +1,77 @@
+{
+  "id": "piliers-foi",
+  "format": "fiche",
+  "title": "Les 6 Piliers de la Foi (Iman)",
+  "subtitle": "Les convictions du cœur enseignées dans le hadith de Jibril",
+  "category": "foi",
+  "icon": "💫",
+  "gradient": "linear-gradient(135deg, #2563eb 0%, #38bdf8 100%)",
+  "badge": "Croyance",
+  "summary": "La foi musulmane repose sur six articles de foi indispensables qui éclairent le cheminement spirituel.",
+  "quizCategoryTarget": "Mélange",
+  "revision": 1,
+  "published": true,
+  "order": 2,
+  "sections": [
+    {
+      "id": "foi-allah",
+      "heading": "La foi en Allah",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Croire en Son existence, Son unicité absolue (Tawhid), Sa souveraineté, et en Ses Noms et Attributs sublimes."
+        }
+      ]
+    },
+    {
+      "id": "foi-anges",
+      "heading": "La foi aux Anges",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Créés de lumière, ils obéissent parfaitement à Allah. Parmi eux : Jibril (révélation), Mikaïl (subsistance), Israfil (le cor), Malak al-Mawt (la mort)."
+        }
+      ]
+    },
+    {
+      "id": "foi-livres",
+      "heading": "La foi aux Livres révélés",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Croire aux révélations divines originelles : les Feuillets d'Abraham, la Torah à Moïse, les Psaumes (Zabur) à David, l'Évangile (Injil) à Jésus et le Coran à Muhammad ﷺ."
+        }
+      ]
+    },
+    {
+      "id": "foi-messagers",
+      "heading": "La foi aux Messagers et Prophètes",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Reconnaître tous les prophètes envoyés par Allah pour guider l'humanité, du premier (Adam) au sceau des prophètes (Muhammad ﷺ)."
+        }
+      ]
+    },
+    {
+      "id": "foi-jour-dernier",
+      "heading": "La foi au Jour Dernier",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "La résurrection, le Jugement Dernier, la balance des actes, le Paradis (Jannah) et l'Enfer (Jahannam)."
+        }
+      ]
+    },
+    {
+      "id": "foi-qadr",
+      "heading": "La foi au Destin (Al-Qadr)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Croire que tout arrive selon la science, la volonté, l'écriture et la création d'Allah, qu'il s'agisse de bien ou d'épreuves."
+        }
+      ]
+    }
+  ]
+}

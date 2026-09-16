@@ -6,16 +6,20 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "seed:firestore": "node scripts/seedAllFirestore.js",
     "test": "node --test tests/"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@supabase/supabase-js": "^2.78.0",
     "@upstash/redis": "^1.38.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^8.6.2",
     "helmet": "^8.3.0",
+    "pdf-parse": "^1.1.1",
     "zod": "^4.4.3"
   }
 }

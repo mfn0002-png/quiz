@@ -1,0 +1,831 @@
+{
+  "id": "noms-allah",
+  "format": "fiche",
+  "title": "Les 99 Noms d'Allah (Al-Asmâ al-Husnâ)",
+  "subtitle": "Connaître son Créateur pour fortifier son amour, son recueillement et son adoration",
+  "category": "noms",
+  "icon": "🌟",
+  "gradient": "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+  "badge": "99 Noms Divins",
+  "summary": "L'ensemble complet des 99 Noms d'Allah avec calligraphie arabe, translittération phonétique et sens spirituel en français.",
+  "quizCategoryTarget": "Mélange",
+  "revision": 1,
+  "published": true,
+  "order": 7,
+  "sections": [
+    {
+      "id": "intro-hadith",
+      "heading": "L'importance d'apprendre les 99 Noms",
+      "blocks": [
+        {
+          "type": "stats",
+          "items": [
+            {
+              "label": "Noms Divins",
+              "value": "99"
+            },
+            {
+              "label": "Thématiques majeures",
+              "value": "10"
+            },
+            {
+              "label": "Récompense promise",
+              "value": "Le Paradis"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "value": "D'après Abou Houreira (qu'Allah l'agrée), le Prophète ﷺ a dit : « Certes Allah a 99 noms, cent moins un, quiconque les apprend (les comprend, y croit et invoque Allah par eux) entrera au Paradis. » (Rapporté par Al-Bukhari et Muslim)"
+        },
+        {
+          "type": "text",
+          "value": "« C'est à Allah qu'appartiennent les plus beaux Noms. Invoquez-Le par ces Noms. » (Sourate Al-A'raf, 180)"
+        }
+      ]
+    },
+    {
+      "id": "cat-1",
+      "heading": "Miséricorde & Bienveillance (8 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الرَّحْمَنُ",
+          "phonetic": "1. Ar Rahmaan",
+          "translation": "« Le Tout-Miséricordieux » — Sa miséricorde infinie et absolue embrasse toutes les créatures de l'univers.",
+          "citation": "Nom Divin n°1"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّحِيمُ",
+          "phonetic": "2. Ar Raheem",
+          "translation": "« Le Très-Miséricordieux » — Celui qui accorde une miséricorde particulière et éternelle aux croyants.",
+          "citation": "Nom Divin n°2"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "اللَّطِيفُ",
+          "phonetic": "30. Al Lateef",
+          "translation": "« Le Subtil, Le Bienveillant » — Celui qui agit avec délicatesse et bienveillance imperceptible.",
+          "citation": "Nom Divin n°30"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُجِيبُ",
+          "phonetic": "44. Al Mujeeb ",
+          "translation": "« Celui qui exauce » — Celui qui répond toujours aux invocations et aux prières des cœurs sincères.",
+          "citation": "Nom Divin n°44"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَدُودُ",
+          "phonetic": "47. Al Wudood",
+          "translation": "« Le Bien-Aimant » — Celui qui aime Ses créatures pieuses et se fait aimer d'elles par Ses bienfaits.",
+          "citation": "Nom Divin n°47"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَرُّ",
+          "phonetic": "79. Al Barr",
+          "translation": "« Le Bienfaisant, La Source de bonté » — Celui dont la bonté, la douceur et la bienveillance sont incommensurables.",
+          "citation": "Nom Divin n°79"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّؤُوفُ",
+          "phonetic": "83. Ar Ra’oof",
+          "translation": "« Le Très-Compatissant » — D'une tendresse et d'une pitié infinies envers Ses créatures.",
+          "citation": "Nom Divin n°83"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْهَادِي",
+          "phonetic": "94. Al Haadi",
+          "translation": "« Le Guide » — Celui qui guide les âmes vers la vérité, la droiture et la paix.",
+          "citation": "Nom Divin n°94"
+        }
+      ]
+    },
+    {
+      "id": "cat-2",
+      "heading": "Souveraineté & Majesté (13 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْمَلِكُ",
+          "phonetic": "3. Al Malik",
+          "translation": "« Le Souverain, Le Roi » — Le Maître absolu de toute la création, sans associé ni égal.",
+          "citation": "Nom Divin n°3"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُتَكَبِّرُ",
+          "phonetic": "10. Al Mutakabbir",
+          "translation": "« Le Superbe, Le Majestueux » — Celui à qui appartient la grandeur suprême et la transcendance.",
+          "citation": "Nom Divin n°10"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْقَهَّارُ",
+          "phonetic": "15. Al Qahhaar",
+          "translation": "« Le Dominateur suprême » — Celui devant la souveraineté duquel toute la création est soumise.",
+          "citation": "Nom Divin n°15"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْعَظِيمُ",
+          "phonetic": "33. Al 'Azeem",
+          "translation": "« L'Immense, Le Magnifique » — Celui dont la grandeur dépasse toute compréhension humaine.",
+          "citation": "Nom Divin n°33"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْعَلِيُّ",
+          "phonetic": "36. Al 'Aliyy",
+          "translation": "« Le Très-Haut » — Celui qui est au-dessus de toute création par Son essence et Ses attributs.",
+          "citation": "Nom Divin n°36"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْكَبِيرُ",
+          "phonetic": "37. Al Kabeer",
+          "translation": "« L'Infiniment Grand » — Le Plus Grand, devant Lequel toute grandeur s'efface.",
+          "citation": "Nom Divin n°37"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْجَلِيلُ",
+          "phonetic": "41. Al Jaleel",
+          "translation": "« Le Majestueux » — L'Être digne de majesté, de respect et de louange éternelle.",
+          "citation": "Nom Divin n°41"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمَجِيدُ",
+          "phonetic": "48. Al Majeed",
+          "translation": "« Le Glorieux » — Le Maître de gloire, d'honneur éclatant et de magnificence.",
+          "citation": "Nom Divin n°48"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمَاجِدُ",
+          "phonetic": "65. Al Maajid",
+          "translation": "« Le Noble, Le Majestueux » — L'Être illustre dont la noblesse est incomparable.",
+          "citation": "Nom Divin n°65"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَالِي",
+          "phonetic": "77. Al Waali",
+          "translation": "« Le Maître régent » — Celui qui administre et gouverne toute la création avec autorité.",
+          "citation": "Nom Divin n°77"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُتَعَالِي",
+          "phonetic": "78. Al Muta’ali",
+          "translation": "« Le Très-Exalté » — Celui qui transcende toute pensée, attribut imparfait ou défaut.",
+          "citation": "Nom Divin n°78"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "مَالِكُ الْمُلْكِ",
+          "phonetic": "84. Maalik Ul Mulk",
+          "translation": "« Le Maître du Royaume » — Le Propriétaire souverain de tout l'univers et de tout ce qu'il renferme.",
+          "citation": "Nom Divin n°84"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "ذُوالْجَلاَلِ وَالإكْرَامِ",
+          "phonetic": "85. Dhu Al Jalaali Wa Al Ikraam",
+          "translation": "« Le Détenteur de Majesté et de Noblesse » — Le Seul digne de vénération, d'honneur suprême et d'adoration.",
+          "citation": "Nom Divin n°85"
+        }
+      ]
+    },
+    {
+      "id": "cat-3",
+      "heading": "Pureté & Perfection (4 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْقُدُّوسُ",
+          "phonetic": "4. Al Quddus",
+          "translation": "« Le Sanctifié, Le Pur » — Exempt de toute imperfection, défaut, ressemblance ou limitation.",
+          "citation": "Nom Divin n°4"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَقُّ",
+          "phonetic": "51. Al Haqq",
+          "translation": "« La Vérité suprême » — L'Être réel et indéniable dont les promesses et paroles sont la vérité même.",
+          "citation": "Nom Divin n°51"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَمِيدُ",
+          "phonetic": "56. Al Hameed",
+          "translation": "« Le Digne de Louange » — L'Unique qui mérite d'être glorifié et loué en toute circonstance.",
+          "citation": "Nom Divin n°56"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "النُّورُ",
+          "phonetic": "93. An Noor",
+          "translation": "« La Lumière » — Celui qui illumine les cieux, la terre et les cœurs des croyants.",
+          "citation": "Nom Divin n°93"
+        }
+      ]
+    },
+    {
+      "id": "cat-4",
+      "heading": "Paix & Protection (2 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "السَّلاَمُ",
+          "phonetic": "5. As Salaam",
+          "translation": "« La Paix, Le Pacifique » — La Source de toute sécurité, paix intérieure et sérénité.",
+          "citation": "Nom Divin n°5"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُؤْمِنُ",
+          "phonetic": "6. Al Mu'min",
+          "translation": "« Le Rassurant, Le Garant » — Celui qui accorde la sécurité et confirme la sincérité de Ses serviteurs.",
+          "citation": "Nom Divin n°6"
+        }
+      ]
+    },
+    {
+      "id": "cat-5",
+      "heading": "Protection & Vigilance (7 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْمُهَيْمِنُ",
+          "phonetic": "7. Al Muhaymin",
+          "translation": "« Le Préservateur, Le Témoin » — Le Gardien suprême qui veille avec vigilance sur toutes Ses créatures.",
+          "citation": "Nom Divin n°7"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَفِيظُ",
+          "phonetic": "38. Al Hafeez",
+          "translation": "« Le Gardien suprême » — Celui qui préserve l'ordre de l'univers et protège Ses serviteurs.",
+          "citation": "Nom Divin n°38"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحسِيبُ",
+          "phonetic": "40. Al Haseeb",
+          "translation": "« Le Suffisant, Celui qui tient compte » — Celui qui suffit à Ses serviteurs et compte chaque acte avec exactitude.",
+          "citation": "Nom Divin n°40"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّقِيبُ",
+          "phonetic": "43. Ar Raqeeb",
+          "translation": "« Le Surveillant suprême » — Celui qui observe tout et à qui rien n'échappe.",
+          "citation": "Nom Divin n°43"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَكِيلُ",
+          "phonetic": "52. Al Wakeel",
+          "translation": "« Le Tuteur digne de confiance » — Le Garant parfait à qui l'on peut s'en remettre en toute quiétude.",
+          "citation": "Nom Divin n°52"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَلِيُّ",
+          "phonetic": "55. Al Waliyy",
+          "translation": "« Le Protecteur, L'Ami intime » — L'Allié fidèle qui soutient, protège et guide les croyants.",
+          "citation": "Nom Divin n°55"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "اَلْمَانِعُ",
+          "phonetic": "90. Al Maani'",
+          "translation": "« Le Défenseur, Celui qui empêche » — Celui qui préserve du mal et retient ce qui pourrait nuire selon Sa sagesse.",
+          "citation": "Nom Divin n°90"
+        }
+      ]
+    },
+    {
+      "id": "cat-6",
+      "heading": "Puissance & Grandeur (7 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْعَزِيزُ",
+          "phonetic": "8. Al Azeez",
+          "translation": "« Le Tout-Puissant, Le Noble » — L'Invincible que rien ne peut vaincre ni affaiblir.",
+          "citation": "Nom Divin n°8"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْجَبَّارُ",
+          "phonetic": "9. Al Jabbaar",
+          "translation": "« Le Contraignant, Le Réparateur » — Celui dont la volonté s'impose et qui répare les cœurs brisés.",
+          "citation": "Nom Divin n°9"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُعِزُّ",
+          "phonetic": "24. Al Mu'iz",
+          "translation": "« Celui qui rend puissant » — Celui qui accorde honneur, dignité et victoire à qui Il veut.",
+          "citation": "Nom Divin n°24"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْقَوِيُّ",
+          "phonetic": "53. Al Qawiyy",
+          "translation": "« Le Fort, Le Puissant » — Celui qui possède une force absolue exempte de toute faiblesse.",
+          "citation": "Nom Divin n°53"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمَتِينُ",
+          "phonetic": "54. Al Mateen",
+          "translation": "« L'Inébranlable, Le Robuste » — Sa fermeté et Sa puissance sont indestructibles.",
+          "citation": "Nom Divin n°54"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْقَادِرُ",
+          "phonetic": "69. Al Qaadir",
+          "translation": "« Le Tout-Puissant » — Celui qui a le pouvoir complet d'accomplir tout ce qu'Il veut.",
+          "citation": "Nom Divin n°69"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُقْتَدِرُ",
+          "phonetic": "70. Al Muqtadir",
+          "translation": "« Le Déterminateur suprême » — Celui qui applique Sa puissance selon une mesure et un décret parfaits.",
+          "citation": "Nom Divin n°70"
+        }
+      ]
+    },
+    {
+      "id": "cat-7",
+      "heading": "Création & Puissance (9 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْخَالِقُ",
+          "phonetic": "11. Al Khaaliq",
+          "translation": "« Le Créateur » — Celui qui donne l'existence à partir du néant selon Sa détermination parfaite.",
+          "citation": "Nom Divin n°11"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَارِئُ",
+          "phonetic": "12. Al Baari",
+          "translation": "« Le Créateur distinct, Le Novateur » — Celui qui fait passer la création du néant à l'existence sans modèle préalable.",
+          "citation": "Nom Divin n°12"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُصَوِّرُ",
+          "phonetic": "13. Al Musawwir",
+          "translation": "« Le Formateur, Le Façonneur » — Celui qui donne à chaque créature sa forme, son harmonie et son unicité.",
+          "citation": "Nom Divin n°13"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَاعِثُ",
+          "phonetic": "49. Al Baa'ith",
+          "translation": "« Celui qui ressuscite » — Celui qui ramènera les morts à la vie pour le Jour du Jugement.",
+          "citation": "Nom Divin n°49"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُبْدِئُ",
+          "phonetic": "58. Al Mubdi",
+          "translation": "« L'Initiateur premier » — Celui qui a créé l'univers pour la première fois sans exemple précédent.",
+          "citation": "Nom Divin n°58"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُعِيدُ",
+          "phonetic": "59. Al Mu'eed",
+          "translation": "« Celui qui réintègre et répète la création » — Celui qui renouvelle la vie et ramène toute création après sa fin.",
+          "citation": "Nom Divin n°59"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُحْيِي",
+          "phonetic": "60. Al Muhiy",
+          "translation": "« Celui qui donne la vie » — La Source de toute vie physique, biologique et spirituelle.",
+          "citation": "Nom Divin n°60"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "اَلْمُمِيتُ",
+          "phonetic": "61. Al Mumeet",
+          "translation": "« Celui qui donne la mort » — Celui qui décrète le terme de chaque être vivant avec justice.",
+          "citation": "Nom Divin n°61"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَدِيعُ",
+          "phonetic": "95. Al Badi'",
+          "translation": "« Le Créateur admirable et incomparable » — Celui qui a conçu l'univers avec une créativité et une harmonie sans égales.",
+          "citation": "Nom Divin n°95"
+        }
+      ]
+    },
+    {
+      "id": "cat-8",
+      "heading": "Pardon & Clémence (6 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْغَفَّارُ",
+          "phonetic": "14. Al Ghaffaar",
+          "translation": "« Le Tout-Pardonneur » — Celui qui pardonne inlassablement et efface les fautes de Ses serviteurs.",
+          "citation": "Nom Divin n°14"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَلِيمُ",
+          "phonetic": "32. Al Haleem",
+          "translation": "« Le Très-Indulgent, Le Patient » — Celui qui ne se hâte pas de châtier et patiente envers les fautes.",
+          "citation": "Nom Divin n°32"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْغَفُورُ",
+          "phonetic": "34. Al Ghafoor",
+          "translation": "« Le Très-Pardonneur » — Celui qui voile les péchés et pardonne avec une immense indulgence.",
+          "citation": "Nom Divin n°34"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "التَّوَابُ",
+          "phonetic": "80. At Tawwaab",
+          "translation": "« L'Accueillant au repentir » — Celui qui accepte sans cesse le retour sincère de Ses serviteurs.",
+          "citation": "Nom Divin n°80"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "العَفُوُّ",
+          "phonetic": "82. Al Afuww",
+          "translation": "« L'Indulgent qui efface » — Celui qui efface complètement les péchés comme s'ils n'avaient jamais existé.",
+          "citation": "Nom Divin n°82"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الصَّبُورُ",
+          "phonetic": "99. As Saboor",
+          "translation": "« Le Très-Patient » — Celui dont la patience infinie embrasse la création sans précipitation.",
+          "citation": "Nom Divin n°99"
+        }
+      ]
+    },
+    {
+      "id": "cat-9",
+      "heading": "Générosité & Bienfaits (10 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْوَهَّابُ",
+          "phonetic": "16. Al Wahhaab",
+          "translation": "« Le Dispensateur suprême » — Le Donateur généreux qui offre Ses bienfaits sans rien attendre en retour.",
+          "citation": "Nom Divin n°16"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّزَّاقُ",
+          "phonetic": "17. Ar Razzaaq",
+          "translation": "« Le Grand Pourvoyeur » — Celui qui accorde la subsistance matérielle et spirituelle à toute vie.",
+          "citation": "Nom Divin n°17"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَاسِطُ",
+          "phonetic": "21. Al Baasit",
+          "translation": "« Celui qui accorde largement » — Celui qui dilate les cœurs et répand Ses bienfaits avec abondance.",
+          "citation": "Nom Divin n°21"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الشَّكُورُ",
+          "phonetic": "35. Ash Shakoor",
+          "translation": "« Le Très-Reconnaissant » — Celui qui rétribue abondamment le moindre acte sincère.",
+          "citation": "Nom Divin n°35"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "المُقيِت",
+          "phonetic": "39. Al Muqeet",
+          "translation": "« Le Nourricier, Le Témoin vigilant » — Celui qui dispense subsistance et veille à chaque besoin vital.",
+          "citation": "Nom Divin n°39"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْكَرِيمُ",
+          "phonetic": "42. Al Kareem",
+          "translation": "« Le Tout-Généreux » — Celui dont la noblesse et les dons sont inépuisables.",
+          "citation": "Nom Divin n°42"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَاجِدُ",
+          "phonetic": "64. Al Waajid",
+          "translation": "« L'Opulent, Celui qui trouve tout » — Celui qui ne manque de rien et détient toutes les richesses.",
+          "citation": "Nom Divin n°64"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْغَنِيُّ",
+          "phonetic": "88. Al Ghaniyy",
+          "translation": "« Le Riche absolu » — Celui qui se suffit à Lui-même et n'a besoin d'aucune créature.",
+          "citation": "Nom Divin n°88"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُغْنِي",
+          "phonetic": "89. Al Mughi",
+          "translation": "« Celui qui enrichit » — Celui qui comble Ses serviteurs de richesses matérielles et spirituelles.",
+          "citation": "Nom Divin n°89"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "النَّافِعُ",
+          "phonetic": "92. An Naafi’",
+          "translation": "« L'Auteur du profit et du bien » — La Source de tout bénéfice, guérison et utilité dans l'existence.",
+          "citation": "Nom Divin n°92"
+        }
+      ]
+    },
+    {
+      "id": "cat-10",
+      "heading": "Justice & Sagesse (8 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْفَتَّاحُ",
+          "phonetic": "18. Al Fattaah",
+          "translation": "« Le Grand Décideur, Celui qui ouvre » — Celui qui ouvre les portes de la miséricorde et tranche en toute justice.",
+          "citation": "Nom Divin n°18"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْقَابِضُ",
+          "phonetic": "20. Al Qaabid",
+          "translation": "« Celui qui restreint » — Celui qui retient et mesure la subsistance et les épreuves avec sagesse.",
+          "citation": "Nom Divin n°20"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَكَمُ",
+          "phonetic": "28. Al Hakam",
+          "translation": "« L'Arbitre suprême, Le Juge » — Le Juge suprême dont les décrets sont d'une absolue équité.",
+          "citation": "Nom Divin n°28"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْحَكِيمُ",
+          "phonetic": "46. Al Hakeem",
+          "translation": "« Le Très-Sage » — Celui qui place chaque chose à sa juste place avec une sagesse absolue.",
+          "citation": "Nom Divin n°46"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُقَدِّمُ",
+          "phonetic": "71. Al Muqaddim",
+          "translation": "« Celui qui avance » — Celui qui accorde la préséance et avance les choses selon Sa volonté.",
+          "citation": "Nom Divin n°71"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُؤَخِّرُ",
+          "phonetic": "72. Al Mu’akhir",
+          "translation": "« Celui qui retarde » — Celui qui diffère les événements et les décrets jusqu'au moment opportun.",
+          "citation": "Nom Divin n°72"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الضَّارَّ",
+          "phonetic": "91. Ad Daaarr",
+          "translation": "« Celui qui permet l'adversité » — Celui qui décrète les épreuves pour éprouver, purifier et enseigner la patience.",
+          "citation": "Nom Divin n°91"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّشِيدُ",
+          "phonetic": "98. Ar Rasheed",
+          "translation": "« Le Guide droit, Le Parfaitement avisé » — Celui dont tous les actes et décrets conduisent infailliblement au bien.",
+          "citation": "Nom Divin n°98"
+        }
+      ]
+    },
+    {
+      "id": "cat-11",
+      "heading": "Science & Connaissance (7 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "اَلْعَلِيْمُ",
+          "phonetic": "19. Al 'Aleem",
+          "translation": "« L'Omniscient » — Sa science infinie embrasse le visible et l'invisible, le passé, le présent et le futur.",
+          "citation": "Nom Divin n°19"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْخَبِيرُ",
+          "phonetic": "31. Al Khabeer",
+          "translation": "« Le Parfaitement Informé » — Celui qui connaît les secrets les plus intimes et la réalité profonde des choses.",
+          "citation": "Nom Divin n°31"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَاسِعُ",
+          "phonetic": "45. Al Waasi'",
+          "translation": "« L'Immense, Celui qui embrasse tout » — Son savoir, Sa miséricorde et Ses bienfaits englobent toute existence.",
+          "citation": "Nom Divin n°45"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الشَّهِيدُ",
+          "phonetic": "50. Ash Shaheed",
+          "translation": "« Le Témoin parfait » — Celui devant qui toute vérité est dévoilée et constatée.",
+          "citation": "Nom Divin n°50"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُحْصِي",
+          "phonetic": "57. Al Muhsi",
+          "translation": "« Celui qui dénombre et connaît tout » — Celui dont la science compte avec précision chaque grain de l'univers.",
+          "citation": "Nom Divin n°57"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الظَّاهِرُ",
+          "phonetic": "75. Az Zaahir",
+          "translation": "« Le Manifeste, L'Apparent » — Celui dont les signes et les preuves de l'existence éclatent partout.",
+          "citation": "Nom Divin n°75"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَاطِنُ",
+          "phonetic": "76. Al Baatin",
+          "translation": "« Le Caché, Le Mystérieux » — Celui que les regards ne peuvent saisir dans Sa réalité profonde.",
+          "citation": "Nom Divin n°76"
+        }
+      ]
+    },
+    {
+      "id": "cat-12",
+      "heading": "Justice & Équité (7 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْخَافِضُ",
+          "phonetic": "22. Al Khaafid",
+          "translation": "« Celui qui abaisse » — Celui qui abaisse les orgueilleux et les transgresseurs.",
+          "citation": "Nom Divin n°22"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الرَّافِعُ",
+          "phonetic": "23. Ar Raafi'",
+          "translation": "« Celui qui élève » — Celui qui élève en rang Ses serviteurs pieux et véridiques.",
+          "citation": "Nom Divin n°23"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "المُذِلُّ",
+          "phonetic": "25. Al Mudhil",
+          "translation": "« Celui qui humilie » — Celui qui prive de soutien ceux qui s'enflent d'orgueil.",
+          "citation": "Nom Divin n°25"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْعَدْلُ",
+          "phonetic": "29. Al 'Adl",
+          "translation": "« Le Juste absolu » — L'Équitable parfait qui n'opprime aucune de Ses créatures.",
+          "citation": "Nom Divin n°29"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُنْتَقِمُ",
+          "phonetic": "81. Al Muntaqim",
+          "translation": "« Le Vengeur légitime » — Celui qui rétribue justement les tyrans et les oppresseurs impénitents.",
+          "citation": "Nom Divin n°81"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْمُقْسِطُ",
+          "phonetic": "86. Al Muqsit",
+          "translation": "« L'Équitable suprême » — Celui qui rend justice à l'opprimé face à l'oppresseur.",
+          "citation": "Nom Divin n°86"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْجَامِعُ",
+          "phonetic": "87. Al Jaami'",
+          "translation": "« Le Rassembleur » — Celui qui rassemblera toute l'humanité pour le Jour sans doute.",
+          "citation": "Nom Divin n°87"
+        }
+      ]
+    },
+    {
+      "id": "cat-13",
+      "heading": "Attributs d'Écoute & Vision (2 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "السَّمِيعُ",
+          "phonetic": "26. As Samee'",
+          "translation": "« L'Audient » — Celui qui entend tout murmure, prière et pensée dans les cœurs.",
+          "citation": "Nom Divin n°26"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْبَصِيرُ",
+          "phonetic": "27. Al Baseer",
+          "translation": "« Le Clairvoyant » — Celui dont le regard parfait embrasse chaque détail de l'univers.",
+          "citation": "Nom Divin n°27"
+        }
+      ]
+    },
+    {
+      "id": "cat-14",
+      "heading": "Éternité & Subsistance (7 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْحَيُّ",
+          "phonetic": "62. Al Haiyy",
+          "translation": "« Le Vivant éternel » — L'Éternel qui ne meurt jamais, d'une vie sans début ni fin.",
+          "citation": "Nom Divin n°62"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْقَيُّومُ",
+          "phonetic": "63. Al Qayyoom",
+          "translation": "« L'Auto-Suffisant qui maintient tout » — Celui qui subsiste par Lui-même et assure la pérennité des cieux et de la terre.",
+          "citation": "Nom Divin n°63"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الصَّمَدُ",
+          "phonetic": "68. As Samad",
+          "translation": "« Le Refuge suprême, L'Impénétrable » — Celui vers qui toutes les créatures se tournent pour leurs besoins.",
+          "citation": "Nom Divin n°68"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الأوَّلُ",
+          "phonetic": "73. Al Awwal",
+          "translation": "« Le Premier sans commencement » — Celui qui existait avant toute chose créée.",
+          "citation": "Nom Divin n°73"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الآخِرُ",
+          "phonetic": "74. Al Aakhir",
+          "translation": "« Le Dernier sans fin » — Celui qui subsistera éternellement après la fin de toute chose.",
+          "citation": "Nom Divin n°74"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "اَلْبَاقِي",
+          "phonetic": "96. Al Baaqi",
+          "translation": "« Le Permanent, L'Éternel » — Celui dont l'existence ne connaît aucune fin ni altération.",
+          "citation": "Nom Divin n°96"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "الْوَارِثُ",
+          "phonetic": "97. Al Waarith",
+          "translation": "« L'Héritier de tout » — Celui à qui reviendra tout le cosmos lorsque la création aura disparu.",
+          "citation": "Nom Divin n°97"
+        }
+      ]
+    },
+    {
+      "id": "cat-15",
+      "heading": "Unicité (Tawhid) (2 Noms)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْواحِدُ",
+          "phonetic": "66. Al Waahid",
+          "translation": "« L'Unique sans égal » — L'Unique dans Son essence, Ses attributs et Ses actes.",
+          "citation": "Nom Divin n°66"
+        },
+        {
+          "type": "static-quote",
+          "arabic": "اَلاَحَدُ",
+          "phonetic": "67. Al Ahad",
+          "translation": "« L'Indivisible » — L'Unique qui n'a ni associé, ni semblable, ni pair.",
+          "citation": "Nom Divin n°67"
+        }
+      ]
+    }
+  ]
+}

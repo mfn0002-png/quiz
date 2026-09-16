@@ -32,20 +32,23 @@ export function useQuiz(user: User | null) {
   // Actif uniquement pendant le quiz (démarré) : sur les autres écrans, aucune
   // interface n'affiche les vies, donc on évite un timer global permanent.
   useEffect(() => {
-    if (!started) return;
     const timer = setInterval(() => {
       setLivesState(getGlobalLivesState());
     }, 1000);
     return () => clearInterval(timer);
-  }, [started]);
+  }, []);
 
-  const startQuiz = async (difficulty: Difficulty) => {
+  const startQuiz = async (difficulty: Difficulty, categoryOverride?: string) => {
     const currentLives = getGlobalLivesState();
     if (currentLives.lives <= 0) {
       setError("Vous n'avez plus de vie disponible. Veuillez attendre la recharge automatique.");
       return;
     }
 
+    const targetCategory = categoryOverride || selectedCategory;
+    if (categoryOverride) {
+      setSelectedCategory(categoryOverride);
+    }
     setSelectedDifficulty(difficulty);
     setLoading(true);
     setError(null);
@@ -54,7 +57,7 @@ export function useQuiz(user: User | null) {
 
     try {
       const sessionId = getClientSessionId(user?.uid);
-      const generatedQuestions = await generateQuestions(difficulty, selectedCategory, DEFAULT_QUESTION_COUNT, sessionId);
+      const generatedQuestions = await generateQuestions(difficulty, targetCategory, DEFAULT_QUESTION_COUNT, sessionId);
 
       if (!generatedQuestions || generatedQuestions.length === 0) {
         throw new Error("Aucune question n'a pu être générée. Réessayez.");
