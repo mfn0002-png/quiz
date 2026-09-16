@@ -1,0 +1,71 @@
+{
+  "id": "duas-quotidien",
+  "format": "fiche",
+  "title": "Invocations & Adhkar Essentiels",
+  "subtitle": "Les paroles prophétiques pour illuminer chaque moment de la journée",
+  "category": "duas",
+  "icon": "🤲",
+  "gradient": "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+  "badge": "Pratique",
+  "summary": "Le Prophète ﷺ nous a enseigné des invocations protectrices et bénies pour chaque instant de la vie.",
+  "quizCategoryTarget": "Pratiques",
+  "revision": 1,
+  "published": true,
+  "order": 3,
+  "sections": [
+    {
+      "id": "dua-reveil",
+      "heading": "Au réveil",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+          "phonetic": "Al-hamdu li-llâhi-l-ladhî ahyânâ ba'da mâ amâtanâ wa ilayhi-n-nuchûr",
+          "translation": "« Louange à Allah qui nous a rendu la vie après nous avoir fait mourir, et c'est vers Lui que se fera le retour. »",
+          "citation": "Rapporté par Al-Bukhari et Muslim"
+        }
+      ]
+    },
+    {
+      "id": "dua-sortie",
+      "heading": "En sortant de chez soi",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، وَلاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ",
+          "phonetic": "Bismi-llâh, tawakkaltu 'alâ-llâh, wa lâ hawla wa lâ quwwata illâ bi-llâh",
+          "translation": "« Au nom d'Allah, je m'en remets à Allah. Il n'y a de force ni de puissance que par Allah. »",
+          "citation": "Rapporté par Abu Dawud et At-Tirmidhi"
+        }
+      ]
+    },
+    {
+      "id": "dua-savoir",
+      "heading": "Pour demander le savoir bénéfique",
+      "blocks": [
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 20,
+            "ayah": 114
+          }
+        }
+      ]
+    },
+    {
+      "id": "dua-epreuve",
+      "heading": "En cas d'épreuve ou de tristesse",
+      "blocks": [
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 3,
+            "ayah": 173
+          }
+        }
+      ]
+    }
+  ]
+}

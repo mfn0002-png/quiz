@@ -1,0 +1,800 @@
+[
+  {
+    "id": "prophet-adam",
+    "format": "recit",
+    "title": "Adam (عليه السلام)",
+    "subtitle": "Le premier homme, père de l'humanité et premier prophète",
+    "category": "prophetes",
+    "icon": "🌿",
+    "gradient": "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+    "badge": "Prophète",
+    "summary": "Créé d'argile par les Mains d'Allah, Adam est le premier être humain et le premier prophète. Son histoire enseigne la dignité de l'homme, le danger de l'orgueil et la puissance du repentir sincère.",
+    "quizCategoryTarget": "Prophètes",
+    "revision": 1,
+    "estimatedMinutes": 10,
+    "chapters": [
+      {
+        "id": "adam-creation",
+        "label": "La création",
+        "title": "La création et la dignité de l'être humain",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Allah ﷻ informa les anges de Sa volonté de placer sur Terre un vicaire (khalîfah). Les anges, non par arrogance mais par souci de comprendre la sagesse divine, questionnèrent cette décision. Allah leur répondit qu'Il sait ce qu'ils ne savent pas. Adam fut créé d'argile, façonné par les Mains d'Allah, et l'Esprit divin fut insufflé en lui."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 30
+            },
+            "note": "Annonce de la création du khalîfah aux anges."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 7,
+              "ayah": 11
+            },
+            "note": "« Nous vous avons créés, puis Nous vous avons donné forme. »"
+          },
+          {
+            "type": "stats",
+            "items": [
+              {
+                "value": "7",
+                "label": "sourates mentionnent Adam"
+              },
+              {
+                "value": "1er",
+                "label": "prophète de l'humanité"
+              },
+              {
+                "value": "25",
+                "label": "prophètes nommés dans le Coran"
+              }
+            ]
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Khalîfah",
+            "definition": "Vicaire, représentant d'Allah sur Terre. Ce titre montre la dignité accordée à l'être humain.",
+            "arabic": "خليفة"
+          },
+          {
+            "term": "Malâ'ikah",
+            "definition": "Les anges, créés de lumière. Ils obéissent parfaitement à Allah et ne désobéissent jamais.",
+            "arabic": "ملائكة"
+          }
+        ],
+        "checkpoint": {
+          "question": "Quelle a été la réaction des anges lorsqu'Allah leur annonça la création d'Adam ?",
+          "options": [
+            "Ils se sont révoltés",
+            "Ils ont questionné avec humilité la sagesse de cette décision",
+            "Ils ont refusé d'obéir",
+            "Ils ont ignoré l'ordre"
+          ],
+          "correctIndex": 1,
+          "explanation": "Les anges ont demandé « Vas-Tu y placer quelqu'un qui y sèmera le désordre ? » (2:30), non par désobéissance mais pour comprendre. Allah a répondu : « Je sais ce que vous ne savez pas. »"
+        }
+      },
+      {
+        "id": "adam-noms",
+        "label": "Les Noms",
+        "title": "L'enseignement des Noms",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Pour démontrer la distinction accordée à l'être humain, Allah enseigna à Adam tous les noms — la connaissance des choses, leur nature et leur réalité. Puis Il demanda aux anges de nommer ces choses. Les anges reconnurent humblement leur limite : « Gloire à Toi ! Nous n'avons de savoir que ce que Tu nous as enseigné. » Quand Adam, lui, les nomma tous, la sagesse divine dans cette création devint manifeste."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 31
+            },
+            "note": "Allah enseigne à Adam tous les noms."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 32
+            },
+            "note": "Les anges reconnaissent la limite de leur savoir."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Al-Asmâ'",
+            "definition": "Les noms. Désigne ici la connaissance complète des choses enseignée par Allah à Adam, ce qui le distingue des anges.",
+            "arabic": "الأسماء"
+          }
+        ],
+        "checkpoint": {
+          "question": "Qu'a fait Allah pour prouver la distinction d'Adam par rapport aux anges ?",
+          "options": [
+            "Il lui a donné des ailes",
+            "Il lui a enseigné tous les noms",
+            "Il l'a rendu immortel",
+            "Il lui a donné le pouvoir de voler"
+          ],
+          "correctIndex": 1,
+          "explanation": "« Et Il apprit à Adam tous les noms » (2:31). Cette connaissance est ce qui distingue l'être humain et justifie son rôle de vicaire sur Terre."
+        }
+      },
+      {
+        "id": "adam-iblis",
+        "label": "Iblîs",
+        "title": "La prosternation des anges et le refus d'Iblîs",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Allah ordonna aux anges de se prosterner devant Adam, en signe d'honneur — non d'adoration, car l'adoration n'est due qu'à Allah. Tous les anges obéirent sans exception. Seul Iblîs (le Diable), qui se trouvait parmi eux, refusa par orgueil. Il se justifia en disant : « Je suis meilleur que lui : Tu m'as créé de feu, et Tu l'as créé d'argile. » Cet orgueil causa sa chute et fit de lui l'ennemi juré de l'humanité."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 34
+            },
+            "note": "L'ordre de la prosternation et le refus d'Iblîs."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Iblîs",
+            "definition": "Le Diable. Il était parmi les anges mais n'en était pas un (créé de feu). Son orgueil le fit déchoir du rang élevé qu'il occupait.",
+            "arabic": "إبليس"
+          },
+          {
+            "term": "Sujûd",
+            "definition": "Prosternation. Ici un signe d'honneur envers Adam, et non une adoration qui n'est due qu'à Allah seul.",
+            "arabic": "سجود"
+          },
+          {
+            "term": "Kibr",
+            "definition": "L'orgueil. Le premier péché commis dans la création, source de la chute d'Iblîs.",
+            "arabic": "كبر"
+          }
+        ],
+        "checkpoint": {
+          "question": "Pour quelle raison Iblîs a-t-il refusé de se prosterner devant Adam ?",
+          "options": [
+            "Il avait peur",
+            "Il trouvait Adam faible",
+            "Par orgueil, estimant que le feu est supérieur à l'argile",
+            "Il n'avait pas entendu l'ordre"
+          ],
+          "correctIndex": 2,
+          "explanation": "Iblîs a dit : « Je suis meilleur que lui : Tu m'as créé de feu, alors que Tu l'as créé d'argile » (7:12). L'orgueil (kibr) est le premier péché commis dans la création."
+        }
+      },
+      {
+        "id": "adam-epreuve",
+        "label": "L'épreuve",
+        "title": "L'épreuve au Paradis",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Allah installa Adam et son épouse dans le Paradis et leur permit de jouir de tout ce qu'ils souhaitaient, à une seule condition : ne pas approcher un arbre en particulier. Iblîs, animé par la rancœur, les tenta en leur chuchotant de fausses promesses — la vie éternelle et un royaume impérissable. Adam et son épouse cédèrent à la tentation et goûtèrent à l'arbre. Aussitôt, leur nudité leur apparut et ils commencèrent à se couvrir de feuilles du Paradis. C'était la première épreuve de l'humanité."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 35
+            },
+            "note": "L'installation au Paradis et l'interdiction de l'arbre."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 7,
+              "ayah": 19
+            },
+            "note": "« Mangez de tout… mais n'approchez pas de cet arbre. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 20,
+              "ayah": 121
+            },
+            "note": "« Ils en mangèrent, leur nudité leur apparut. »"
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Jannah",
+            "definition": "Le Paradis. Ici le jardin où Adam et son épouse furent installés avant leur descente sur Terre.",
+            "arabic": "جنة"
+          },
+          {
+            "term": "Waswasah",
+            "definition": "Le chuchotement du Diable, sa méthode de tentation. Il ne contraint jamais, il suggère.",
+            "arabic": "وسوسة"
+          },
+          {
+            "term": "Shajarah",
+            "definition": "L'arbre interdit. Le Coran ne précise pas son espèce — l'important est l'épreuve d'obéissance, pas la nature de l'arbre.",
+            "arabic": "شجرة"
+          }
+        ],
+        "checkpoint": {
+          "question": "Quel stratagème Iblîs utilisa-t-il pour tromper Adam et son épouse ?",
+          "options": [
+            "La force physique",
+            "Des chuchotements leur promettant l'éternité et un royaume",
+            "Il se déguisa en ange",
+            "Il changea l'apparence de l'arbre"
+          ],
+          "correctIndex": 1,
+          "explanation": "« Le Diable le tenta en disant : Ô Adam, t'indiquerai-je l'arbre de l'éternité et un royaume impérissable ? » (20:120). Iblîs ne force jamais ; il chuchote."
+        }
+      },
+      {
+        "id": "adam-repentir",
+        "label": "Le repentir",
+        "title": "Le repentir et la descente sur Terre",
+        "ambient": "linear-gradient(180deg, rgba(5, 150, 105, 0.06) 0%, var(--surface-color) 100%)",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Contrairement à Iblîs qui persista dans son orgueil, Adam et son épouse reconnurent immédiatement leur tort. Ils implorèrent Allah avec les mots les plus humbles. Allah, le Pardonneur, accepta leur repentir et leur enseigna des paroles de repentance. Puis Il les fit descendre sur Terre pour accomplir la mission pour laquelle Adam avait été créé : être le vicaire d'Allah."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 7,
+              "ayah": 23
+            },
+            "note": "L'invocation de repentir d'Adam et de son épouse."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 2,
+              "ayah": 37
+            },
+            "note": "« Adam reçut de son Seigneur des paroles, et Allah agréa son repentir. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 20,
+              "ayah": 122
+            },
+            "note": "« Son Seigneur le choisit, agréa son repentir et le guida. »"
+          },
+          {
+            "type": "text",
+            "value": "Cette histoire enseigne que l'erreur fait partie de la nature humaine, mais que ce qui distingue le croyant, c'est la capacité à se repentir sincèrement et à revenir vers Allah. Adam n'est pas déchu — il est élevé par son repentir."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Tawbah",
+            "definition": "Le repentir sincère : revenir vers Allah après une faute. C'est une vertu, pas une honte.",
+            "arabic": "توبة"
+          },
+          {
+            "term": "At-Tawwâb",
+            "definition": "Nom d'Allah signifiant « Celui qui accepte sans cesse le repentir ». Il ne se lasse jamais de pardonner.",
+            "arabic": "التواب"
+          },
+          {
+            "term": "Istikhlâf",
+            "definition": "La mission de vicariat sur Terre confiée à Adam et sa descendance.",
+            "arabic": "استخلاف"
+          }
+        ],
+        "checkpoint": {
+          "question": "Quelle est la grande leçon de l'histoire d'Adam selon le Coran ?",
+          "options": [
+            "L'être humain ne doit jamais faire d'erreur",
+            "Le repentir sincère est toujours accepté par Allah",
+            "Allah n'a pas pardonné à Adam",
+            "Les anges sont supérieurs aux humains"
+          ],
+          "correctIndex": 1,
+          "explanation": "« Adam reçut de son Seigneur des paroles, et Allah agréa son repentir. C'est Lui le Repentant, le Miséricordieux » (2:37). L'erreur est humaine ; le repentir sincère est la voie du retour vers Allah."
+        }
+      }
+    ]
+  },
+  {
+    "id": "prophet-idriss",
+    "format": "recit",
+    "title": "Idriss (عليه السلام)",
+    "subtitle": "Le véridique élevé à un haut rang",
+    "category": "prophetes",
+    "icon": "✒️",
+    "gradient": "linear-gradient(135deg, #6366f1 0%, #818cf8 100%)",
+    "badge": "Prophète",
+    "summary": "Qualifié par Allah de « véridique et prophète », Idriss fut élevé à un rang éminent. Son histoire, brève dans le Coran, enseigne que la constance silencieuse dans la vérité suffit à être honoré par Allah.",
+    "quizCategoryTarget": "Prophètes",
+    "revision": 1,
+    "estimatedMinutes": 5,
+    "chapters": [
+      {
+        "id": "idriss-siddiq",
+        "label": "Le véridique",
+        "title": "Un homme véridique et un prophète",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Allah ﷻ ordonne au Prophète Muhammad ﷺ de mentionner Idriss dans le Livre (le Coran), puis le qualifie avec deux titres éminents : « siddîq » (véridique) et « nabiyy » (prophète). Le titre de « siddîq » est l'un des plus élevés dans la hiérarchie spirituelle de l'Islam — il désigne celui dont la parole, la croyance et les actes sont en parfaite cohérence. Idriss n'est pas simplement un homme pieux : il est certifié par Allah Lui-même comme un modèle de vérité."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 19,
+              "ayah": 56
+            },
+            "note": "« Et mentionne Idriss dans le Livre. C'était un véridique et un prophète. »"
+          },
+          {
+            "type": "text",
+            "value": "La tradition islamique le situe entre Adam et Noé dans la chronologie prophétique et lui attribue d'avoir été le premier à écrire avec le calame (la plume), bien que cette information ne vienne pas directement du Coran."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Siddîq",
+            "definition": "Le véridique, le très sincère. Titre donné à ceux dont la foi, la parole et les actes sont en parfaite harmonie. C'est le rang juste en dessous de la prophétie.",
+            "arabic": "صديق"
+          },
+          {
+            "term": "Nabiyy",
+            "definition": "Prophète. Celui qui reçoit la révélation d'Allah pour guider un peuple ou transmettre un message.",
+            "arabic": "نبي"
+          }
+        ],
+        "checkpoint": {
+          "question": "Quels sont les deux titres qu'Allah accorde à Idriss dans le Coran ?",
+          "options": [
+            "Khalîl et Nabiyy",
+            "Siddîq et Nabiyy",
+            "Rasûl et Kalîm",
+            "Habîb et Siddîq"
+          ],
+          "correctIndex": 1,
+          "explanation": "« C'était un véridique (siddîq) et un prophète (nabiyy) » (19:56). Ces deux titres résument sa stature spirituelle."
+        }
+      },
+      {
+        "id": "idriss-elevation",
+        "label": "L'élévation",
+        "title": "Élevé à un rang éminent",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Après avoir qualifié Idriss, Allah ajoute : « Et Nous l'avons élevé à un haut rang. » Les exégètes du Coran ont proposé deux interprétations principales : une élévation spirituelle (en rang, en honneur et en proximité divine) et une élévation physique (certains mentionnent qu'Idriss fut élevé au quatrième ciel lors de l'Isrâ'). Le Coran, dans sa sagesse, laisse cette formulation ouverte."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 19,
+              "ayah": 57
+            },
+            "note": "« Et Nous l'avons élevé à un haut rang. »"
+          },
+          {
+            "type": "text",
+            "value": "Le passage d'Al-Anbiyâ' confirme un autre trait : Idriss fait partie des « endurants » (sâbirîn), aux côtés d'Ismaël et de Dhul-Kifl. Allah les fait tous entrer dans Sa miséricorde."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 21,
+              "ayah": 85
+            },
+            "note": "« Et Ismaël, et Idriss, et Dhul-Kifl — tous faisaient partie des endurants. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 21,
+              "ayah": 86
+            },
+            "note": "« Et Nous les fîmes entrer dans Notre miséricorde. »"
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Makânan 'aliyyâ",
+            "definition": "« Un haut rang / un lieu élevé ». Expression coranique désignant l'honneur accordé par Allah à Idriss.",
+            "arabic": "مكانا عليا"
+          },
+          {
+            "term": "As-Sâbirîn",
+            "definition": "Les endurants, les patients. Ceux qui persévèrent dans l'obéissance à Allah malgré les épreuves.",
+            "arabic": "الصابرين"
+          },
+          {
+            "term": "Rahmah",
+            "definition": "La miséricorde d'Allah, dans laquelle Il fait entrer Ses serviteurs fidèles.",
+            "arabic": "رحمة"
+          }
+        ],
+        "checkpoint": {
+          "question": "Que dit le Coran sur le rang d'Idriss ?",
+          "options": [
+            "Qu'il était le plus riche des prophètes",
+            "Qu'Allah l'a élevé à un haut rang",
+            "Qu'il a vécu 950 ans",
+            "Qu'il a construit la Kaaba"
+          ],
+          "correctIndex": 1,
+          "explanation": "« Et Nous l'avons élevé à un haut rang (makânan 'aliyyâ) » (19:57). C'est un honneur divin accordé pour sa sincérité."
+        }
+      },
+      {
+        "id": "idriss-lecons",
+        "label": "Les leçons",
+        "title": "Les leçons d'une mention brève",
+        "ambient": "linear-gradient(180deg, rgba(99, 102, 241, 0.06) 0%, var(--surface-color) 100%)",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Pourquoi le Coran mentionne-t-il Idriss en si peu de mots ? Cette brièveté est elle-même une leçon. Le Coran n'est pas un livre d'histoire : il sélectionne ce qui est utile pour la guidée. D'Idriss, Allah retient trois qualités essentielles :"
+          },
+          {
+            "type": "list",
+            "items": [
+              "La véracité (sidq) — être en accord avec ce qu'on professe",
+              "La patience (sabr) — endurer les épreuves du chemin de la foi",
+              "L'élévation par la piété — ce n'est ni la richesse ni la lignée qui élèvent, mais la sincérité envers Allah"
+            ]
+          },
+          {
+            "type": "text",
+            "value": "Ces trois qualités sont accessibles à tout croyant. Idriss nous rappelle qu'on n'a pas besoin d'un récit spectaculaire pour être honoré par Allah — la constance silencieuse dans la vérité suffit."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Sidq",
+            "definition": "La véracité, la sincérité dans la parole, les actes et les intentions.",
+            "arabic": "صدق"
+          },
+          {
+            "term": "Sabr",
+            "definition": "La patience et l'endurance. L'une des qualités les plus louées dans le Coran.",
+            "arabic": "صبر"
+          }
+        ],
+        "checkpoint": {
+          "question": "Avec quels autres prophètes Idriss est-il mentionné dans la sourate Al-Anbiyâ' ?",
+          "options": [
+            "Adam et Noé",
+            "Moïse et Aaron",
+            "Ismaël et Dhul-Kifl",
+            "Abraham et Lot"
+          ],
+          "correctIndex": 2,
+          "explanation": "« Et Ismaël, et Idriss, et Dhul-Kifl — tous faisaient partie des endurants » (21:85). Ces trois prophètes partagent le titre d'endurants."
+        }
+      }
+    ]
+  },
+  {
+    "id": "prophet-nuh",
+    "format": "recit",
+    "title": "Nūḥ / Noé (عليه السلام)",
+    "subtitle": "L'endurant aux 950 ans de prédication et le père du second départ",
+    "category": "prophetes",
+    "icon": "🚢",
+    "gradient": "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+    "badge": "Ouloul 'Azm",
+    "summary": "Noé prêcha patiemment pendant 950 ans malgré le mépris et le rejet de son peuple. Construit sous l'ordre divin, son navire sauva les croyants du Déluge universel.",
+    "quizCategoryTarget": "Prophètes",
+    "revision": 1,
+    "estimatedMinutes": 12,
+    "chapters": [
+      {
+        "id": "nuh-dawah",
+        "label": "L'appel patient",
+        "title": "L'appel patient : 950 ans de da'wah",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Noé (Nūḥ) fut envoyé à un peuple qui s'était détourné d'Allah pour adorer des idoles. Sa mission : les avertir d'un châtiment douloureux s'ils ne revenaient pas au monothéisme. Noé appela son peuple avec une patience extraordinaire — nuit et jour, en public et en secret, par la douceur et par l'avertissement. Le Coran mentionne explicitement la durée de sa mission : 950 ans, la plus longue mentionnée dans le Livre sacré."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 25
+            },
+            "note": "Envoyé comme avertisseur clair."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 29,
+              "ayah": 14
+            },
+            "note": "« Il demeura parmi eux mille ans moins cinquante. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 71,
+              "ayah": 5
+            },
+            "note": "« Seigneur, j'ai appelé mon peuple nuit et jour. »"
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Da'wah",
+            "definition": "L'appel, l'invitation à la foi et au monothéisme.",
+            "arabic": "دعوة"
+          },
+          {
+            "term": "Ouloul 'Azm",
+            "definition": "Les prophètes doués de ferme résolution : Noé, Abraham, Moïse, Jésus et Muhammad ﷺ.",
+            "arabic": "أولو العزم"
+          }
+        ],
+        "checkpoint": {
+          "question": "Combien de temps Noé a-t-il prêché parmi son peuple selon le Coran ?",
+          "options": [
+            "100 ans",
+            "500 ans",
+            "950 ans",
+            "1000 ans"
+          ],
+          "correctIndex": 2,
+          "explanation": "« Il demeura parmi eux mille ans moins cinquante » (29:14), soit 950 ans de da'wah ininterrompue."
+        }
+      },
+      {
+        "id": "nuh-invocation",
+        "label": "L'invocation",
+        "title": "Le refus obstiné et l'invocation finale",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Les notables rejetèrent le message avec orgueil et méprisèrent les croyants modestes. Noé leur rappela que l'istighfâr (la demande de pardon) ouvre les portes de la bénédiction divine : pluies abondantes, richesses et descendance. Face à leur entêtement irréversible, Noé remit leur sort à la justice d'Allah."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 71,
+              "ayah": 10
+            },
+            "note": "« Implorez le pardon de votre Seigneur, car Il est Grand Pardonneur. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 71,
+              "ayah": 26
+            },
+            "note": "L'invocation finale de Noé face à l'arrogance du peuple."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Istighfâr",
+            "definition": "La demande sincère de pardon à Allah, clé des bénédictions matérielles et spirituelles.",
+            "arabic": "استغفار"
+          }
+        ],
+        "checkpoint": {
+          "question": "Que proposait Noé à son peuple pour obtenir les bénédictions divines ?",
+          "options": [
+            "Construire des monuments",
+            "Demander le pardon d'Allah (istighfâr)",
+            "Lui offrir des présents",
+            "Émigrer ailleurs"
+          ],
+          "correctIndex": 1,
+          "explanation": "« Demandez le pardon de votre Seigneur... Il vous enverra du ciel des pluies abondantes » (71:10-11)."
+        }
+      },
+      {
+        "id": "nuh-arche",
+        "label": "L'Arche",
+        "title": "La construction de l'Arche sous le regard d'Allah",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Allah ordonna à Noé de bâtir un navire (al-Fulk) sous Sa direction et selon Sa révélation, au beau milieu de la terre ferme. Les chefs de son peuple passaient et se moquaient ouvertement de lui. Noé répondit avec fermeté : « Si vous vous moquez de nous, nous nous moquerons de vous comme vous vous moquez. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 37
+            },
+            "note": "« Construis l'Arche sous Nos yeux et selon Notre révélation. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 38
+            },
+            "note": "Les notables moqueurs devant le chantier de l'Arche."
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Al-Fulk",
+            "definition": "L'Arche, navire du salut construit sur ordre divin.",
+            "arabic": "الفلك"
+          },
+          {
+            "term": "Wahy",
+            "definition": "L'inspiration ou révélation divine guidant l'action des messagers.",
+            "arabic": "وحي"
+          }
+        ],
+        "checkpoint": {
+          "question": "Comment les notables réagirent-ils face au chantier de l'Arche ?",
+          "options": [
+            "Ils aidèrent Noé",
+            "Ils se moquèrent de lui",
+            "Ils prirent la fuite",
+            "Ils embrassèrent la foi"
+          ],
+          "correctIndex": 1,
+          "explanation": "Chaque fois que les notables passaient près de lui, ils se moquaient de voir un navire construit en pleine terre (11:38)."
+        }
+      },
+      {
+        "id": "nuh-deluge",
+        "label": "Le Déluge",
+        "title": "Le Déluge et l'épreuve du fils",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Quand vint l'ordre divin, les eaux jaillirent de la terre et tombèrent du ciel. Noé fit monter un couple de chaque espèce vivante et les croyants. Voyant son fils hésiter sur le rivage, Noé l'appela avec affection : « Ô mon fils, monte avec nous ! » Mais le fils refusa, préférant se réfugier sur une montagne. Une vague engloutit le fils rebelle, rappelant que les liens de la foi prévalent sur les liens de sang."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 40
+            },
+            "note": "« Charge dans l'Arche un couple de chaque espèce... »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 42
+            },
+            "note": "L'appel déchirant de Noé à son fils."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 43
+            },
+            "note": "« Rien aujourd'hui ne protège du décret d'Allah... »"
+          }
+        ],
+        "glossary": [
+          {
+            "term": "At-Tannûr",
+            "definition": "Le four d'où jaillit l'eau, signe annonciateur du cataclysme.",
+            "arabic": "التنور"
+          }
+        ],
+        "checkpoint": {
+          "question": "Pourquoi le fils de Noé a-t-il refusé de monter dans l'Arche ?",
+          "options": [
+            "Il ne savait pas nager",
+            "Il croyait qu'une montagne le protégerait",
+            "Il n'a pas entendu l'appel",
+            "Il était malade"
+          ],
+          "correctIndex": 1,
+          "explanation": "Le fils compta sur une cause matérielle illusoire : « Je vais me réfugier sur une montagne qui me protégera de l'eau » (11:43)."
+        }
+      },
+      {
+        "id": "nuh-nouveau-depart",
+        "label": "Le nouveau départ",
+        "title": "L'apaisement sur le Mont Jûdiy et le renouveau",
+        "blocks": [
+          {
+            "type": "text",
+            "value": "Le décret accompli, Allah ordonna à la terre d'avaler ses eaux et au ciel de cesser ses pluies. L'Arche se posa en toute sécurité sur le mont Jûdiy. Noé descendit porteur d'une paix divine et de bénédictions perpétuelles pour l'humanité régénérée."
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 44
+            },
+            "note": "« L'Arche se posa sur le Jûdiy. »"
+          },
+          {
+            "type": "source",
+            "ref": {
+              "kind": "quran",
+              "surah": 11,
+              "ayah": 48
+            },
+            "note": "« Descends avec Notre paix et Nos bénédictions... »"
+          },
+          {
+            "type": "stats",
+            "items": [
+              {
+                "value": "950",
+                "label": "années de prédication"
+              },
+              {
+                "value": "3e",
+                "label": "prophète chronologique"
+              },
+              {
+                "value": "Jûdiy",
+                "label": "montagne du salut"
+              }
+            ]
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Jûdiy",
+            "definition": "La montagne nommée dans le Coran où s'est immobilisée l'Arche après le Déluge.",
+            "arabic": "الجودي"
+          },
+          {
+            "term": "Barakât",
+            "definition": "Bénédictions et faveurs abondantes accordées par Allah.",
+            "arabic": "بركات"
+          }
+        ],
+        "checkpoint": {
+          "question": "Sur quelle montagne l'Arche de Noé s'est-elle posée selon le Coran ?",
+          "options": [
+            "Le mont Sinaï",
+            "Le mont Arafat",
+            "Le mont Jûdiy",
+            "Le mont Hira"
+          ],
+          "correctIndex": 2,
+          "explanation": "Le Coran spécifie expressément le mont Jûdiy : « Et l'Arche s'installa sur le Jûdiy » (11:44)."
+        }
+      }
+    ]
+  }
+]

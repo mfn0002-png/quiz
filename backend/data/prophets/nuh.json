@@ -1,0 +1,303 @@
+{
+  "id": "prophet-nuh",
+  "format": "recit",
+  "title": "Nūḥ / Noé (عليه السلام)",
+  "subtitle": "L'endurant aux 950 ans de prédication et le père du second départ",
+  "category": "prophetes",
+  "icon": "🚢",
+  "gradient": "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+  "badge": "Ouloul 'Azm",
+  "summary": "Noé prêcha patiemment pendant 950 ans malgré le mépris et le rejet de son peuple. Construit sous l'ordre divin, son navire sauva les croyants du Déluge universel.",
+  "quizCategoryTarget": "Prophètes",
+  "revision": 1,
+  "estimatedMinutes": 12,
+  "chapters": [
+    {
+      "id": "nuh-dawah",
+      "label": "L'appel patient",
+      "title": "L'appel patient : 950 ans de da'wah",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Noé (Nūḥ) fut envoyé à un peuple qui s'était détourné d'Allah pour adorer des idoles. Sa mission : les avertir d'un châtiment douloureux s'ils ne revenaient pas au monothéisme. Noé appela son peuple avec une patience extraordinaire — nuit et jour, en public et en secret, par la douceur et par l'avertissement. Le Coran mentionne explicitement la durée de sa mission : 950 ans, la plus longue mentionnée dans le Livre sacré."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 25
+          },
+          "note": "Envoyé comme avertisseur clair."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 29,
+            "ayah": 14
+          },
+          "note": "« Il demeura parmi eux mille ans moins cinquante. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 71,
+            "ayah": 5
+          },
+          "note": "« Seigneur, j'ai appelé mon peuple nuit et jour. »"
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Da'wah",
+          "definition": "L'appel, l'invitation à la foi et au monothéisme.",
+          "arabic": "دعوة"
+        },
+        {
+          "term": "Ouloul 'Azm",
+          "definition": "Les prophètes doués de ferme résolution : Noé, Abraham, Moïse, Jésus et Muhammad ﷺ.",
+          "arabic": "أولو العزم"
+        }
+      ],
+      "checkpoint": {
+        "question": "Combien de temps Noé a-t-il prêché parmi son peuple selon le Coran ?",
+        "options": [
+          "100 ans",
+          "500 ans",
+          "950 ans",
+          "1000 ans"
+        ],
+        "correctIndex": 2,
+        "explanation": "« Il demeura parmi eux mille ans moins cinquante » (29:14), soit 950 ans de da'wah ininterrompue."
+      }
+    },
+    {
+      "id": "nuh-invocation",
+      "label": "L'invocation",
+      "title": "Le refus obstiné et l'invocation finale",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Les notables rejetèrent le message avec orgueil et méprisèrent les croyants modestes. Noé leur rappela que l'istighfâr (la demande de pardon) ouvre les portes de la bénédiction divine : pluies abondantes, richesses et descendance. Face à leur entêtement irréversible, Noé remit leur sort à la justice d'Allah."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 71,
+            "ayah": 10
+          },
+          "note": "« Implorez le pardon de votre Seigneur, car Il est Grand Pardonneur. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 71,
+            "ayah": 26
+          },
+          "note": "L'invocation finale de Noé face à l'arrogance du peuple."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Istighfâr",
+          "definition": "La demande sincère de pardon à Allah, clé des bénédictions matérielles et spirituelles.",
+          "arabic": "استغفار"
+        }
+      ],
+      "checkpoint": {
+        "question": "Que proposait Noé à son peuple pour obtenir les bénédictions divines ?",
+        "options": [
+          "Construire des monuments",
+          "Demander le pardon d'Allah (istighfâr)",
+          "Lui offrir des présents",
+          "Émigrer ailleurs"
+        ],
+        "correctIndex": 1,
+        "explanation": "« Demandez le pardon de votre Seigneur... Il vous enverra du ciel des pluies abondantes » (71:10-11)."
+      }
+    },
+    {
+      "id": "nuh-arche",
+      "label": "L'Arche",
+      "title": "La construction de l'Arche sous le regard d'Allah",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Allah ordonna à Noé de bâtir un navire (al-Fulk) sous Sa direction et selon Sa révélation, au beau milieu de la terre ferme. Les chefs de son peuple passaient et se moquaient ouvertement de lui. Noé répondit avec fermeté : « Si vous vous moquez de nous, nous nous moquerons de vous comme vous vous moquez. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 37
+          },
+          "note": "« Construis l'Arche sous Nos yeux et selon Notre révélation. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 38
+          },
+          "note": "Les notables moqueurs devant le chantier de l'Arche."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Al-Fulk",
+          "definition": "L'Arche, navire du salut construit sur ordre divin.",
+          "arabic": "الفلك"
+        },
+        {
+          "term": "Wahy",
+          "definition": "L'inspiration ou révélation divine guidant l'action des messagers.",
+          "arabic": "وحي"
+        }
+      ],
+      "checkpoint": {
+        "question": "Comment les notables réagirent-ils face au chantier de l'Arche ?",
+        "options": [
+          "Ils aidèrent Noé",
+          "Ils se moquèrent de lui",
+          "Ils prirent la fuite",
+          "Ils embrassèrent la foi"
+        ],
+        "correctIndex": 1,
+        "explanation": "Chaque fois que les notables passaient près de lui, ils se moquaient de voir un navire construit en pleine terre (11:38)."
+      }
+    },
+    {
+      "id": "nuh-deluge",
+      "label": "Le Déluge",
+      "title": "Le Déluge et l'épreuve du fils",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Quand vint l'ordre divin, les eaux jaillirent de la terre et tombèrent du ciel. Noé fit monter un couple de chaque espèce vivante et les croyants. Voyant son fils hésiter sur le rivage, Noé l'appela avec affection : « Ô mon fils, monte avec nous ! » Mais le fils refusa, préférant se réfugier sur une montagne. Une vague engloutit le fils rebelle, rappelant que les liens de la foi prévalent sur les liens de sang."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 40
+          },
+          "note": "« Charge dans l'Arche un couple de chaque espèce... »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 42
+          },
+          "note": "L'appel déchirant de Noé à son fils."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 43
+          },
+          "note": "« Rien aujourd'hui ne protège du décret d'Allah... »"
+        }
+      ],
+      "glossary": [
+        {
+          "term": "At-Tannûr",
+          "definition": "Le four d'où jaillit l'eau, signe annonciateur du cataclysme.",
+          "arabic": "التنور"
+        }
+      ],
+      "checkpoint": {
+        "question": "Pourquoi le fils de Noé a-t-il refusé de monter dans l'Arche ?",
+        "options": [
+          "Il ne savait pas nager",
+          "Il croyait qu'une montagne le protégerait",
+          "Il n'a pas entendu l'appel",
+          "Il était malade"
+        ],
+        "correctIndex": 1,
+        "explanation": "Le fils compta sur une cause matérielle illusoire : « Je vais me réfugier sur une montagne qui me protégera de l'eau » (11:43)."
+      }
+    },
+    {
+      "id": "nuh-nouveau-depart",
+      "label": "Le nouveau départ",
+      "title": "L'apaisement sur le Mont Jûdiy et le renouveau",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Le décret accompli, Allah ordonna à la terre d'avaler ses eaux et au ciel de cesser ses pluies. L'Arche se posa en toute sécurité sur le mont Jûdiy. Noé descendit porteur d'une paix divine et de bénédictions perpétuelles pour l'humanité régénérée."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 44
+          },
+          "note": "« L'Arche se posa sur le Jûdiy. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 11,
+            "ayah": 48
+          },
+          "note": "« Descends avec Notre paix et Nos bénédictions... »"
+        },
+        {
+          "type": "stats",
+          "items": [
+            {
+              "value": "950",
+              "label": "années de prédication"
+            },
+            {
+              "value": "3e",
+              "label": "prophète chronologique"
+            },
+            {
+              "value": "Jûdiy",
+              "label": "montagne du salut"
+            }
+          ]
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Jûdiy",
+          "definition": "La montagne nommée dans le Coran où s'est immobilisée l'Arche après le Déluge.",
+          "arabic": "الجودي"
+        },
+        {
+          "term": "Barakât",
+          "definition": "Bénédictions et faveurs abondantes accordées par Allah.",
+          "arabic": "بركات"
+        }
+      ],
+      "checkpoint": {
+        "question": "Sur quelle montagne l'Arche de Noé s'est-elle posée selon le Coran ?",
+        "options": [
+          "Le mont Sinaï",
+          "Le mont Arafat",
+          "Le mont Jûdiy",
+          "Le mont Hira"
+        ],
+        "correctIndex": 2,
+        "explanation": "Le Coran spécifie expressément le mont Jûdiy : « Et l'Arche s'installa sur le Jûdiy » (11:44)."
+      }
+    }
+  ],
+  "order": 6,
+  "published": true
+}

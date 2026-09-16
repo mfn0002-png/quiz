@@ -1,0 +1,319 @@
+{
+  "id": "prophet-adam",
+  "format": "recit",
+  "title": "Adam (عليه السلام)",
+  "subtitle": "Le premier homme, père de l'humanité et premier prophète",
+  "category": "prophetes",
+  "icon": "🌿",
+  "gradient": "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+  "badge": "Prophète",
+  "summary": "Créé d'argile par les Mains d'Allah, Adam est le premier être humain et le premier prophète. Son histoire enseigne la dignité de l'homme, le danger de l'orgueil et la puissance du repentir sincère.",
+  "quizCategoryTarget": "Prophètes",
+  "revision": 1,
+  "estimatedMinutes": 10,
+  "chapters": [
+    {
+      "id": "adam-creation",
+      "label": "La création",
+      "title": "La création et la dignité de l'être humain",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Allah ﷻ informa les anges de Sa volonté de placer sur Terre un vicaire (khalîfah). Les anges, non par arrogance mais par souci de comprendre la sagesse divine, questionnèrent cette décision. Allah leur répondit qu'Il sait ce qu'ils ne savent pas. Adam fut créé d'argile, façonné par les Mains d'Allah, et l'Esprit divin fut insufflé en lui."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 30
+          },
+          "note": "Annonce de la création du khalîfah aux anges."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 7,
+            "ayah": 11
+          },
+          "note": "« Nous vous avons créés, puis Nous vous avons donné forme. »"
+        },
+        {
+          "type": "stats",
+          "items": [
+            {
+              "value": "7",
+              "label": "sourates mentionnent Adam"
+            },
+            {
+              "value": "1er",
+              "label": "prophète de l'humanité"
+            },
+            {
+              "value": "25",
+              "label": "prophètes nommés dans le Coran"
+            }
+          ]
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Khalîfah",
+          "definition": "Vicaire, représentant d'Allah sur Terre. Ce titre montre la dignité accordée à l'être humain.",
+          "arabic": "خليفة"
+        },
+        {
+          "term": "Malâ'ikah",
+          "definition": "Les anges, créés de lumière. Ils obéissent parfaitement à Allah et ne désobéissent jamais.",
+          "arabic": "ملائكة"
+        }
+      ],
+      "checkpoint": {
+        "question": "Quelle a été la réaction des anges lorsqu'Allah leur annonça la création d'Adam ?",
+        "options": [
+          "Ils se sont révoltés",
+          "Ils ont questionné avec humilité la sagesse de cette décision",
+          "Ils ont refusé d'obéir",
+          "Ils ont ignoré l'ordre"
+        ],
+        "correctIndex": 1,
+        "explanation": "Les anges ont demandé « Vas-Tu y placer quelqu'un qui y sèmera le désordre ? » (2:30), non par désobéissance mais pour comprendre. Allah a répondu : « Je sais ce que vous ne savez pas. »"
+      }
+    },
+    {
+      "id": "adam-noms",
+      "label": "Les Noms",
+      "title": "L'enseignement des Noms",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Pour démontrer la distinction accordée à l'être humain, Allah enseigna à Adam tous les noms — la connaissance des choses, leur nature et leur réalité. Puis Il demanda aux anges de nommer ces choses. Les anges reconnurent humblement leur limite : « Gloire à Toi ! Nous n'avons de savoir que ce que Tu nous as enseigné. » Quand Adam, lui, les nomma tous, la sagesse divine dans cette création devint manifeste."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 31
+          },
+          "note": "Allah enseigne à Adam tous les noms."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 32
+          },
+          "note": "Les anges reconnaissent la limite de leur savoir."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Al-Asmâ'",
+          "definition": "Les noms. Désigne ici la connaissance complète des choses enseignée par Allah à Adam, ce qui le distingue des anges.",
+          "arabic": "الأسماء"
+        }
+      ],
+      "checkpoint": {
+        "question": "Qu'a fait Allah pour prouver la distinction d'Adam par rapport aux anges ?",
+        "options": [
+          "Il lui a donné des ailes",
+          "Il lui a enseigné tous les noms",
+          "Il l'a rendu immortel",
+          "Il lui a donné le pouvoir de voler"
+        ],
+        "correctIndex": 1,
+        "explanation": "« Et Il apprit à Adam tous les noms » (2:31). Cette connaissance est ce qui distingue l'être humain et justifie son rôle de vicaire sur Terre."
+      }
+    },
+    {
+      "id": "adam-iblis",
+      "label": "Iblîs",
+      "title": "La prosternation des anges et le refus d'Iblîs",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Allah ordonna aux anges de se prosterner devant Adam, en signe d'honneur — non d'adoration, car l'adoration n'est due qu'à Allah. Tous les anges obéirent sans exception. Seul Iblîs (le Diable), qui se trouvait parmi eux, refusa par orgueil. Il se justifia en disant : « Je suis meilleur que lui : Tu m'as créé de feu, et Tu l'as créé d'argile. » Cet orgueil causa sa chute et fit de lui l'ennemi juré de l'humanité."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 34
+          },
+          "note": "L'ordre de la prosternation et le refus d'Iblîs."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Iblîs",
+          "definition": "Le Diable. Il était parmi les anges mais n'en était pas un (créé de feu). Son orgueil le fit déchoir du rang élevé qu'il occupait.",
+          "arabic": "إبليس"
+        },
+        {
+          "term": "Sujûd",
+          "definition": "Prosternation. Ici un signe d'honneur envers Adam, et non une adoration qui n'est due qu'à Allah seul.",
+          "arabic": "سجود"
+        },
+        {
+          "term": "Kibr",
+          "definition": "L'orgueil. Le premier péché commis dans la création, source de la chute d'Iblîs.",
+          "arabic": "كبر"
+        }
+      ],
+      "checkpoint": {
+        "question": "Pour quelle raison Iblîs a-t-il refusé de se prosterner devant Adam ?",
+        "options": [
+          "Il avait peur",
+          "Il trouvait Adam faible",
+          "Par orgueil, estimant que le feu est supérieur à l'argile",
+          "Il n'avait pas entendu l'ordre"
+        ],
+        "correctIndex": 2,
+        "explanation": "Iblîs a dit : « Je suis meilleur que lui : Tu m'as créé de feu, alors que Tu l'as créé d'argile » (7:12). L'orgueil (kibr) est le premier péché commis dans la création."
+      }
+    },
+    {
+      "id": "adam-epreuve",
+      "label": "L'épreuve",
+      "title": "L'épreuve au Paradis",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Allah installa Adam et son épouse dans le Paradis et leur permit de jouir de tout ce qu'ils souhaitaient, à une seule condition : ne pas approcher un arbre en particulier. Iblîs, animé par la rancœur, les tenta en leur chuchotant de fausses promesses — la vie éternelle et un royaume impérissable. Adam et son épouse cédèrent à la tentation et goûtèrent à l'arbre. Aussitôt, leur nudité leur apparut et ils commencèrent à se couvrir de feuilles du Paradis. C'était la première épreuve de l'humanité."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 35
+          },
+          "note": "L'installation au Paradis et l'interdiction de l'arbre."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 7,
+            "ayah": 19
+          },
+          "note": "« Mangez de tout… mais n'approchez pas de cet arbre. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 20,
+            "ayah": 121
+          },
+          "note": "« Ils en mangèrent, leur nudité leur apparut. »"
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Jannah",
+          "definition": "Le Paradis. Ici le jardin où Adam et son épouse furent installés avant leur descente sur Terre.",
+          "arabic": "جنة"
+        },
+        {
+          "term": "Waswasah",
+          "definition": "Le chuchotement du Diable, sa méthode de tentation. Il ne contraint jamais, il suggère.",
+          "arabic": "وسوسة"
+        },
+        {
+          "term": "Shajarah",
+          "definition": "L'arbre interdit. Le Coran ne précise pas son espèce — l'important est l'épreuve d'obéissance, pas la nature de l'arbre.",
+          "arabic": "شجرة"
+        }
+      ],
+      "checkpoint": {
+        "question": "Quel stratagème Iblîs utilisa-t-il pour tromper Adam et son épouse ?",
+        "options": [
+          "La force physique",
+          "Des chuchotements leur promettant l'éternité et un royaume",
+          "Il se déguisa en ange",
+          "Il changea l'apparence de l'arbre"
+        ],
+        "correctIndex": 1,
+        "explanation": "« Le Diable le tenta en disant : Ô Adam, t'indiquerai-je l'arbre de l'éternité et un royaume impérissable ? » (20:120). Iblîs ne force jamais ; il chuchote."
+      }
+    },
+    {
+      "id": "adam-repentir",
+      "label": "Le repentir",
+      "title": "Le repentir et la descente sur Terre",
+      "ambient": "linear-gradient(180deg, rgba(5, 150, 105, 0.06) 0%, var(--surface-color) 100%)",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Contrairement à Iblîs qui persista dans son orgueil, Adam et son épouse reconnurent immédiatement leur tort. Ils implorèrent Allah avec les mots les plus humbles. Allah, le Pardonneur, accepta leur repentir et leur enseigna des paroles de repentance. Puis Il les fit descendre sur Terre pour accomplir la mission pour laquelle Adam avait été créé : être le vicaire d'Allah."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 7,
+            "ayah": 23
+          },
+          "note": "L'invocation de repentir d'Adam et de son épouse."
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 2,
+            "ayah": 37
+          },
+          "note": "« Adam reçut de son Seigneur des paroles, et Allah agréa son repentir. »"
+        },
+        {
+          "type": "source",
+          "ref": {
+            "kind": "quran",
+            "surah": 20,
+            "ayah": 122
+          },
+          "note": "« Son Seigneur le choisit, agréa son repentir et le guida. »"
+        },
+        {
+          "type": "text",
+          "value": "Cette histoire enseigne que l'erreur fait partie de la nature humaine, mais que ce qui distingue le croyant, c'est la capacité à se repentir sincèrement et à revenir vers Allah. Adam n'est pas déchu — il est élevé par son repentir."
+        }
+      ],
+      "glossary": [
+        {
+          "term": "Tawbah",
+          "definition": "Le repentir sincère : revenir vers Allah après une faute. C'est une vertu, pas une honte.",
+          "arabic": "توبة"
+        },
+        {
+          "term": "At-Tawwâb",
+          "definition": "Nom d'Allah signifiant « Celui qui accepte sans cesse le repentir ». Il ne se lasse jamais de pardonner.",
+          "arabic": "التواب"
+        },
+        {
+          "term": "Istikhlâf",
+          "definition": "La mission de vicariat sur Terre confiée à Adam et sa descendance.",
+          "arabic": "استخلاف"
+        }
+      ],
+      "checkpoint": {
+        "question": "Quelle est la grande leçon de l'histoire d'Adam selon le Coran ?",
+        "options": [
+          "L'être humain ne doit jamais faire d'erreur",
+          "Le repentir sincère est toujours accepté par Allah",
+          "Allah n'a pas pardonné à Adam",
+          "Les anges sont supérieurs aux humains"
+        ],
+        "correctIndex": 1,
+        "explanation": "« Adam reçut de son Seigneur des paroles, et Allah agréa son repentir. C'est Lui le Repentant, le Miséricordieux » (2:37). L'erreur est humaine ; le repentir sincère est la voie du retour vers Allah."
+      }
+    }
+  ],
+  "order": 4,
+  "published": true
+}
