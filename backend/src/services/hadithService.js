@@ -230,21 +230,30 @@ export async function getCollectionBooks(collectionId) {
   return result;
 }
 
+function isRealFrench(hadith) {
+  if (!hadith || !hadith.frenchTranslation) return false;
+  if (hadith.frenchTranslation === hadith.englishTranslation) return false;
+  if (/^(It is narrated|Narrated|Allah's Messenger|He who|Abu Huraira)/i.test(hadith.frenchTranslation.trim())) return false;
+  return true;
+}
+
 /**
  * Récupère les hadiths d'un chapitre/section spécifique via UmmahAPI
  */
 export async function getBookHadiths(collectionId, bookNumber) {
   const cacheKey = `hadith:data:${collectionId}:${bookNumber}`;
   const memCached = getFromExplorerCache(cacheKey);
-  if (memCached) return memCached;
+  if (memCached && isRealFrench(memCached.hadiths?.[0])) return memCached;
 
   if (redis) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) {
         const parsed = typeof cached === 'string' ? JSON.parse(cached) : cached;
-        setInExplorerCache(cacheKey, parsed);
-        return parsed;
+        if (parsed?.hadiths?.[0] && isRealFrench(parsed.hadiths[0])) {
+          setInExplorerCache(cacheKey, parsed);
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn(`[HadithService] Redis read error: ${e.message}`);
@@ -268,8 +277,8 @@ export async function getBookHadiths(collectionId, bookNumber) {
       rawHadiths.map(async (h, idx) => {
         const arabicText = h.arabic || '';
         const englishText = typeof h.english === 'string' ? h.english : h.english?.text || h.text || h.body || '';
-        const frenchText = await translateEnToFr(englishText);
-        const phoneticText = transliterateArabic(arabicText);
+        const frenchText = h.french || h.fr || (await translateEnToFr(englishText));
+        const phoneticText = h.phonetic || h.phonetics || h.transliteration || h.transcription || transliterateArabic(arabicText);
 
         return {
           hadithNumber: h.hadithnumber || h.id || (idx + 1),

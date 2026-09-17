@@ -67,7 +67,7 @@ export function transliterateArabic(text) {
 }
 
 /**
- * Traduit un texte anglais en français via MyMemory API (gratuit & rapide) avec cache mémoire.
+ * Traduit un texte anglais en français via l'API AndroidTranslate avec cache mémoire.
  */
 export async function translateEnToFr(englishText) {
   if (!englishText || typeof englishText !== 'string') return '';
@@ -79,25 +79,23 @@ export async function translateEnToFr(englishText) {
   }
 
   try {
-    // Découpage si le texte est long (MyMemory accepte ~500 caractères par segment)
-    const chunks = trimmed.match(/.{1,450}(\s+|$)/g) || [trimmed];
-    const translatedChunks = await Promise.all(
-      chunks.map(async (chunk) => {
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk.trim())}&langpair=en|fr`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(3500) });
-        if (!res.ok) return chunk;
-        const data = await res.json();
-        const translated = data.responseData?.translatedText;
-        return translated && !translated.startsWith('QUERY LENGTH') ? translated : chunk;
-      })
-    );
+    const url = `https://translate.googleapis.com/translate_a/t?client=at&sl=en&tl=fr&q=${encodeURIComponent(trimmed)}`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'AndroidTranslate/5.3.0.RC02.130440794',
+      },
+      signal: AbortSignal.timeout(4000),
+    });
 
-    const fullFr = translatedChunks.join(' ');
-    translationCache.set(trimmed, fullFr);
-    return fullFr;
+    if (!res.ok) return trimmed;
+    const json = await res.json();
+    const translated = Array.isArray(json) ? json[0] : trimmed;
+    const result = typeof translated === 'string' && translated ? translated : trimmed;
+
+    translationCache.set(trimmed, result);
+    return result;
   } catch (err) {
     console.warn(`[HadithTransform] Erreur traduction FR: ${err.message}`);
-    // En cas de timeout ou erreur réseau, on retourne l'anglais original
     return trimmed;
   }
 }
