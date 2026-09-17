@@ -34,7 +34,10 @@ export interface HadithItem {
   hadithNumber: number;
   arabicNumber?: number;
   arabicText: string;
+  phoneticText?: string;
   translation: string;
+  englishTranslation?: string;
+  frenchTranslation?: string;
   grades: HadithGrade[];
   reference: {
     book: number;

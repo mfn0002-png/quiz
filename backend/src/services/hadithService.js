@@ -13,6 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { redis } from '../config/redis.js';
+import { transliterateArabic, translateEnToFr } from '../utils/hadithTransform.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -263,14 +264,26 @@ export async function getBookHadiths(collectionId, bookNumber) {
     const json = await resp.json();
     const rawHadiths = json.data?.hadiths || [];
 
-    const hadiths = rawHadiths.map((h, idx) => ({
-      hadithNumber: h.hadithnumber || h.id || (idx + 1),
-      arabicNumber: h.hadithnumber || (idx + 1),
-      arabicText: h.arabic || '',
-      translation: h.english || h.french || '',
-      grades: h.grade ? [{ name: 'Statut', grade: h.grade }] : [],
-      reference: { book: page, hadith: h.hadithnumber || (idx + 1) },
-    }));
+    const hadiths = await Promise.all(
+      rawHadiths.map(async (h, idx) => {
+        const arabicText = h.arabic || '';
+        const englishText = typeof h.english === 'string' ? h.english : h.english?.text || h.text || h.body || '';
+        const frenchText = await translateEnToFr(englishText);
+        const phoneticText = transliterateArabic(arabicText);
+
+        return {
+          hadithNumber: h.hadithnumber || h.id || (idx + 1),
+          arabicNumber: h.hadithnumber || (idx + 1),
+          arabicText,
+          phoneticText,
+          translation: frenchText || englishText,
+          englishTranslation: englishText,
+          frenchTranslation: frenchText || englishText,
+          grades: h.grade ? [{ name: 'Statut', grade: h.grade }] : [],
+          reference: { book: page, hadith: h.hadithnumber || (idx + 1) },
+        };
+      })
+    );
 
     const result = {
       collectionId,

@@ -2,15 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
-  BookOpen,
   ChevronRight,
   ArrowLeft,
   Search,
   Copy,
   Check,
-  Clock,
-  Layers,
-  Sparkles,
 } from 'lucide-react';
 import {
   HadithCollection,
@@ -46,12 +42,14 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
   const [selectedBook, setSelectedBook] = useState<HadithBook | null>(null);
   const [hadiths, setHadiths] = useState<HadithItem[]>([]);
 
-  // UI / Search / Loading States
+  // UI / Search / Loading / Language & Phonetic States
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>('large');
+  const [showPhonetic, setShowPhonetic] = useState<boolean>(true);
+  const [langMode, setLangMode] = useState<'fr' | 'en'>('fr');
 
   // 1. Charger les collections au montage
   useEffect(() => {
@@ -390,71 +388,145 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
               </div>
             </div>
 
-            {/* Actions à droite (Font controls + Close) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            {/* Actions à droite (Traduction FR/EN, Phonétique, Taille texte & Fermer) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               {currentView === 'reader' && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.2rem',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--surface-color-subtle)',
-                    border: '1px solid var(--border-color)',
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setFontSize('normal')}
+                <>
+                  {/* Selecteur de Langue (FR / EN) */}
+                  <div
                     style={{
-                      padding: '0.3rem 0.6rem',
-                      border: 'none',
-                      borderRadius: 'var(--radius-sm)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.8rem',
-                      fontWeight: fontSize === 'normal' ? 700 : 500,
-                      cursor: 'pointer',
-                      backgroundColor: fontSize === 'normal' ? 'var(--primary-color)' : 'transparent',
-                      color: fontSize === 'normal' ? '#ffffff' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.2rem',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--surface-color-subtle)',
+                      border: '1px solid var(--border-color)',
                     }}
                   >
-                    A
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setLangMode('fr')}
+                      title="Afficher la traduction en Français"
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'inherit',
+                        fontSize: '0.78rem',
+                        fontWeight: langMode === 'fr' ? 700 : 500,
+                        cursor: 'pointer',
+                        backgroundColor: langMode === 'fr' ? 'var(--primary-color)' : 'transparent',
+                        color: langMode === 'fr' ? '#ffffff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      🇫🇷 FR
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLangMode('en')}
+                      title="Show original English text"
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'inherit',
+                        fontSize: '0.78rem',
+                        fontWeight: langMode === 'en' ? 700 : 500,
+                        cursor: 'pointer',
+                        backgroundColor: langMode === 'en' ? 'var(--primary-color)' : 'transparent',
+                        color: langMode === 'en' ? '#ffffff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      🇬🇧 EN
+                    </button>
+                  </div>
+
+                  {/* Bouton Toggle Phonétique */}
                   <button
                     type="button"
-                    onClick={() => setFontSize('large')}
+                    onClick={() => setShowPhonetic(!showPhonetic)}
+                    title="Activer ou désactiver la transcription phonétique en caractères latins"
                     style={{
-                      padding: '0.3rem 0.6rem',
-                      border: 'none',
-                      borderRadius: 'var(--radius-sm)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.8rem',
-                      fontWeight: fontSize === 'large' ? 700 : 500,
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: `1px solid ${showPhonetic ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                      backgroundColor: showPhonetic ? 'rgba(5, 150, 105, 0.12)' : 'var(--surface-color-subtle)',
+                      color: showPhonetic ? 'var(--primary-color)' : 'var(--text-secondary)',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
                       cursor: 'pointer',
-                      backgroundColor: fontSize === 'large' ? 'var(--primary-color)' : 'transparent',
-                      color: fontSize === 'large' ? '#ffffff' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
                     }}
                   >
-                    A+
+                    🗣️ Phonétique
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setFontSize('xl')}
+
+                  {/* Taille du texte */}
+                  <div
                     style={{
-                      padding: '0.3rem 0.6rem',
-                      border: 'none',
-                      borderRadius: 'var(--radius-sm)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.8rem',
-                      fontWeight: fontSize === 'xl' ? 700 : 500,
-                      cursor: 'pointer',
-                      backgroundColor: fontSize === 'xl' ? 'var(--primary-color)' : 'transparent',
-                      color: fontSize === 'xl' ? '#ffffff' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.2rem',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--surface-color-subtle)',
+                      border: '1px solid var(--border-color)',
                     }}
                   >
-                    A++
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setFontSize('normal')}
+                      style={{
+                        padding: '0.3rem 0.6rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'inherit',
+                        fontSize: '0.8rem',
+                        fontWeight: fontSize === 'normal' ? 700 : 500,
+                        cursor: 'pointer',
+                        backgroundColor: fontSize === 'normal' ? 'var(--primary-color)' : 'transparent',
+                        color: fontSize === 'normal' ? '#ffffff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      A
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFontSize('large')}
+                      style={{
+                        padding: '0.3rem 0.6rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'inherit',
+                        fontSize: '0.8rem',
+                        fontWeight: fontSize === 'large' ? 700 : 500,
+                        cursor: 'pointer',
+                        backgroundColor: fontSize === 'large' ? 'var(--primary-color)' : 'transparent',
+                        color: fontSize === 'large' ? '#ffffff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      A+
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFontSize('xl')}
+                      style={{
+                        padding: '0.3rem 0.6rem',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontFamily: 'inherit',
+                        fontSize: '0.8rem',
+                        fontWeight: fontSize === 'xl' ? 700 : 500,
+                        cursor: 'pointer',
+                        backgroundColor: fontSize === 'xl' ? 'var(--primary-color)' : 'transparent',
+                        color: fontSize === 'xl' ? '#ffffff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      A++
+                    </button>
+                  </div>
+                </>
               )}
 
               <button
@@ -934,9 +1006,32 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
                     </div>
                   )}
 
-                  {/* Traduction */}
+                  {/* Transcription Phonétique (Lettres Latines) */}
+                  {showPhonetic && h.phoneticText && (
+                    <div
+                      style={{
+                        fontSize: '0.92rem',
+                        fontStyle: 'italic',
+                        color: 'var(--primary-color)',
+                        padding: '0.75rem 1rem',
+                        borderRadius: 'var(--radius-lg)',
+                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                        borderLeft: '4px solid var(--primary-color)',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, fontStyle: 'normal', fontSize: '0.8rem', display: 'block', marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>
+                        🗣️ Transcription Phonétique :
+                      </span>
+                      {h.phoneticText}
+                    </div>
+                  )}
+
+                  {/* Traduction (Français ou Anglais) */}
                   <div style={{ fontSize: fontSize === 'normal' ? '0.98rem' : fontSize === 'large' ? '1.08rem' : '1.2rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
-                    {h.translation}
+                    {langMode === 'fr'
+                      ? (h.frenchTranslation || h.translation)
+                      : (h.englishTranslation || h.translation)}
                   </div>
                 </div>
               ))}
