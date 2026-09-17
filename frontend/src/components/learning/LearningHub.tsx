@@ -1517,9 +1517,29 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setInitialHadithCollection(undefined);
+                  setShowHadithExplorer(true);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                }}
+              >
                 Explorer les recueils <ChevronRight size={16} />
-              </span>
+              </button>
 
               {onStartQuizWithCategory && (
                 <button
