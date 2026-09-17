@@ -13,7 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { redis } from '../config/redis.js';
-import { transliterateArabic, translateEnToFr } from '../utils/hadithTransform.js';
+import { translateEnToFr } from '../utils/hadithTransform.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -278,13 +278,11 @@ export async function getBookHadiths(collectionId, bookNumber) {
         const arabicText = h.arabic || '';
         const englishText = typeof h.english === 'string' ? h.english : h.english?.text || h.text || h.body || '';
         const frenchText = h.french || h.fr || (await translateEnToFr(englishText));
-        const phoneticText = h.phonetic || h.phonetics || h.transliteration || h.transcription || transliterateArabic(arabicText);
 
         return {
           hadithNumber: h.hadithnumber || h.id || (idx + 1),
           arabicNumber: h.hadithnumber || (idx + 1),
           arabicText,
-          phoneticText,
           translation: frenchText || englishText,
           englishTranslation: englishText,
           frenchTranslation: frenchText || englishText,

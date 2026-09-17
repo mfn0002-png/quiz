@@ -48,7 +48,6 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>('large');
-  const [showPhonetic, setShowPhonetic] = useState<boolean>(true);
   const [langMode, setLangMode] = useState<'fr' | 'en'>('fr');
 
   // 1. Charger les collections au montage
@@ -159,8 +158,8 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
     }
   };
 
-  // Navigation Retour
-  const handleBack = () => {
+  // Navigation Retour / Fermeture Hiérarchique
+  const handleCloseOrBack = () => {
     if (currentView === 'reader') {
       if (books.length === 1) {
         setCurrentView('collections');
@@ -176,8 +175,28 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
       setSelectedCollection(null);
       setSelectedBook(null);
       setSearchQuery('');
+    } else {
+      onClose();
     }
   };
+
+  const handleBack = handleCloseOrBack;
+
+  // Gestion de la touche Échap pour remonter d'un niveau
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseOrBack();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, currentView, books.length]);
 
   // Filtrage des collections
   const filteredCollections = useMemo(() => {
@@ -249,7 +268,7 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
         padding: '1.25rem',
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleCloseOrBack();
       }}
     >
       <div
@@ -441,28 +460,6 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
                     </button>
                   </div>
 
-                  {/* Bouton Toggle Phonétique */}
-                  <button
-                    type="button"
-                    onClick={() => setShowPhonetic(!showPhonetic)}
-                    title="Activer ou désactiver la transcription phonétique en caractères latins"
-                    style={{
-                      padding: '0.35rem 0.75rem',
-                      borderRadius: 'var(--radius-md)',
-                      border: `1px solid ${showPhonetic ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                      backgroundColor: showPhonetic ? 'rgba(5, 150, 105, 0.12)' : 'var(--surface-color-subtle)',
-                      color: showPhonetic ? 'var(--primary-color)' : 'var(--text-secondary)',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                    }}
-                  >
-                    🗣️ Phonétique
-                  </button>
-
                   {/* Taille du texte */}
                   <div
                     style={{
@@ -531,8 +528,8 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
 
               <button
                 type="button"
-                onClick={onClose}
-                aria-label="Fermer"
+                onClick={handleCloseOrBack}
+                aria-label={currentView === 'collections' ? 'Fermer' : 'Retour'}
                 style={{
                   width: '38px',
                   height: '38px',
@@ -1003,27 +1000,6 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
                       }}
                     >
                       {h.arabicText}
-                    </div>
-                  )}
-
-                  {/* Transcription Phonétique (Lettres Latines) */}
-                  {showPhonetic && h.phoneticText && (
-                    <div
-                      style={{
-                        fontSize: '0.92rem',
-                        fontStyle: 'italic',
-                        color: 'var(--primary-color)',
-                        padding: '0.75rem 1rem',
-                        borderRadius: 'var(--radius-lg)',
-                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
-                        borderLeft: '4px solid var(--primary-color)',
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      <span style={{ fontWeight: 700, fontStyle: 'normal', fontSize: '0.8rem', display: 'block', marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>
-                        🗣️ Transcription Phonétique :
-                      </span>
-                      {h.phoneticText}
                     </div>
                   )}
 
