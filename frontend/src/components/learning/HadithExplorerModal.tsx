@@ -2,15 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
-  BookOpen,
   ChevronRight,
   ArrowLeft,
   Search,
   Copy,
   Check,
-  Clock,
-  Layers,
-  Sparkles,
 } from 'lucide-react';
 import {
   HadithCollection,
@@ -161,8 +157,8 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
     }
   };
 
-  // Navigation Retour
-  const handleBack = () => {
+  // Navigation Retour / Fermeture Hiérarchique
+  const handleCloseOrBack = () => {
     if (currentView === 'reader') {
       if (books.length === 1) {
         setCurrentView('collections');
@@ -178,8 +174,28 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
       setSelectedCollection(null);
       setSelectedBook(null);
       setSearchQuery('');
+    } else {
+      onClose();
     }
   };
+
+  const handleBack = handleCloseOrBack;
+
+  // Gestion de la touche Échap pour remonter d'un niveau
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseOrBack();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, currentView, books.length]);
 
   // Filtrage des collections
   const filteredCollections = useMemo(() => {
@@ -251,7 +267,7 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
         padding: '1.25rem',
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleCloseOrBack();
       }}
     >
       <div
@@ -459,8 +475,8 @@ export const HadithExplorerModal: React.FC<HadithExplorerModalProps> = ({
 
               <button
                 type="button"
-                onClick={onClose}
-                aria-label="Fermer"
+                onClick={handleCloseOrBack}
+                aria-label={currentView === 'collections' ? 'Fermer' : 'Retour'}
                 style={{
                   width: '38px',
                   height: '38px',
