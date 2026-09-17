@@ -12,6 +12,7 @@ import { LEARNING_CATEGORIES } from '../../constants';
 import { useLearningContent, useTopicDetail } from '../../hooks/useLearningContent';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { SourceBlock } from './SourceBlock';
+import { HadithExplorerModal } from './HadithExplorerModal';
 import { Difficulty } from '../../data/questions';
 
 interface LearningHubProps {
@@ -906,7 +907,58 @@ function TopicModalLoader({
   onCheckpoint: (topic: LearningTopic, chapterId: string, correct: boolean) => void;
   onStartQuiz: (topic: LearningTopic | TopicSummary) => void;
 }) {
-  const { topic, loading } = useTopicDetail(topicSummary.id);
+  const { topic, loading, error } = useTopicDetail(topicSummary.id);
+
+  if (error && !topic) {
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Erreur - ${topicSummary.title}`}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(5, 10, 20, 0.82)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          padding: '1.25rem',
+        }}
+        onClick={onClose}
+      >
+        <div
+          className="glass-panel"
+          style={{
+            padding: '2rem',
+            textAlign: 'center',
+            borderRadius: 'var(--radius-2xl)',
+            backgroundColor: 'var(--surface-color)',
+            border: '1px solid var(--border-color)',
+            maxWidth: '440px',
+            width: '100%',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+            Fiche temporairement indisponible
+          </h3>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            {error.message || 'Impossible de charger cette fiche pour le moment. Veuillez vérifier votre connexion internet.'}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button className="btn btn-outline" onClick={onClose} style={{ borderRadius: 'var(--radius-full)' }}>
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   if (loading || !topic) {
     return createPortal(
@@ -1016,6 +1068,16 @@ function getTopicTheme(category: string) {
         badgeColor: '#0284c7',
         accentColor: '#0284c7',
       };
+    case 'hadiths':
+    case 'hadith':
+      return {
+        bg: 'linear-gradient(135deg, rgba(225, 29, 72, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #e11d48 0%, #fb7185 100%)',
+        border: '1px solid rgba(244, 63, 94, 0.22)',
+        badgeBg: 'rgba(225, 29, 72, 0.14)',
+        badgeColor: '#e11d48',
+        accentColor: '#e11d48',
+      };
     case 'prophetes':
     default:
       return {
@@ -1043,10 +1105,12 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showProphetPicker, setShowProphetPicker] = useState(false);
   const [openedFromPicker, setOpenedFromPicker] = useState(false);
+  const [showHadithExplorer, setShowHadithExplorer] = useState(false);
+  const [initialHadithCollection, setInitialHadithCollection] = useState<string | undefined>(undefined);
 
-  // Separate prophet topics from other topics
+  // Separate prophet topics from other topics and exclude duplicate hadiths-essentiels card
   const prophetTopics = useMemo(() => topics.filter(t => t.category === 'prophetes'), [topics]);
-  const nonProphetTopics = useMemo(() => topics.filter(t => t.category !== 'prophetes'), [topics]);
+  const nonProphetTopics = useMemo(() => topics.filter(t => t.category !== 'prophetes' && t.id !== 'hadiths-essentiels'), [topics]);
 
   const filteredTopics = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -1083,6 +1147,14 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
       [t.title, t.subtitle, t.summary, ...(t.unitHeadings || [])].join(' ').toLowerCase().includes(query),
     );
   }, [prophetTopics, selectedCat, searchQuery]);
+
+  // Check if search matches Hadith explorer
+  const searchMatchesHadiths = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    const keywords = ['hadith', 'hadiths', 'sounnah', 'sunnah', 'bukhari', 'muslim', 'nawawi', 'recueil', 'livre', 'tirmidhi', 'abudawud', 'malik', 'nasai'];
+    return keywords.some(k => k.includes(query) || query.includes(k));
+  }, [searchQuery]);
 
   const handleStartQuiz = useCallback((topic: LearningTopic | TopicSummary) => {
     setActiveTopic(null);
@@ -1264,6 +1336,58 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           </div>
         )}
 
+        {selectedCat === 'hadiths' && (
+          <div
+            className="glass-panel"
+            style={{
+              gridColumn: '1 / -1',
+              padding: '1.75rem 2rem',
+              borderRadius: 'var(--radius-xl)',
+              background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(13, 148, 136, 0.08) 100%)',
+              border: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1.5rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.65rem', borderRadius: 'var(--radius-full)', backgroundColor: 'rgba(5, 150, 105, 0.15)', color: '#10b981', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                <BookOpen size={14} />
+                <span>Bibliothèque des Hadiths & Sounnah (الحديث الشريف)</span>
+              </div>
+              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.35rem' }}>
+                Les paroles, actes et approbations du Prophète ﷺ
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: '650px', lineHeight: 1.5 }}>
+                Consultez les 9 grands recueils canoniques (*Kutub at-Tis'ah*), les 40 Hadiths d'An-Nawawi et les enseignements spirituels majeurs indexés par livres et chapitres.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowHadithExplorer(true)}
+              className="btn btn-primary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.85rem 1.4rem',
+                borderRadius: 'var(--radius-lg)',
+                fontWeight: 700,
+                fontSize: '0.92rem',
+                background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(5, 150, 105, 0.3)',
+              }}
+            >
+              <BookOpen size={17} />
+              <span>Ouvrir l'Explorateur de Hadiths</span>
+            </button>
+          </div>
+        )}
+
         {/* Prophet gateway card — only in 'all' mode */}
         {!loading && selectedCat === 'all' && prophetTopics.length > 0 && searchMatchesProphets && (
           <div
@@ -1329,6 +1453,91 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           </div>
         )}
 
+        {/* Hadith Explorer Gateway Card */}
+        {!loading && (selectedCat === 'all' || selectedCat === 'hadiths') && searchMatchesHadiths && (
+          <div
+            onClick={() => {
+              setInitialHadithCollection(undefined);
+              setShowHadithExplorer(true);
+            }}
+            className="glass-panel"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-xl)',
+              cursor: 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all var(--transition-normal)',
+              background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.5rem',
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                  }}
+                >
+                  📚
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: 'rgba(5, 150, 105, 0.15)',
+                    color: '#10b981',
+                  }}
+                >
+                  14 Recueils & 40 Hadiths d'An-Nawawi
+                </span>
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 700 }}>
+                Explorateur des Hadiths & Sounnah
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.5 }}>
+                Consultez les 40 Hadiths Fondamentaux d'An-Nawawi, Sahih al-Bukhari, Sahih Muslim, Riyad as-Salihin et l'ensemble de la Sounnah.
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.82rem', fontWeight: 600, color: '#10b981' }}>
+                <BookOpen size={15} />
+                Texte arabe, traduction & références
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                Explorer les recueils <ChevronRight size={16} />
+              </span>
+
+              {onStartQuizWithCategory && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onStartQuizWithCategory('Histoire', 'Auto');
+                  }}
+                  className="btn btn-outline"
+                  style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', borderRadius: 'var(--radius-full)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <Play size={13} style={{ fill: 'currentColor' }} />
+                  Quiz
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {(loading ? Array.from({ length: 4 }) : filteredTopics).map((item, i) => {
           if (loading) {
             return (
@@ -1348,7 +1557,14 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           return (
             <div
               key={topic.id}
-              onClick={() => setActiveTopic(topic)}
+              onClick={() => {
+                if (topic.id === 'hadiths-essentiels') {
+                  setInitialHadithCollection('nawawi');
+                  setShowHadithExplorer(true);
+                } else {
+                  setActiveTopic(topic);
+                }
+              }}
               className="glass-panel"
               style={{
                 display: 'flex',
@@ -1501,6 +1717,16 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           }}
         />
       )}
+
+      {/* Hadith Explorer modal */}
+      <HadithExplorerModal
+        isOpen={showHadithExplorer}
+        initialCollectionId={initialHadithCollection}
+        onClose={() => {
+          setShowHadithExplorer(false);
+          setInitialHadithCollection(undefined);
+        }}
+      />
 
       {activeTopic && (
         <TopicModalLoader

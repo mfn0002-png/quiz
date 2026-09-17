@@ -17,6 +17,7 @@ export const LEARNING_CATEGORIES = [
   { id: 'piliers', label: "🕌 Piliers de l'Islam" },
   { id: 'foi', label: '💫 Piliers de la Foi' },
   { id: 'duas', label: '🤲 Invocations & Duas' },
+  { id: 'hadiths', label: '📚 Hadiths' },
   { id: 'prophetes', label: '📜 Les Prophètes' },
   { id: 'noms', label: "🌟 Noms d'Allah" },
 ];

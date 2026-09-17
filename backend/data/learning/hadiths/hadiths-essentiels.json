@@ -1,0 +1,101 @@
+{
+  "id": "hadiths-essentiels",
+  "format": "fiche",
+  "title": "Hadiths Fondamentaux & Sounnah",
+  "subtitle": "Les enseignements prophétiques majeurs qui résument les piliers de la foi et de l'éthique",
+  "category": "hadiths",
+  "icon": "📚",
+  "badge": "Sounnah Authentique",
+  "summary": "Une sélection des hadiths prophétiques les plus emblématiques, constituant les piliers de la pratique, de la pureté du cœur et de la noblesse du comportement.",
+  "quizCategoryTarget": "Histoire",
+  "revision": 1,
+  "published": true,
+  "order": 4,
+  "sections": [
+    {
+      "id": "hadith-intention",
+      "heading": "1. L'Intention sincère (Al-Niyyah)",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ فَهِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ، وَمَنْ كَانَتْ هِجْرَتُهُ لِدُنْيَا يُصِيبُهَا أَوِ امْرَأَةٍ يَنْكِحُهَا فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ",
+          "phonetic": "Innamâ-l-a'mâlu bi-n-niyyât, wa innamâ li-kulli-mri'in mâ nawâ. Fa-man kânat hijratuhu ilâ-llâhi wa rasûlihi fa-hijratuhu ilâ-llâhi wa rasûlih...",
+          "translation": "« Les actes ne valent que par les intentions qui les animent, et chacun ne recevra la récompense que de ce qu'il a eu l'intention d'accomplir. »",
+          "citation": "Rapporté par Al-Bukhari (1) et Muslim (1907) d'après 'Umar ibn Al-Khattâb"
+        },
+        {
+          "type": "text",
+          "value": "Ce hadith fondamental est considéré par les savants comme le tiers de l'Islam. Il enseigne que la valeur de toute action réside dans sa sincérité envers Allah (Ikhlâs), transformant même les actes quotidiens en adoration."
+        }
+      ]
+    },
+    {
+      "id": "hadith-fraternite",
+      "heading": "2. La Fraternité et l'Amour en Dieu",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+          "phonetic": "Lâ yu'minu ahadukum hattâ yuhibba li-akhîhi mâ yuhibbu li-nafsih",
+          "translation": "« Aucun d'entre vous ne sera véritablement croyant tant qu'il n'aimera pas pour son frère ce qu'il aime pour lui-même. »",
+          "citation": "Rapporté par Al-Bukhari (13) et Muslim (45) d'après Anas ibn Mâlik"
+        },
+        {
+          "type": "text",
+          "value": "La plénitude de la foi se manifeste par l'altruisme et la bienveillance envers autrui. Le croyant souhaite pour ses frères et sœurs le bien, la réussite et la guidée qu'il désire pour sa propre personne."
+        }
+      ]
+    },
+    {
+      "id": "hadith-parole",
+      "heading": "3. La Maîtrise de la parole et le bon comportement",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَاليَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَاليَوْمِ الآخِرِ فَلْيُكْرِمْ جَارَهُ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَاليَوْمِ الآخِرِ فَلْيُكْرِمْ ضَيْفَهُ",
+          "phonetic": "Man kâna yu'minu bi-llâhi wa-l-yawmi-l-âkhiri fal-yaqul khayran aw li-yasmut...",
+          "translation": "« Que celui qui croit en Allah et au Jour Dernier dise du bien ou qu'il garde le silence ; que celui qui croit en Allah et au Jour Dernier honore son voisin ; et que celui qui croit en Allah et au Jour Dernier honore son invité. »",
+          "citation": "Rapporté par Al-Bukhari (6018) et Muslim (47) d'après Abu Hurayrah"
+        },
+        {
+          "type": "text",
+          "value": "La langue est le reflet du cœur. Savoir préserver sa parole des calomnies, mensonges et futilités est une preuve éclatante de foi vivante, tout comme l'hospitalité et la bienveillance envers le voisinage."
+        }
+      ]
+    },
+    {
+      "id": "hadith-superflu",
+      "heading": "4. Délaisser ce qui ne nous concerne pas",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "مِنْ حُسْنِ إِسْلاَمِ المَرْءِ تَرْكُهُ مَا لاَ يَعْنِيهِ",
+          "phonetic": "Min husni islâmi-l-mar'i tarkuhu mâ lâ ya'nîh",
+          "translation": "« Fait partie de l'excellence de l'Islam d'une personne de délaisser ce qui ne la concerne pas. »",
+          "citation": "Rapporté par At-Tirmidhi (2317) et Ibn Mâjah (3976) d'après Abu Hurayrah"
+        },
+        {
+          "type": "text",
+          "value": "Ce principe préserve la paix de l'esprit et du cœur. En s'éloignant de la curiosité malsaine, des ragots et des affaires d'autrui, le croyant se consacre pleinement à son propre perfectionnement spirituel et intellectuel."
+        }
+      ]
+    },
+    {
+      "id": "hadith-colere",
+      "heading": "5. La Maîtrise de soi et de la colère",
+      "blocks": [
+        {
+          "type": "static-quote",
+          "arabic": "أَنَّ رَجُلاً قَالَ لِلنَّبِيِّ ﷺ: أَوْصِنِي، قَالَ: «لاَ تَغْضَبْ». فَرَدَّدَ مِرَارًا، قَالَ: «لاَ تَغْضَبْ»",
+          "phonetic": "Anna rajulan qâla li-n-Nabiyyi ﷺ: Awtisinî. Qâla: «Lâ taghdab». Fa-raddada mirâran, qâla: «Lâ taghdab»",
+          "translation": "« Un homme demanda au Prophète ﷺ : 'Conseille-moi.' Le Prophète lui dit : 'Ne te mets pas en colère.' L'homme réitéra sa demande plusieurs fois, et le Prophète répéta à chaque fois : 'Ne te mets pas en colère.' »",
+          "citation": "Rapporté par Al-Bukhari (6116) d'après Abu Hurayrah"
+        },
+        {
+          "type": "text",
+          "value": "La véritable force n'est pas dans la confrontation physique, mais dans la capacité à dominer ses émotions face à la provocation. La maîtrise de la colère préserve la dignité, évite les regrets et attire la satisfaction divine."
+        }
+      ]
+    }
+  ]
+}

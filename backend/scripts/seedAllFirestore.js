@@ -44,8 +44,9 @@ function loadAllTopics() {
 }
 
 async function main() {
-  console.log('🚀 Synchronisation des fichiers JSON vers Firestore (quiz-8e88c)...');
+  console.log('🚀 Synchronisation globale vers Firestore (quiz-8e88c)...');
 
+  // 1. Topics d'apprentissage
   const topics = loadAllTopics();
   console.log(`Trouvé ${topics.length} topics modulaires en JSON.`);
 
@@ -55,7 +56,7 @@ async function main() {
     console.log(`✅ [${topic.order}] "${topic.id}" synchronisé (${topic.title})`);
   }
 
-  // 2. Synchroniser les références scripturaires (sources)
+  // 2. Sources scripturaires
   const sourcesPath = path.resolve(__dirname, '../data/staticSources.json');
   if (fs.existsSync(sourcesPath)) {
     const sources = JSON.parse(fs.readFileSync(sourcesPath, 'utf8'));
@@ -69,7 +70,29 @@ async function main() {
     console.log(`✅ ${keys.length} sources synchronisées dans Firestore (collection 'sources')`);
   }
 
-  console.log('🎉 Synchronisation terminée avec succès !');
+  // 3. Recueils de Hadiths
+  const collectionsPath = path.resolve(__dirname, '../data/hadiths/collections.json');
+  if (fs.existsSync(collectionsPath)) {
+    const collections = JSON.parse(fs.readFileSync(collectionsPath, 'utf8'));
+    console.log(`\n📚 Synchronisation de ${collections.length} recueils de Hadiths vers Firestore...`);
+    for (const col of collections) {
+      const docRef = doc(db, 'hadithCollections', col.id);
+      await setDoc(docRef, col, { merge: true });
+    }
+    console.log(`✅ ${collections.length} recueils de Hadiths synchronisés dans Firestore (collection 'hadithCollections')`);
+  }
+
+  // 4. Titres de livres de Hadiths (Traductions FR)
+  const bookTitlesPath = path.resolve(__dirname, '../data/hadiths/bookTitlesFr.json');
+  if (fs.existsSync(bookTitlesPath)) {
+    const bookTitles = JSON.parse(fs.readFileSync(bookTitlesPath, 'utf8'));
+    console.log(`\n📖 Synchronisation des titres de chapitres Hadiths (FR) vers Firestore...`);
+    const docRef = doc(db, 'hadithBookTitles', 'fr');
+    await setDoc(docRef, bookTitles, { merge: true });
+    console.log(`✅ Titres de livres Hadiths synchronisés dans Firestore ('hadithBookTitles/fr')`);
+  }
+
+  console.log('\n🎉 Synchronisation Firestore terminée avec succès !');
   process.exit(0);
 }
 

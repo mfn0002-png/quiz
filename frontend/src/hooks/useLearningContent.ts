@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LearningTopic, TopicSummary, isRecit } from '../types/learning';
 
-const CACHE_SUMMARIES_KEY = 'learning_summaries_v1';
+const CACHE_SUMMARIES_KEY = 'learning_summaries_v2';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 h
 
 interface SummariesCacheEnvelope {
@@ -90,9 +90,13 @@ export function useLearningContent(): UseLearningContentResult {
 
     (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/learning/topics`);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        const response = await fetch(`${API_BASE_URL}/learning/topics`, { signal: controller.signal });
+        clearTimeout(timer);
+
         if (!response.ok) {
-          throw new Error(`Le serveur a répondu ${response.status}`);
+          throw new Error(`Le serveur a répondu (${response.status})`);
         }
 
         const json = await response.json();
@@ -109,13 +113,16 @@ export function useLearningContent(): UseLearningContentResult {
         setError(null);
       } catch (err) {
         if (!active) return;
-        console.warn('[useLearningContent] API backend inaccessible, utilisation du cache :', (err as Error).message);
+        const msg = (err as Error).name === 'AbortError'
+          ? 'Délai d\'attente dépassé pour charger les fiches d\'apprentissage.'
+          : (err as Error).message;
+        console.warn('[useLearningContent] Erreur API :', msg);
         const cached = readSummariesCache();
         if (cached && cached.length > 0) {
           setTopics(cached);
           setError(null);
         } else {
-          setError(err as Error);
+          setError(new Error(msg));
         }
       } finally {
         if (active) setLoading(false);
@@ -172,9 +179,13 @@ export function useTopicDetail(topicId: string | null): UseTopicDetailResult {
 
     (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/learning/topics/${encodeURIComponent(topicId)}`);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        const response = await fetch(`${API_BASE_URL}/learning/topics/${encodeURIComponent(topicId)}`, { signal: controller.signal });
+        clearTimeout(timer);
+
         if (!response.ok) {
-          throw new Error(`Le serveur a répondu ${response.status}`);
+          throw new Error(`Le serveur a répondu (${response.status})`);
         }
 
         const json = await response.json();
@@ -185,7 +196,12 @@ export function useTopicDetail(topicId: string | null): UseTopicDetailResult {
           setTopic(data);
         }
       } catch (err) {
-        if (active) setError(err as Error);
+        if (active) {
+          const msg = (err as Error).name === 'AbortError'
+            ? 'Délai d\'attente dépassé (6s). Les données de la fiche sont temporairement inaccessibles.'
+            : (err as Error).message;
+          setError(new Error(msg));
+        }
       } finally {
         if (active) setLoading(false);
       }
