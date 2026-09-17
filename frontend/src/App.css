@@ -23,7 +23,7 @@
 }
 
 .app-sidebar.collapsed {
-  width: 78px;
+  width: 76px;
 }
 
 .sidebar-brand-wrapper {
@@ -32,19 +32,70 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+  min-height: 72px;
+}
+
+.app-sidebar.collapsed .sidebar-brand-wrapper {
+  padding: 1rem 0.5rem;
+  justify-content: center;
+}
+
+.sidebar-brand-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sidebar-collapsed-brand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+
+.sidebar-collapsed-brand-btn .brand-icon-expand {
+  display: none;
+}
+
+.sidebar-collapsed-brand-btn:hover .brand-icon-sparkle {
+  display: none;
+}
+
+.sidebar-collapsed-brand-btn:hover .brand-icon-expand {
+  display: block;
+}
+
+.sidebar-collapsed-brand-btn:hover .sidebar-brand-icon-box {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.55);
 }
 
 .sidebar-collapse-btn {
   background: var(--surface-hover);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.35rem;
+  padding: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .sidebar-collapse-btn:hover {
@@ -115,6 +166,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.app-sidebar.collapsed .sidebar-footer {
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  overflow: visible;
 }
 
 /* Mobile Header Top Bar (Hidden on Desktop) */

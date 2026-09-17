@@ -132,6 +132,24 @@ export interface RecitTopic extends BaseTopic {
   estimatedMinutes?: number;
 }
 
+export interface TopicSummary {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  icon: string;
+  gradient: string;
+  badge: string;
+  summary: string;
+  format: 'fiche' | 'recit';
+  order?: number;
+  revision: number;
+  quizCategoryTarget?: string;
+  estimatedMinutes?: number;
+  totalUnits: number;
+  unitHeadings?: string[];
+}
+
 export type LearningTopic = FicheTopic | RecitTopic;
 
 export const isRecit = (t: LearningTopic): t is RecitTopic => t.format === 'recit';

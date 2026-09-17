@@ -5,11 +5,11 @@ import {
   X, Share2, Check, CheckCircle2, Clock, Layers, Users,
 } from 'lucide-react';
 import {
-  LearningTopic, Chapter, Section, ContentBlock, GlossaryTerm,
+  LearningTopic, TopicSummary, Chapter, Section, ContentBlock, GlossaryTerm,
   Checkpoint, TopicProgress, isRecit,
 } from '../../types/learning';
 import { LEARNING_CATEGORIES } from '../../constants';
-import { useLearningContent } from '../../hooks/useLearningContent';
+import { useLearningContent, useTopicDetail } from '../../hooks/useLearningContent';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { SourceBlock } from './SourceBlock';
 import { Difficulty } from '../../data/questions';
@@ -644,9 +644,9 @@ function ProphetPickerModal({
   onSelect,
   onClose,
 }: {
-  prophetTopics: LearningTopic[];
-  progressRatio: (t: LearningTopic) => number;
-  onSelect: (topic: LearningTopic) => void;
+  prophetTopics: TopicSummary[];
+  progressRatio: (t: TopicSummary) => number;
+  onSelect: (topic: TopicSummary) => void;
   onClose: () => void;
 }) {
   const [filter, setFilter] = useState('');
@@ -869,9 +869,9 @@ function ProphetPickerModal({
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {topic.subtitle}
                     </div>
-                    {isRecit(topic) && topic.estimatedMinutes && (
+                    {topic.format === 'recit' && topic.estimatedMinutes && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        <Clock size={12} /> {topic.estimatedMinutes} min · {topic.chapters.length} chapitres
+                        <Clock size={12} /> {topic.estimatedMinutes} min · {topic.totalUnits} chapitres
                       </div>
                     )}
                   </div>
@@ -888,6 +888,148 @@ function ProphetPickerModal({
 }
 
 /* ================================================================== */
+/* Chargement à la demande du sujet complet (Lazy Topic Modal)        */
+/* ================================================================== */
+
+function TopicModalLoader({
+  topicSummary,
+  progress,
+  onClose,
+  onUnitSeen,
+  onCheckpoint,
+  onStartQuiz,
+}: {
+  topicSummary: TopicSummary;
+  progress: TopicProgress | undefined;
+  onClose: () => void;
+  onUnitSeen: (topic: LearningTopic, unitId: string) => void;
+  onCheckpoint: (topic: LearningTopic, chapterId: string, correct: boolean) => void;
+  onStartQuiz: (topic: LearningTopic | TopicSummary) => void;
+}) {
+  const { topic, loading } = useTopicDetail(topicSummary.id);
+
+  if (loading || !topic) {
+    return createPortal(
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Chargement de ${topicSummary.title}`}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(5, 10, 20, 0.82)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          padding: '1.25rem',
+        }}
+      >
+        <div
+          className="glass-panel"
+          style={{
+            padding: '2.5rem',
+            textAlign: 'center',
+            borderRadius: 'var(--radius-2xl)',
+            backgroundColor: 'var(--surface-color)',
+            border: '1px solid var(--border-color)',
+            maxWidth: '420px',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              margin: '0 auto 1.25rem',
+              border: '3px solid rgba(5, 150, 105, 0.2)',
+              borderTopColor: 'var(--primary-color)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
+            {topicSummary.title}
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Chargement des chapitres et références...
+          </p>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+
+  return (
+    <TopicViewer
+      topic={topic}
+      progress={progress}
+      onClose={onClose}
+      onUnitSeen={unitId => onUnitSeen(topic, unitId)}
+      onCheckpoint={(chapterId, correct) => onCheckpoint(topic, chapterId, correct)}
+      onStartQuiz={onStartQuiz}
+    />
+  );
+}
+
+/* ================================================================== */
+/* Thèmes visuels par catégorie (dégradés, bordures, badges)          */
+/* ================================================================== */
+
+function getTopicTheme(category: string) {
+  switch (category) {
+    case 'piliers':
+      return {
+        bg: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+        border: '1px solid rgba(16, 185, 129, 0.22)',
+        badgeBg: 'rgba(5, 150, 105, 0.14)',
+        badgeColor: '#059669',
+        accentColor: '#059669',
+      };
+    case 'foi':
+      return {
+        bg: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(56, 189, 248, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #2563eb 0%, #38bdf8 100%)',
+        border: '1px solid rgba(56, 189, 248, 0.22)',
+        badgeBg: 'rgba(37, 99, 235, 0.14)',
+        badgeColor: '#2563eb',
+        accentColor: '#2563eb',
+      };
+    case 'duas':
+      return {
+        bg: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+        border: '1px solid rgba(245, 158, 11, 0.22)',
+        badgeBg: 'rgba(217, 119, 6, 0.14)',
+        badgeColor: '#d97706',
+        accentColor: '#d97706',
+      };
+    case 'noms':
+      return {
+        bg: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(6, 182, 212, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)',
+        border: '1px solid rgba(6, 182, 212, 0.22)',
+        badgeBg: 'rgba(2, 132, 199, 0.14)',
+        badgeColor: '#0284c7',
+        accentColor: '#0284c7',
+      };
+    case 'prophetes':
+    default:
+      return {
+        bg: 'linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(168, 85, 247, 0.03) 100%)',
+        iconBg: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+        border: '1px solid rgba(168, 85, 247, 0.22)',
+        badgeBg: 'rgba(124, 58, 237, 0.14)',
+        badgeColor: '#7c3aed',
+        accentColor: '#7c3aed',
+      };
+  }
+}
+
+/* ================================================================== */
 /* Hub                                                                 */
 /* ================================================================== */
 
@@ -897,9 +1039,10 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
 
   const [selectedCat, setSelectedCat] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTopic, setActiveTopic] = useState<LearningTopic | null>(null);
+  const [activeTopic, setActiveTopic] = useState<TopicSummary | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showProphetPicker, setShowProphetPicker] = useState(false);
+  const [openedFromPicker, setOpenedFromPicker] = useState(false);
 
   // Separate prophet topics from other topics
   const prophetTopics = useMemo(() => topics.filter(t => t.category === 'prophetes'), [topics]);
@@ -912,7 +1055,7 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
     if (selectedCat === 'prophetes') {
       return prophetTopics.filter(topic => {
         if (!query) return true;
-        const haystack = [topic.title, topic.subtitle, topic.summary].join(' ').toLowerCase();
+        const haystack = [topic.title, topic.subtitle, topic.summary, ...(topic.unitHeadings || [])].join(' ').toLowerCase();
         return haystack.includes(query);
       });
     }
@@ -925,9 +1068,7 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
         topic.title,
         topic.subtitle,
         topic.summary,
-        ...(isRecit(topic)
-          ? topic.chapters.map(c => c.title)
-          : topic.sections.map(s => s.heading)),
+        ...(topic.unitHeadings || []),
       ].join(' ').toLowerCase();
       return haystack.includes(query);
     });
@@ -935,22 +1076,22 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
 
   // Also check if search matches any prophet (to show gateway card in 'all' mode)
   const searchMatchesProphets = useMemo(() => {
-    if (selectedCat === 'prophetes') return false; // already showing individual cards
+    if (selectedCat !== 'all') return false; // Ne s'affiche que dans l'onglet 'Tout voir'
     const query = searchQuery.trim().toLowerCase();
     if (!query) return true;
     return prophetTopics.some(t =>
-      [t.title, t.subtitle, t.summary].join(' ').toLowerCase().includes(query),
+      [t.title, t.subtitle, t.summary, ...(t.unitHeadings || [])].join(' ').toLowerCase().includes(query),
     );
   }, [prophetTopics, selectedCat, searchQuery]);
 
-  const handleStartQuiz = useCallback((topic: LearningTopic) => {
+  const handleStartQuiz = useCallback((topic: LearningTopic | TopicSummary) => {
     setActiveTopic(null);
     if (onStartQuizWithCategory && topic.quizCategoryTarget) {
       onStartQuizWithCategory(topic.quizCategoryTarget, 'Auto');
     }
   }, [onStartQuizWithCategory]);
 
-  const handleShare = (topic: LearningTopic, e: React.MouseEvent) => {
+  const handleShare = (topic: TopicSummary, e: React.MouseEvent) => {
     e.stopPropagation();
     const shareText = `${topic.title} - ${topic.subtitle}\nApprenez sur Quiz Islamique !`;
     if (navigator.share) {
@@ -962,12 +1103,12 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
     }
   };
 
-  const unitCount = (t: LearningTopic) => (isRecit(t) ? t.chapters.length : t.sections.length);
+  const unitCount = (t: TopicSummary) => t.totalUnits || 0;
 
-  const progressRatio = (t: LearningTopic) => {
+  const progressRatio = (t: TopicSummary) => {
     const p = progressByTopic[t.id];
     if (!p || p.revision !== t.revision) return 0;
-    return p.completedUnits.length / unitCount(t);
+    return p.completedUnits.length / Math.max(unitCount(t), 1);
   };
 
   return (
@@ -1123,8 +1264,8 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           </div>
         )}
 
-        {/* Prophet gateway card — only in 'all' mode, not in 'prophetes' mode */}
-        {!loading && selectedCat !== 'prophetes' && prophetTopics.length > 0 && searchMatchesProphets && (
+        {/* Prophet gateway card — only in 'all' mode */}
+        {!loading && selectedCat === 'all' && prophetTopics.length > 0 && searchMatchesProphets && (
           <div
             onClick={() => setShowProphetPicker(true)}
             className="glass-panel"
@@ -1200,8 +1341,9 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
             );
           }
 
-          const topic = item as LearningTopic;
+          const topic = item as TopicSummary;
           const ratio = progressRatio(topic);
+          const theme = getTopicTheme(topic.category);
 
           return (
             <div
@@ -1218,12 +1360,14 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all var(--transition-normal)',
+                background: theme.bg,
+                border: theme.border,
               }}
             >
               {ratio > 0 && (
                 <div
                   aria-hidden
-                  style={{ position: 'absolute', top: 0, left: 0, height: '3px', width: `${ratio * 100}%`, backgroundColor: 'var(--primary-light)' }}
+                  style={{ position: 'absolute', top: 0, left: 0, height: '3px', width: `${ratio * 100}%`, backgroundColor: theme.accentColor }}
                 />
               )}
 
@@ -1240,6 +1384,7 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                       fontSize: '1.5rem',
                       borderRadius: 'var(--radius-lg)',
                       background: topic.gradient,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
                     }}
                   >
                     {topic.icon}
@@ -1252,8 +1397,8 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                         fontWeight: 700,
                         padding: '0.25rem 0.65rem',
                         borderRadius: 'var(--radius-full)',
-                        backgroundColor: 'rgba(5, 150, 105, 0.12)',
-                        color: 'var(--primary-color)',
+                        backgroundColor: theme.badgeBg,
+                        color: theme.badgeColor,
                       }}
                     >
                       {topic.badge}
@@ -1287,14 +1432,14 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                     marginBottom: '1.5rem',
                     fontSize: '0.82rem',
                     fontWeight: 600,
-                    color: 'var(--primary-color)',
+                    color: theme.accentColor,
                   }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    {isRecit(topic) ? <Layers size={15} /> : <CheckCircle2 size={15} />}
-                    {unitCount(topic)} {isRecit(topic) ? 'chapitres' : 'sections'}
+                    {topic.format === 'recit' ? <Layers size={15} /> : <CheckCircle2 size={15} />}
+                    {unitCount(topic)} {topic.format === 'recit' ? 'chapitres' : 'sections'}
                   </span>
-                  {isRecit(topic) && topic.estimatedMinutes && (
+                  {topic.format === 'recit' && topic.estimatedMinutes && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-secondary)' }}>
                       <Clock size={15} /> {topic.estimatedMinutes} min
                     </span>
@@ -1311,8 +1456,8 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                   borderTop: '1px solid var(--border-color)',
                 }}
               >
-                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  {ratio > 0 && ratio < 1 ? 'Reprendre' : isRecit(topic) ? 'Lire le récit' : 'Lire la fiche'}
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.accentColor, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  {ratio > 0 && ratio < 1 ? 'Reprendre' : topic.format === 'recit' ? 'Lire le récit' : 'Lire la fiche'}
                   <ChevronRight size={16} />
                 </span>
 
@@ -1320,7 +1465,7 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
                   <button
                     onClick={e => { e.stopPropagation(); handleStartQuiz(topic); }}
                     className="btn btn-outline"
-                    style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', borderRadius: 'var(--radius-full)' }}
+                    style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', borderRadius: 'var(--radius-full)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Play size={13} style={{ fill: 'currentColor' }} />
                     Quiz
@@ -1346,20 +1491,30 @@ export function LearningHub({ onStartQuizWithCategory }: LearningHubProps) {
           prophetTopics={prophetTopics}
           progressRatio={progressRatio}
           onSelect={topic => {
+            setOpenedFromPicker(true);
             setShowProphetPicker(false);
             setActiveTopic(topic);
           }}
-          onClose={() => setShowProphetPicker(false)}
+          onClose={() => {
+            setShowProphetPicker(false);
+            setOpenedFromPicker(false);
+          }}
         />
       )}
 
       {activeTopic && (
-        <TopicViewer
-          topic={activeTopic}
+        <TopicModalLoader
+          topicSummary={activeTopic}
           progress={progressByTopic[activeTopic.id]}
-          onClose={() => setActiveTopic(null)}
-          onUnitSeen={unitId => markUnitSeen(activeTopic, unitId)}
-          onCheckpoint={(chapterId, correct) => recordCheckpoint(activeTopic, chapterId, correct)}
+          onClose={() => {
+            setActiveTopic(null);
+            if (openedFromPicker) {
+              setOpenedFromPicker(false);
+              setShowProphetPicker(true);
+            }
+          }}
+          onUnitSeen={(topic, unitId) => markUnitSeen(topic, unitId)}
+          onCheckpoint={(topic, chapterId, correct) => recordCheckpoint(topic, chapterId, correct)}
           onStartQuiz={handleStartQuiz}
         />
       )}

@@ -5,9 +5,10 @@ import { signInWithGoogle, signOut, User } from '../firebase';
 interface AuthButtonProps {
   user: User | null;
   authLoading: boolean;
+  compact?: boolean;
 }
 
-export function AuthButton({ user, authLoading }: AuthButtonProps) {
+export function AuthButton({ user, authLoading, compact }: AuthButtonProps) {
   const [busy, setBusy] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -50,7 +51,7 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
 
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: compact ? '38px' : 'auto', height: compact ? '38px' : 'auto', color: 'var(--text-secondary)' }}>
         <Loader2 size={18} className="spin" />
       </div>
     );
@@ -63,17 +64,22 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
         <button
           onClick={() => setShowMenu(prev => !prev)}
           disabled={busy}
+          title={user.displayName || 'Mon profil'}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            justifyContent: 'center',
+            gap: compact ? 0 : '0.5rem',
             background: 'none',
             border: '2px solid var(--primary-color)',
             borderRadius: 'var(--radius-full)',
-            padding: '0.35rem 0.75rem 0.35rem 0.35rem',
+            padding: compact ? '2px' : '0.35rem 0.75rem 0.35rem 0.35rem',
+            width: compact ? '38px' : 'auto',
+            height: compact ? '38px' : 'auto',
             cursor: 'pointer',
             fontFamily: 'var(--font-family)',
             color: 'var(--text-primary)',
+            flexShrink: 0,
           }}
         >
           {busy
@@ -82,14 +88,16 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
               ? <img
                   src={user.photoURL}
                   alt={user.displayName || 'Utilisateur'}
-                  style={{ width: 28, height: 28, borderRadius: '50%' }}
+                  style={{ width: compact ? 30 : 28, height: compact ? 30 : 28, borderRadius: '50%' }}
                   referrerPolicy="no-referrer"
                 />
-              : <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: 'var(--primary-color)' }} />
+              : <div style={{ width: compact ? 30 : 28, height: compact ? 30 : 28, borderRadius: '50%', backgroundColor: 'var(--primary-color)' }} />
           }
-          <span style={{ fontWeight: 600, fontSize: '0.85rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user.displayName}
-          </span>
+          {!compact && (
+            <span style={{ fontWeight: 600, fontSize: '0.85rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user.displayName}
+            </span>
+          )}
         </button>
 
         {/* Menu déroulant */}
@@ -102,21 +110,23 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
             />
             <div style={{
               position: 'absolute',
-              right: 0,
-              top: 'calc(100% + 8px)',
+              left: compact ? 'calc(100% + 12px)' : 'auto',
+              right: compact ? 'auto' : 0,
+              bottom: compact ? '0' : 'auto',
+              top: compact ? 'auto' : 'calc(100% + 8px)',
               backgroundColor: 'var(--surface-color)',
-              border: '1px solid rgba(0,0,0,0.1)',
+              border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-lg)',
               boxShadow: 'var(--shadow-lg)',
               padding: '0.5rem',
-              minWidth: '200px',
-              zIndex: 20,
+              minWidth: '220px',
+              zIndex: 200,
               display: 'flex',
               flexDirection: 'column',
               gap: '0.25rem',
             }}>
               {/* Info utilisateur */}
-              <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: '0.25rem' }}>
+              <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.25rem' }}>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Connecté en tant que</p>
                 <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.email}
@@ -134,7 +144,7 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
                   color: 'var(--text-primary)', textAlign: 'left',
                   transition: 'background-color var(--transition-fast)',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)')}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 <RefreshCw size={16} color="var(--primary-color)" />
@@ -170,13 +180,24 @@ export function AuthButton({ user, authLoading }: AuthButtonProps) {
       onClick={handleSignIn}
       disabled={busy}
       className="btn btn-primary"
-      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+      title="Se connecter avec Google"
+      style={{
+        padding: compact ? 0 : '0.5rem 1rem',
+        fontSize: '0.9rem',
+        width: compact ? '38px' : 'auto',
+        height: compact ? '38px' : 'auto',
+        borderRadius: compact ? '50%' : 'var(--radius-md)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
     >
       {busy
-        ? <Loader2 size={16} className="spin" style={{ marginRight: '0.4rem' }} />
-        : <LogIn size={16} style={{ marginRight: '0.4rem' }} />
+        ? <Loader2 size={18} className="spin" style={{ marginRight: compact ? 0 : '0.4rem' }} />
+        : <LogIn size={18} style={{ marginRight: compact ? 0 : '0.4rem' }} />
       }
-      Se connecter avec Google
+      {!compact && 'Se connecter avec Google'}
     </button>
   );
 }

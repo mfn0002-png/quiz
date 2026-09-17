@@ -119,54 +119,56 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
       >
         {/* Sidebar Header / Brand */}
         <div className="sidebar-brand-wrapper">
-          <Link
-            to="/"
-            onClick={() => setMobileOpen(false)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.85rem',
-              textDecoration: 'none',
-              color: 'inherit',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                flexShrink: 0,
-                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)',
-              }}
+          {collapsed ? (
+            <button
+              onClick={() => setCollapsed(false)}
+              className="sidebar-collapsed-brand-btn"
+              title="Agrandir le menu"
+              aria-label="Agrandir le menu"
             >
-              <Sparkles size={22} />
-            </div>
-            {!collapsed && (
-              <div style={{ whiteSpace: 'nowrap' }}>
-                <span style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                  Noor <span style={{ color: 'var(--primary-light)' }}>Quiz</span>
-                </span>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                  Savoir & Foi Islamique
-                </p>
+              <div className="sidebar-brand-icon-box">
+                <Sparkles size={20} className="brand-icon-sparkle" />
+                <ChevronRight size={18} className="brand-icon-expand" />
               </div>
-            )}
-          </Link>
+            </button>
+          ) : (
+            <>
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.85rem',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  overflow: 'hidden',
+                }}
+              >
+                <div className="sidebar-brand-icon-box">
+                  <Sparkles size={22} />
+                </div>
+                <div style={{ whiteSpace: 'nowrap' }}>
+                  <span style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+                    Noor <span style={{ color: 'var(--primary-light)' }}>Quiz</span>
+                  </span>
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                    Savoir & Foi Islamique
+                  </p>
+                </div>
+              </Link>
 
-          {/* Desktop Collapse Toggle */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="sidebar-collapse-btn"
-            title={collapsed ? 'Agrandir le menu' : 'Réduire le menu'}
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+              {/* Desktop Collapse Toggle */}
+              <button
+                onClick={() => setCollapsed(true)}
+                className="sidebar-collapse-btn"
+                title="Réduire le menu"
+                aria-label="Réduire le menu"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Lives & Moon Counter Status Card */}
@@ -239,15 +241,15 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
 
         {/* Sidebar Footer: Theme + Auth Profile */}
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', gap: '0.5rem', width: '100%', marginBottom: collapsed ? '0' : '0.75rem' }}>
-            <ThemeToggle />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', gap: '0.5rem', width: '100%', marginBottom: collapsed ? '0.6rem' : '0.75rem' }}>
+            <ThemeToggle compact={collapsed} />
             {!collapsed && (
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Thème</span>
             )}
           </div>
 
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <AuthButton user={user} authLoading={authLoading} />
+            <AuthButton user={user} authLoading={authLoading} compact={collapsed} />
           </div>
         </div>
       </aside>

@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
-import { LearningTopic, isRecit } from '../types/learning';
+import { LearningTopic, TopicSummary, isRecit } from '../types/learning';
 
-const CACHE_KEY = 'learning_topics_v1';
+const CACHE_SUMMARIES_KEY = 'learning_summaries_v1';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 h
 
-interface CacheEnvelope {
+interface SummariesCacheEnvelope {
   fetchedAt: number;
-  topics: LearningTopic[];
+  summaries: TopicSummary[];
+}
+
+const detailMemoryCache = new Map<string, LearningTopic>();
+
+/**
+ * Validation minimale d'un résumé de topic.
+ */
+function isValidSummary(candidate: unknown): candidate is TopicSummary {
+  if (!candidate || typeof candidate !== 'object') return false;
+  const s = candidate as Partial<TopicSummary>;
+  return typeof s.id === 'string' && typeof s.title === 'string' && (s.format === 'fiche' || s.format === 'recit');
 }
 
 /**
- * Validation minimale : un document JSON mal formé ne doit pas faire planter le rendu.
+ * Validation d'un topic complet avec ses chapitres/sections.
  */
 function isValidTopic(candidate: unknown): candidate is LearningTopic {
   if (!candidate || typeof candidate !== 'object') return false;
@@ -27,29 +38,29 @@ function isValidTopic(candidate: unknown): candidate is LearningTopic {
   return Array.isArray(units) && units.length > 0;
 }
 
-function readCache(): LearningTopic[] | null {
+function readSummariesCache(): TopicSummary[] | null {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(CACHE_SUMMARIES_KEY);
     if (!raw) return null;
-    const envelope = JSON.parse(raw) as CacheEnvelope;
+    const envelope = JSON.parse(raw) as SummariesCacheEnvelope;
     if (Date.now() - envelope.fetchedAt > CACHE_TTL_MS) return null;
-    return envelope.topics;
+    return envelope.summaries;
   } catch {
     return null;
   }
 }
 
-function writeCache(topics: LearningTopic[]): void {
+function writeSummariesCache(summaries: TopicSummary[]): void {
   try {
-    const envelope: CacheEnvelope = { fetchedAt: Date.now(), topics };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(envelope));
+    const envelope: SummariesCacheEnvelope = { fetchedAt: Date.now(), summaries };
+    localStorage.setItem(CACHE_SUMMARIES_KEY, JSON.stringify(envelope));
   } catch {
-    // Quota : on se contente du cache mémoire de la session.
+    // Quota : cache mémoire
   }
 }
 
 export interface UseLearningContentResult {
-  topics: LearningTopic[];
+  topics: TopicSummary[];
   loading: boolean;
   error: Error | null;
   isFallback: boolean;
@@ -59,15 +70,15 @@ export interface UseLearningContentResult {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005/api';
 
 /**
- * Charge le contenu pédagogique depuis le backend API (qui interroge Firestore avec cache Redis).
+ * Charge les résumés légers des sujets pédagogiques (pour le Hub).
  */
 export function useLearningContent(): UseLearningContentResult {
-  const [topics, setTopics] = useState<LearningTopic[]>(() => {
-    const cached = readCache();
+  const [topics, setTopics] = useState<TopicSummary[]>(() => {
+    const cached = readSummariesCache();
     return (cached && cached.length > 0) ? cached : [];
   });
   const [loading, setLoading] = useState(() => {
-    const cached = readCache();
+    const cached = readSummariesCache();
     return !cached || cached.length === 0;
   });
   const [error, setError] = useState<Error | null>(null);
@@ -86,20 +97,20 @@ export function useLearningContent(): UseLearningContentResult {
 
         const json = await response.json();
         const rawList = Array.isArray(json?.data) ? json.data : [];
-        const remote: LearningTopic[] = rawList.filter(isValidTopic);
+        const remote: TopicSummary[] = rawList.filter(isValidSummary);
 
         if (!active) return;
 
         if (remote.length > 0) {
           setTopics(remote);
-          writeCache(remote);
+          writeSummariesCache(remote);
           setIsFallback(false);
         }
         setError(null);
       } catch (err) {
         if (!active) return;
         console.warn('[useLearningContent] API backend inaccessible, utilisation du cache :', (err as Error).message);
-        const cached = readCache();
+        const cached = readSummariesCache();
         if (cached && cached.length > 0) {
           setTopics(cached);
           setError(null);
@@ -112,7 +123,6 @@ export function useLearningContent(): UseLearningContentResult {
     })();
 
     return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce]);
 
   return {
@@ -122,6 +132,69 @@ export function useLearningContent(): UseLearningContentResult {
     isFallback,
     refresh: () => { setLoading(true); setNonce(n => n + 1); },
   };
+}
+
+export interface UseTopicDetailResult {
+  topic: LearningTopic | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+/**
+ * Charge à la demande le contenu complet d'un sujet (chapitres, blocs, quiz, glossaire)
+ * lors de l'ouverture de la modale.
+ */
+export function useTopicDetail(topicId: string | null): UseTopicDetailResult {
+  const [topic, setTopic] = useState<LearningTopic | null>(() => {
+    return topicId ? (detailMemoryCache.get(topicId) || null) : null;
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    return topicId ? !detailMemoryCache.has(topicId) : false;
+  });
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!topicId) {
+      setTopic(null);
+      setLoading(false);
+      return;
+    }
+
+    if (detailMemoryCache.has(topicId)) {
+      setTopic(detailMemoryCache.get(topicId)!);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/learning/topics/${encodeURIComponent(topicId)}`);
+        if (!response.ok) {
+          throw new Error(`Le serveur a répondu ${response.status}`);
+        }
+
+        const json = await response.json();
+        const data = json?.data;
+
+        if (data && isValidTopic(data) && active) {
+          detailMemoryCache.set(topicId, data);
+          setTopic(data);
+        }
+      } catch (err) {
+        if (active) setError(err as Error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => { active = false; };
+  }, [topicId]);
+
+  return { topic, loading, error };
 }
 
 /** Extrait toutes les SourceRef d'un topic, pour préchargement. */

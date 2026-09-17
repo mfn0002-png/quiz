@@ -1,5 +1,5 @@
 import express from 'express';
-import { getLearningTopics, getLearningTopicById } from '../services/learningService.js';
+import { getLearningTopicsSummaries, getLearningTopicById } from '../services/learningService.js';
 import { createRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
@@ -7,13 +7,15 @@ const learningLimiter = createRateLimiter({ windowMs: 60_000, max: 120 });
 
 /**
  * GET /api/learning/topics
- * Renvoie tous les topics d'apprentissage publiés ordonnés depuis Firestore.
+ * Renvoie les résumés légers des topics publiés ordonnés depuis Firestore.
+ * Paramètre optionnel : ?category=prophetes | piliers | foi | duas
  */
 router.get('/topics', learningLimiter, async (req, res) => {
   try {
-    const topics = await getLearningTopics();
+    const { category } = req.query;
+    const summaries = await getLearningTopicsSummaries(category ? String(category) : null);
     res.set('Cache-Control', 'public, max-age=300'); // 5 minutes de cache HTTP
-    return res.json({ success: true, count: topics.length, data: topics });
+    return res.json({ success: true, count: summaries.length, data: summaries });
   } catch (err) {
     console.error(`❌ [Learning Route] Erreur GET /topics : ${err.message}`);
     return res.status(err.statusCode || 500).json({ error: err.message });
