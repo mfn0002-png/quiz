@@ -2,9 +2,20 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Document profil utilisateur : lecture et écriture pour l'utilisateur connecté
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Sessions personnelles : chaque utilisateur ne peut lire/écrire que les siennes
     match /users/{userId}/sessions/{sessionId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Paramètres généraux de la plateforme
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // Classement : lecture publique, écriture réservée au propriétaire de l'entrée

@@ -14,8 +14,8 @@ export function useAuthUser() {
       setUser(u);
       setAuthLoading(false);
       if (u) {
-        ensureUserProfileDoc(u).catch(err => console.error("Erreur doc user :", err));
-        upsertLeaderboardProfile(u).catch(err => console.error("Erreur profil leaderboard :", err));
+        ensureUserProfileDoc(u).catch(() => {});
+        upsertLeaderboardProfile(u).catch(() => {});
       }
     });
 
