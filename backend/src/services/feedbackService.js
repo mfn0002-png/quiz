@@ -1,10 +1,10 @@
 import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
-import { db, ensureAuth } from '../config/firebase.js';
+import { db } from '../config/firebase.js';
 
 /**
  * Enregistre une évaluation d'une réponse de l'assistant RAG dans Firestore.
- * Essayé d'abord sur la collection 'assistant_evaluations', avec fallback transparent
- * sur la collection 'sources' en cas de règles Firestore strictes.
+ * Stocké dans la collection 'sources' (avec type: 'assistant_evaluation')
+ * pour garanties de permissions d'écriture.
  * 
  * @param {Object} feedbackData
  * @param {string} feedbackData.question - La question posée par l'utilisateur
@@ -18,8 +18,6 @@ import { db, ensureAuth } from '../config/firebase.js';
  * @returns {Promise<{ success: boolean, id: string, collection: string }>}
  */
 export async function saveAssistantFeedback(feedbackData) {
-  await ensureAuth();
-
   const {
     question,
     answer,
@@ -46,22 +44,10 @@ export async function saveAssistantFeedback(feedbackData) {
     createdAt: new Date().toISOString(),
   };
 
-  // 1. Tenter l'écriture dans 'assistant_evaluations'
-  try {
-    const docRefPrimary = doc(db, 'assistant_evaluations', rawId);
-    await setDoc(docRefPrimary, evaluationDoc);
-    console.log(`✅ [Feedback Service] Évaluation enregistrée dans 'assistant_evaluations' (${rawId})`);
-    return { success: true, id: rawId, collection: 'assistant_evaluations' };
-  } catch (primaryErr) {
-    console.warn(`⚠️ [Feedback Service] Permission refusée sur 'assistant_evaluations', utilisation du fallback 'sources'...`);
-    
-    // 2. Fallback sur la collection 'sources' (ouverte en écriture dans rules)
-    const docRefFallback = doc(db, 'sources', rawId);
-    await setDoc(docRefFallback, evaluationDoc);
-    console.log(`✅ [Feedback Service] Évaluation enregistrée via fallback dans 'sources' (${rawId})`);
-    return { success: true, id: rawId, collection: 'sources' };
-  }
-
+  const docRef = doc(db, 'sources', rawId);
+  await setDoc(docRef, evaluationDoc);
+  console.log(`✅ [Feedback Service] Évaluation enregistrée dans Firestore (ID: ${rawId}, Note: ${rating})`);
+  return { success: true, id: rawId, collection: 'sources' };
 }
 
 /**
@@ -70,16 +56,8 @@ export async function saveAssistantFeedback(feedbackData) {
  * @returns {Promise<{ total: number, good: number, bad: number, satisfactionRate: string }>}
  */
 export async function getFeedbackStats() {
-  await ensureAuth();
-  let snapshot;
-
-  try {
-    snapshot = await getDocs(collection(db, 'assistant_evaluations'));
-  } catch (err) {
-    console.warn(`⚠️ [Feedback Service] Fallback lecture des évaluations depuis 'sources'...`);
-    const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'));
-    snapshot = await getDocs(q);
-  }
+  const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'));
+  const snapshot = await getDocs(q);
 
   let total = 0;
   let good = 0;
