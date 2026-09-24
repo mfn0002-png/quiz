@@ -66,6 +66,9 @@ export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const handleFeedback = async (msgId: number, question: string, answer: string, rating: 'good' | 'bad') => {
+    // Si l'utilisateur clique sur la même note déjà sélectionnée, on conserve la note
+    if (feedbackMap[msgId] === rating) return;
+
     setFeedbackMap(prev => ({ ...prev, [msgId]: rating }));
     try {
       await sendAssistantFeedback({
@@ -847,12 +850,11 @@ export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
                                   const userMsg = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === 'user');
                                   handleFeedback(msg.id, userMsg ? userMsg.content : 'Question de l\'utilisateur', msg.content, 'good');
                                 }}
-                                disabled={!!feedbackMap[msg.id]}
                                 style={{
                                   border: feedbackMap[msg.id] === 'good' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(0,0,0,0.1)',
                                   backgroundColor: feedbackMap[msg.id] === 'good' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
                                   color: feedbackMap[msg.id] === 'good' ? '#10b981' : 'var(--text-secondary)',
-                                  cursor: feedbackMap[msg.id] ? 'default' : 'pointer',
+                                  cursor: 'pointer',
                                   padding: isCompact ? '0.2rem 0.45rem' : '0.25rem 0.55rem',
                                   borderRadius: '6px',
                                   display: 'flex',
@@ -873,12 +875,11 @@ export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
                                   const userMsg = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === 'user');
                                   handleFeedback(msg.id, userMsg ? userMsg.content : 'Question de l\'utilisateur', msg.content, 'bad');
                                 }}
-                                disabled={!!feedbackMap[msg.id]}
                                 style={{
                                   border: feedbackMap[msg.id] === 'bad' ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(0,0,0,0.1)',
-                                  backgroundColor: feedbackMap[msg.id] === 'bad' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                                  backgroundColor: feedbackMap[msg.id] === 'bad' ? 'rgba(239, 68, 68, 0.12)' : 'transparent',
                                   color: feedbackMap[msg.id] === 'bad' ? '#ef4444' : 'var(--text-secondary)',
-                                  cursor: feedbackMap[msg.id] ? 'default' : 'pointer',
+                                  cursor: 'pointer',
                                   padding: isCompact ? '0.2rem 0.45rem' : '0.25rem 0.55rem',
                                   borderRadius: '6px',
                                   display: 'flex',
