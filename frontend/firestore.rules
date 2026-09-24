@@ -52,5 +52,11 @@ service cloud.firestore {
     match /users/{userId}/learningProgress/{topicId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Évaluations de l'assistant RAG : création et lecture autorisées
+    match /assistant_evaluations/{evalId} {
+      allow read, create, write: if true;
+    }
   }
 }
+

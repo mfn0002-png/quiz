@@ -181,3 +181,42 @@ export const deleteAssistantConversation = async (conversationId: string, client
     method: 'DELETE'
   }).catch(err => console.error("Erreur suppression conversation :", err));
 };
+
+export interface AssistantFeedbackPayload {
+  question: string;
+  answer: string;
+  rating: 'good' | 'bad';
+  feedbackReason?: string;
+  comment?: string;
+  sources?: any[];
+  conversationId?: string;
+  clientId?: string;
+}
+
+/**
+ * Envoie une évaluation (Bonne / Mauvaise réponse) au backend pour enregistrement dans Firestore.
+ */
+export const sendAssistantFeedback = async (
+  payload: AssistantFeedbackPayload,
+  baseUrl?: string
+): Promise<{ success: boolean; id: string }> => {
+  const finalBaseUrl = baseUrl || API_BASE_URL;
+  const finalPayload = {
+    ...payload,
+    clientId: payload.clientId || getClientSessionId(),
+  };
+
+  const response = await fetch(`${finalBaseUrl}/assistant/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(finalPayload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Erreur serveur HTTP ${response.status}`);
+  }
+
+  return response.json();
+};
+

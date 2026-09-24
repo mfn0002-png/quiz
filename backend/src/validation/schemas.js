@@ -58,3 +58,23 @@ export const sessionIdParamsSchema = z.object({
   clientId: sessionIdSchema.optional(),
   conversationId: sessionIdSchema.optional(),
 });
+
+export const feedbackSchema = z.object({
+  question: z
+    .string({ message: "Le champ 'question' est requis." })
+    .min(1, "La question ne peut pas être vide.")
+    .max(5000, "Question trop longue."),
+  answer: z
+    .string({ message: "Le champ 'answer' est requis." })
+    .min(1, "La réponse ne peut pas être vide.")
+    .max(10000, "Réponse trop longue."),
+  rating: z.enum(['good', 'bad'], {
+    errorMap: () => ({ message: "Le champ 'rating' doit être 'good' ou 'bad'." }),
+  }),
+  feedbackReason: z.string().max(100).optional(),
+  comment: z.string().max(1000).optional(),
+  sources: z.array(z.any()).optional().default([]),
+  conversationId: sessionIdSchema.optional(),
+  clientId: sessionIdSchema.optional(),
+});
+

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Bot, User, Quote, X, MessageSquareQuote, History, Plus, Trash2 } from 'lucide-react';
+import { Send, Loader2, Bot, User, Quote, X, MessageSquareQuote, History, Plus, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import {
   askQuestion,
   AssistantResponse,
@@ -8,6 +8,7 @@ import {
   getAssistantHistory,
   getAssistantConversations,
   deleteAssistantConversation,
+  sendAssistantFeedback,
   AssistantConversation
 } from '../services/apiService';
 import { parseApiError } from '../utils/errorUtils';
@@ -58,10 +59,26 @@ export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
   const [highlightedMsgId, setHighlightedMsgId] = useState<number | null>(null);
   const [highlightedPassage, setHighlightedPassage] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<{ message: string; detail?: string } | null>(null);
+  const [feedbackMap, setFeedbackMap] = useState<Record<number, 'good' | 'bad'>>({});
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleFeedback = async (msgId: number, question: string, answer: string, rating: 'good' | 'bad') => {
+    setFeedbackMap(prev => ({ ...prev, [msgId]: rating }));
+    try {
+      await sendAssistantFeedback({
+        question,
+        answer,
+        rating,
+        conversationId: activeConvId || undefined,
+        clientId,
+      }, apiUrl);
+    } catch (err) {
+      console.error('Erreur envoi évaluation :', err);
+    }
+  };
 
   // Charger la liste des conversations du client
   const refreshConversations = async () => {
@@ -808,6 +825,76 @@ export function Assistant({ isCompact = false, apiUrl }: AssistantProps = {}) {
                           </>
                         ) : (
                           msg.content
+                        )}
+
+                        {/* Section d'évaluation par Pouces (👍 / 👎) */}
+                        {msg.role === 'assistant' && msg.id !== 0 && (
+                          <div className="no-quote" style={{
+                            marginTop: isCompact ? '0.45rem' : '0.65rem',
+                            paddingTop: '0.4rem',
+                            borderTop: '1px solid rgba(0,0,0,0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '0.5rem',
+                          }}>
+                            <span style={{ fontSize: isCompact ? '0.72rem' : '0.78rem', color: 'var(--text-secondary)', opacity: 0.85 }}>
+                              {feedbackMap[msg.id] ? 'Merci pour votre retour !' : 'Cette réponse vous a-t-elle été utile ?'}
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <button
+                                onClick={() => {
+                                  const userMsg = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === 'user');
+                                  handleFeedback(msg.id, userMsg ? userMsg.content : 'Question de l\'utilisateur', msg.content, 'good');
+                                }}
+                                disabled={!!feedbackMap[msg.id]}
+                                style={{
+                                  border: feedbackMap[msg.id] === 'good' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(0,0,0,0.1)',
+                                  backgroundColor: feedbackMap[msg.id] === 'good' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                                  color: feedbackMap[msg.id] === 'good' ? '#10b981' : 'var(--text-secondary)',
+                                  cursor: feedbackMap[msg.id] ? 'default' : 'pointer',
+                                  padding: isCompact ? '0.2rem 0.45rem' : '0.25rem 0.55rem',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  fontSize: isCompact ? '0.72rem' : '0.78rem',
+                                  fontWeight: feedbackMap[msg.id] === 'good' ? 600 : 400,
+                                  transition: 'all 150ms ease-in-out',
+                                }}
+                                title="Marquer cette réponse comme utile (👍)"
+                              >
+                                <ThumbsUp size={isCompact ? 13 : 14} />
+                                {feedbackMap[msg.id] === 'good' && <span>Utile</span>}
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  const userMsg = messages.slice(0, messages.findIndex(m => m.id === msg.id)).reverse().find(m => m.role === 'user');
+                                  handleFeedback(msg.id, userMsg ? userMsg.content : 'Question de l\'utilisateur', msg.content, 'bad');
+                                }}
+                                disabled={!!feedbackMap[msg.id]}
+                                style={{
+                                  border: feedbackMap[msg.id] === 'bad' ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(0,0,0,0.1)',
+                                  backgroundColor: feedbackMap[msg.id] === 'bad' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                                  color: feedbackMap[msg.id] === 'bad' ? '#ef4444' : 'var(--text-secondary)',
+                                  cursor: feedbackMap[msg.id] ? 'default' : 'pointer',
+                                  padding: isCompact ? '0.2rem 0.45rem' : '0.25rem 0.55rem',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  fontSize: isCompact ? '0.72rem' : '0.78rem',
+                                  fontWeight: feedbackMap[msg.id] === 'bad' ? 600 : 400,
+                                  transition: 'all 150ms ease-in-out',
+                                }}
+                                title="Marquer cette réponse comme inexacte ou incomplète (👎)"
+                              >
+                                <ThumbsDown size={isCompact ? 13 : 14} />
+                                {feedbackMap[msg.id] === 'bad' && <span>Inexacte</span>}
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

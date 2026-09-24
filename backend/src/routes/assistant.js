@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { runAssistantAgent } from '../services/assistantAgent.js';
 import { clearHistory, getHistory, getConversations, deleteConversation } from '../services/sessionService.js';
+import { saveAssistantFeedback, getFeedbackStats } from '../services/feedbackService.js';
 import { validate, validateParams } from '../middleware/validate.js';
-import { chatSchema, sessionIdParamsSchema } from '../validation/schemas.js';
+import { chatSchema, sessionIdParamsSchema, feedbackSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -106,4 +107,29 @@ router.post('/rag-query', async (req, res) => {
   }
 });
 
+// POST /api/assistant/feedback
+// Enregistre l'évaluation (Good / Bad) d'une réponse de l'assistant dans Firestore
+router.post('/feedback', validate(feedbackSchema), async (req, res) => {
+  try {
+    const result = await saveAssistantFeedback(req.body);
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Erreur enregistrement évaluation :', error);
+    res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'évaluation dans Firestore.' });
+  }
+});
+
+// GET /api/assistant/feedback/stats
+// Récupère les statistiques de satisfaction globales
+router.get('/feedback/stats', async (req, res) => {
+  try {
+    const stats = await getFeedbackStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Erreur récupération stats évaluation :', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des statistiques.' });
+  }
+});
+
 export default router;
+
