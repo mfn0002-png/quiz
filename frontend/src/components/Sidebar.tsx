@@ -13,12 +13,14 @@ import {
   ChevronRight,
   Menu,
   X,
+  Settings,
 } from 'lucide-react';
 import { AuthButton } from './AuthButton';
 import { ThemeToggle } from './ThemeToggle';
 import { User } from '../firebase';
 import { LivesState } from '../services/livesService';
 import { MAX_GLOBAL_LIVES } from '../constants';
+import { useAdminRole } from '../hooks/useAdminRole';
 
 interface SidebarProps {
   user: User | null;
@@ -37,6 +39,7 @@ const NAV_LINKS = [
 export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isAdmin } = useAdminRole(user);
 
   const currentLives = livesState?.lives ?? MAX_GLOBAL_LIVES;
   const isZeroLives = currentLives <= 0;
@@ -237,6 +240,21 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
               </NavLink>
             );
           })}
+
+          {/* Lien d'administration réservé exclusivement aux administrateurs Firestore */}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              title={collapsed ? 'Administration' : undefined}
+              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              style={{ marginTop: '0.5rem', borderTop: '1px dashed var(--border-color)', paddingTop: '0.5rem' }}
+            >
+              <Settings size={20} className="nav-icon" style={{ color: 'var(--primary-color)' }} />
+              {!collapsed && <span className="nav-label" style={{ fontWeight: 600 }}>Administration</span>}
+              {!collapsed && <span className="nav-badge" style={{ backgroundColor: 'rgba(5, 150, 105, 0.15)', color: 'var(--primary-color)' }}>RAG</span>}
+            </NavLink>
+          )}
         </nav>
 
         {/* Sidebar Footer: Theme + Auth Profile */}

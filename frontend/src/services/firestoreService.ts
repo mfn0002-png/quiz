@@ -156,6 +156,20 @@ export const upsertLeaderboardProfile = async (user: User): Promise<void> => {
   );
 };
 
+export const ensureUserProfileDoc = async (user: User): Promise<void> => {
+  const userRef = doc(db, 'users', user.uid);
+  await setDoc(
+    userRef,
+    {
+      email: user.email,
+      displayName: user.displayName || 'Joueur',
+      photoURL: user.photoURL || null,
+      lastLogin: Timestamp.now(),
+    },
+    { merge: true }
+  );
+};
+
 export const getLeaderboard = async (topN: number = 20): Promise<LeaderboardEntry[]> => {
   const leaderboardRef = collection(db, 'leaderboard');
   const q = query(leaderboardRef, orderBy('bestScore', 'desc'), limit(topN));

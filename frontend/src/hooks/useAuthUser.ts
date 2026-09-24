@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from '../firebase';
-import { upsertLeaderboardProfile } from '../services/firestoreService';
+import { upsertLeaderboardProfile, ensureUserProfileDoc } from '../services/firestoreService';
 
 export function useAuthUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,6 +14,7 @@ export function useAuthUser() {
       setUser(u);
       setAuthLoading(false);
       if (u) {
+        ensureUserProfileDoc(u).catch(err => console.error("Erreur doc user :", err));
         upsertLeaderboardProfile(u).catch(err => console.error("Erreur profil leaderboard :", err));
       }
     });

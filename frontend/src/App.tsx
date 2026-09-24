@@ -12,6 +12,7 @@ import { LearningHub } from './components/learning/LearningHub';
 import { FloatingAssistant } from './components/FloatingAssistant';
 import { ChallengePage } from './components/challenge/ChallengePage';
 import { ThemeProvider } from './context/ThemeContext';
+import { AdminSettings } from './components/admin/AdminSettings';
 import './App.css';
 
 function AppContent() {
@@ -74,6 +75,7 @@ function AppContent() {
               element={<StatsTab user={user} authLoading={authLoading} refreshKey={quiz.statsRefreshKey} onReplayQuiz={quiz.replayQuiz} />}
             />
             <Route path="/leaderboard" element={<LeaderboardTab currentUser={user} />} />
+            <Route path="/admin" element={<AdminSettings user={user} authLoading={authLoading} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
