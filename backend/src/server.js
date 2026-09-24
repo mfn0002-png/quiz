@@ -8,6 +8,7 @@ import assistantRouter from './routes/assistant.js';
 import sourcesRouter from './routes/sources.js';
 import learningRouter from './routes/learning.js';
 import hadithsRouter from './routes/hadiths.js';
+import adminRagRouter from './routes/adminRag.js';
 import {
   createAppRateLimiter,
   createGenerateRateLimiter,
@@ -43,6 +44,7 @@ app.use('/api/assistant', assistantRouter);
 app.use('/api/sources', sourcesRouter);
 app.use('/api/learning', learningRouter);
 app.use('/api/hadiths', hadithsRouter);
+app.use('/api/admin/rag', adminRagRouter);
 
 // Healthcheck
 app.get('/api/health', (req, res) => {
