@@ -245,7 +245,7 @@ export function SourceBlock({ refSource, note, compact = false }: SourceBlockPro
         }}
       >
         <BookOpen size={13} aria-hidden />
-        {source.citation}
+        <span>{source.citation}</span>
       </figcaption>
 
       {note && (

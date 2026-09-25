@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Component, ErrorInfo, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Search, Sparkles, BookOpen, Play, ChevronRight, ChevronLeft,
@@ -17,6 +17,88 @@ import { Difficulty } from '../../data/questions';
 
 interface LearningHubProps {
   onStartQuizWithCategory?: (category: string, difficulty?: Difficulty) => void;
+}
+
+/* ================================================================== */
+/* Error Boundary pour sécuriser l'affichage des fiches               */
+/* ================================================================== */
+
+class TopicErrorBoundary extends Component<{ children: ReactNode; onClose: () => void }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: ReactNode; onClose: () => void }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('⚠️ [TopicErrorBoundary] Erreur DOM ou rendu :', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return createPortal(
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(5, 10, 20, 0.82)',
+            backdropFilter: 'blur(10px)',
+            padding: '1.25rem',
+          }}
+          onClick={this.props.onClose}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              padding: '2rem',
+              textAlign: 'center',
+              borderRadius: 'var(--radius-2xl)',
+              backgroundColor: 'var(--surface-color)',
+              border: '1px solid var(--border-color)',
+              maxWidth: '440px',
+              width: '100%',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔄</div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+              Affichage interrompu
+            </h3>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+              Une extension de traduction ou un rechargement DOM a perturbé la navigation.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => this.setState({ hasError: false, error: null })}
+                style={{ borderRadius: 'var(--radius-full)' }}
+              >
+                <span>Recharger la fiche</span>
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={this.props.onClose}
+                style={{ borderRadius: 'var(--radius-full)' }}
+              >
+                <span>Fermer</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      );
+    }
+    return this.props.children;
+  }
 }
 
 /* ================================================================== */
@@ -72,7 +154,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
           )}
           <p style={{ fontSize: '0.98rem', lineHeight: 1.65, marginBottom: '0.6rem' }}>{block.translation}</p>
           <figcaption style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--secondary-color)' }}>
-            {block.citation}
+            <span>{block.citation}</span>
           </figcaption>
         </figure>
       );
@@ -132,7 +214,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
             <>
               <div style={{ fontSize: '1rem', marginBottom: '0.6rem' }}>{block.front}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Touchez pour révéler
+                <span>Touchez pour révéler</span>
               </div>
             </>
           )}
@@ -147,6 +229,11 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
 
 function Glossary({ terms }: { terms: GlossaryTerm[] }) {
   const [openTerm, setOpenTerm] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOpenTerm(null);
+  }, [terms]);
+
   const active = terms.find(t => t.term === openTerm);
 
   return (
@@ -171,7 +258,7 @@ function Glossary({ terms }: { terms: GlossaryTerm[] }) {
                 transition: 'all var(--transition-fast)',
               }}
             >
-              {t.term}
+              <span>{t.term}</span>
             </button>
           );
         })}
@@ -194,7 +281,7 @@ function Glossary({ terms }: { terms: GlossaryTerm[] }) {
               {active.arabic}
             </span>
           )}
-          {active.definition}
+          <span>{active.definition}</span>
         </div>
       )}
     </div>
@@ -213,6 +300,11 @@ function CheckpointBox({
   onAnswer: (correct: boolean) => void;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
+
+  useEffect(() => {
+    setPicked(null);
+  }, [checkpoint]);
+
   const answered = picked !== null;
 
   const handlePick = (i: number) => {
@@ -267,14 +359,14 @@ function CheckpointBox({
               transition: 'all var(--transition-fast)',
             }}
           >
-            {opt}
+            <span>{opt}</span>
           </button>
         );
       })}
 
       {answered && (
         <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: '0.6rem', lineHeight: 1.6 }}>
-          {checkpoint.explanation}
+          <span>{checkpoint.explanation}</span>
         </p>
       )}
     </div>
@@ -298,11 +390,84 @@ function TopicViewer({
   topic, progress, onClose, onUnitSeen, onCheckpoint, onStartQuiz,
 }: TopicViewerProps) {
   const recit = isRecit(topic);
-  const units: (Chapter | Section)[] = recit ? topic.chapters : topic.sections;
+
+  // Normalisation résiliente des unités (chapitres ou sections)
+  // Assure que chaque unité a un id unique, un libellé, et des blocks valides
+  const units: (Chapter | Section)[] = useMemo(() => {
+    const raw: any[] = recit ? (topic.chapters || []) : (topic.sections || []);
+    if (raw.length === 0) {
+      return [{
+        id: `${topic.id}-main`,
+        label: topic.title,
+        title: topic.title,
+        heading: topic.title,
+        blocks: [
+          { type: 'text', value: topic.summary || 'Contenu en cours de rédaction.' },
+        ],
+      } as any];
+    }
+
+    return raw.map((u: any, idx: number) => {
+      const id = u.id || (recit ? `${topic.id}-ch${idx + 1}` : `${topic.id}-sec${idx + 1}`);
+      const label = u.label || u.title || (recit ? `Chapitre ${idx + 1}` : `Section ${idx + 1}`);
+      const title = u.title || u.heading || label;
+      const heading = u.heading || u.title || label;
+
+      let blocks: ContentBlock[] = Array.isArray(u.blocks) ? u.blocks : [];
+      if (blocks.length === 0) {
+        if (Array.isArray(u.paragraphs) && u.paragraphs.length > 0) {
+          blocks = u.paragraphs.map((p: string) => ({ type: 'text', value: p }));
+        } else if (typeof u.body === 'string' && u.body) {
+          blocks = [{ type: 'text', value: u.body }];
+        } else if (typeof u.contentText === 'string' && u.contentText) {
+          blocks = [{ type: 'text', value: u.contentText }];
+        } else if (typeof u.content === 'string' && u.content) {
+          blocks = [{ type: 'text', value: u.content }];
+        } else if (typeof u.text === 'string' && u.text) {
+          blocks = [{ type: 'text', value: u.text }];
+        }
+      }
+
+      let glossary: GlossaryTerm[] = [];
+      const rawGlossary = u.glossary || u.glossaire;
+      if (Array.isArray(rawGlossary)) {
+        glossary = rawGlossary.map((g: any) => ({
+          term: g.term || g.terme || '',
+          definition: g.definition || '',
+          arabic: g.arabic || g.arabe,
+        })).filter((g: any) => g.term && g.definition);
+      }
+
+      let checkpoint = u.checkpoint;
+      if (checkpoint && typeof checkpoint === 'object') {
+        checkpoint = {
+          question: checkpoint.question || '',
+          options: Array.isArray(checkpoint.options) ? checkpoint.options : [],
+          correctIndex: typeof checkpoint.correctIndex === 'number'
+            ? checkpoint.correctIndex
+            : (typeof checkpoint.answer === 'number' ? checkpoint.answer : 0),
+          explanation: checkpoint.explanation || checkpoint.explication || '',
+        };
+      } else {
+        checkpoint = undefined;
+      }
+
+      return {
+        ...u,
+        id,
+        label,
+        title,
+        heading,
+        blocks,
+        glossary,
+        checkpoint,
+      };
+    });
+  }, [topic, recit]);
 
   // En mode fiche, tout est affiché d'un bloc ; en mode récit, un chapitre à la fois.
   const [index, setIndex] = useState(0);
-  const currentUnit = units[index];
+  const currentUnit = units[index] || units[0];
 
   useEffect(() => {
     if (recit && currentUnit) onUnitSeen(currentUnit.id);
@@ -312,7 +477,7 @@ function TopicViewer({
   useEffect(() => {
     if (!recit) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') setIndex(i => Math.min(i + 1, units.length - 1));
+      if (e.key === 'ArrowRight') setIndex(i => Math.min(i + 1, Math.max(0, units.length - 1)));
       if (e.key === 'ArrowLeft') setIndex(i => Math.max(i - 1, 0));
       if (e.key === 'Escape') onClose();
     };
@@ -320,21 +485,28 @@ function TopicViewer({
     return () => window.removeEventListener('keydown', onKey);
   }, [recit, units.length, onClose]);
 
-  const isLast = index === units.length - 1;
+  const isLast = index >= units.length - 1;
 
-  const renderUnit = (unit: Chapter | Section, showTitle: boolean) => {
-    const heading = 'label' in unit ? unit.title : unit.heading;
+  const renderUnit = (unit: any, showTitle: boolean) => {
+    if (!unit) return null;
+    const heading = 'label' in unit ? (unit.title || unit.label) : (unit.heading || unit.title);
+    const blocks: ContentBlock[] = Array.isArray(unit.blocks) ? unit.blocks : [];
     return (
       <div key={unit.id} className="slide-up" style={{ marginBottom: recit ? 0 : '2rem' }}>
         {showTitle && (
           <h3 style={{ fontSize: recit ? '1.65rem' : '1.25rem', fontWeight: 700, marginBottom: '1.25rem' }}>
-            {heading}
+            <span>{heading}</span>
           </h3>
         )}
-        {unit.blocks.map((b, i) => <BlockRenderer key={i} block={b} />)}
-        {unit.glossary && unit.glossary.length > 0 && <Glossary terms={unit.glossary} />}
-        {'checkpoint' in unit && unit.checkpoint && (
+        {blocks.map((b, i) => (
+          <BlockRenderer key={`${unit.id}-block-${i}`} block={b} />
+        ))}
+        {unit.glossary && unit.glossary.length > 0 && (
+          <Glossary key={`${unit.id}-glossary`} terms={unit.glossary} />
+        )}
+        {unit.checkpoint && (
           <CheckpointBox
+            key={`${unit.id}-checkpoint`}
             checkpoint={unit.checkpoint}
             onAnswer={correct => onCheckpoint(unit.id, correct)}
           />
@@ -414,10 +586,10 @@ function TopicViewer({
                 justifyContent: 'center',
                 fontSize: '1.4rem',
                 borderRadius: 'var(--radius-xl)',
-                background: topic.gradient,
+                background: topic.gradient || 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
               }}
             >
-              {topic.icon}
+              {topic.icon || '📖'}
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -431,7 +603,7 @@ function TopicViewer({
                     color: 'var(--primary-color)',
                   }}
                 >
-                  {topic.badge}
+                  {topic.badge || (recit ? 'Récit' : 'Fiche')}
                 </span>
                 {recit && topic.estimatedMinutes && (
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -463,7 +635,7 @@ function TopicViewer({
           </button>
         </div>
 
-        {/* Scrollable content area — minHeight: 0 is essential for flex-child scrolling */}
+        {/* Scrollable content area */}
         <div
           className="custom-scrollbar"
           style={{
@@ -493,12 +665,12 @@ function TopicViewer({
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.6rem', paddingLeft: '0.4rem' }}>
                     Chapitres ({units.length})
                   </div>
-                  {topic.chapters.map((ch, i) => {
+                  {units.map((ch: any, i: number) => {
                     const isActive = i === index;
-                    const isDone = progress?.completedUnits.includes(ch.id);
+                    const isDone = Boolean(progress?.completedUnits?.includes(ch.id));
                     return (
                       <button
-                        key={ch.id}
+                        key={ch.id || `chapter-${i}`}
                         onClick={() => setIndex(i)}
                         aria-current={isActive ? 'step' : undefined}
                         style={{
@@ -537,7 +709,7 @@ function TopicViewer({
                           {isDone && <Check size={10} color="#fff" />}
                         </span>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {i + 1}. {ch.label}
+                          {i + 1}. {ch.label || ch.title}
                         </span>
                       </button>
                     );
@@ -570,10 +742,11 @@ function TopicViewer({
                     <button
                       className="btn btn-outline"
                       disabled={index === 0}
-                      onClick={() => setIndex(i => i - 1)}
-                      style={{ borderRadius: 'var(--radius-full)', opacity: index === 0 ? 0.35 : 1 }}
+                      onClick={() => setIndex(i => Math.max(0, i - 1))}
+                      style={{ borderRadius: 'var(--radius-full)', opacity: index === 0 ? 0.35 : 1, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                     >
-                      <ChevronLeft size={16} /> Précédent
+                      <ChevronLeft size={16} />
+                      <span>Précédent</span>
                     </button>
 
                     {isLast ? (
@@ -581,23 +754,28 @@ function TopicViewer({
                         <button
                           className="btn btn-primary"
                           onClick={() => onStartQuiz(topic)}
-                          style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem' }}
+                          style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                         >
                           <Play size={16} style={{ fill: 'currentColor' }} />
-                          Tester mes connaissances en quiz
+                          <span>Tester mes connaissances en quiz</span>
                         </button>
                       ) : (
-                        <button className="btn btn-primary" onClick={onClose} style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem' }}>
-                          Terminer la lecture
+                        <button
+                          className="btn btn-primary"
+                          onClick={onClose}
+                          style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                        >
+                          <span>Terminer la lecture</span>
                         </button>
                       )
                     ) : (
                       <button
                         className="btn btn-primary"
-                        onClick={() => setIndex(i => i + 1)}
-                        style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem' }}
+                        onClick={() => setIndex(i => Math.min(units.length - 1, i + 1))}
+                        style={{ borderRadius: 'var(--radius-full)', padding: '0.75rem 1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                       >
-                        Chapitre suivant <ChevronRight size={16} />
+                        <span>Chapitre suivant</span>
+                        <ChevronRight size={16} />
                       </button>
                     )}
                   </div>
@@ -608,7 +786,11 @@ function TopicViewer({
                 <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
                   {topic.subtitle}
                 </p>
-                {topic.sections.map(s => renderUnit(s, true))}
+                {units.map((s: any, idx: number) => (
+                  <div key={s.id || `section-${idx}`}>
+                    {renderUnit(s, true)}
+                  </div>
+                ))}
 
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: '2rem' }}>
                   <button className="btn btn-outline" onClick={onClose} style={{ borderRadius: 'var(--radius-full)' }}>
@@ -1015,14 +1197,16 @@ function TopicModalLoader({
   }
 
   return (
-    <TopicViewer
-      topic={topic}
-      progress={progress}
-      onClose={onClose}
-      onUnitSeen={unitId => onUnitSeen(topic, unitId)}
-      onCheckpoint={(chapterId, correct) => onCheckpoint(topic, chapterId, correct)}
-      onStartQuiz={onStartQuiz}
-    />
+    <TopicErrorBoundary onClose={onClose}>
+      <TopicViewer
+        topic={topic}
+        progress={progress}
+        onClose={onClose}
+        onUnitSeen={unitId => onUnitSeen(topic, unitId)}
+        onCheckpoint={(chapterId, correct) => onCheckpoint(topic, chapterId, correct)}
+        onStartQuiz={onStartQuiz}
+      />
+    </TopicErrorBoundary>
   );
 }
 

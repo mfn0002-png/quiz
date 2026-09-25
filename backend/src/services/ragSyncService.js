@@ -27,9 +27,23 @@ function extractChunksFromTopic(topic) {
   if (topic.format === 'recit' && Array.isArray(topic.chapters)) {
     topic.chapters.forEach((chapter, idx) => {
       const chapterTitle = chapter.title || chapter.label || `Chapitre ${idx + 1}`;
-      const textContent = Array.isArray(chapter.paragraphs)
-        ? chapter.paragraphs.join('\n')
-        : (chapter.content || chapter.text || '');
+      let textContent = '';
+      if (Array.isArray(chapter.blocks) && chapter.blocks.length > 0) {
+        textContent = chapter.blocks
+          .map(b => {
+            if (b.type === 'text') return b.value;
+            if (b.type === 'static-quote') return `${b.arabic || ''}\n${b.translation || ''}`;
+            if (b.type === 'list') return (b.items || []).join('\n');
+            if (b.type === 'flip') return `${b.front} : ${b.back}`;
+            return '';
+          })
+          .filter(Boolean)
+          .join('\n\n');
+      } else if (Array.isArray(chapter.paragraphs)) {
+        textContent = chapter.paragraphs.join('\n');
+      } else {
+        textContent = chapter.content || chapter.text || '';
+      }
 
       if (textContent.trim()) {
         const textToChunk = `[THÈME: ${title}] - [CHAPITRE: ${chapterTitle}]\n${textContent}`;
@@ -56,7 +70,15 @@ function extractChunksFromTopic(topic) {
     // Si c'est une fiche d'apprentissage avec des sections
     topic.sections.forEach((section, idx) => {
       const heading = section.heading || `Section ${idx + 1}`;
-      const body = section.body || section.content || '';
+      let body = '';
+      if (Array.isArray(section.blocks) && section.blocks.length > 0) {
+        body = section.blocks
+          .map(b => (b.type === 'text' ? b.value : ''))
+          .filter(Boolean)
+          .join('\n\n');
+      } else {
+        body = section.body || section.content || '';
+      }
       const textToChunk = `[THÈME: ${title}] - [SECTION: ${heading}]\n${body}`;
 
       const subChunks = recursiveChunkText(textToChunk, 800, 150);

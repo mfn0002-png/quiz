@@ -117,9 +117,23 @@ export function useTopicProgress(): UseTopicProgressResult {
       ids.map(topicId => {
         const entry = latest.current[topicId];
         if (!entry) return Promise.resolve();
+
+        // Nettoyage strict des clés 'undefined' incompatibles avec Firestore
+        const cleanPayload: Record<string, any> = {
+          topicId: entry.topicId,
+          revision: entry.revision,
+          completedUnits: entry.completedUnits || [],
+          checkpointResults: entry.checkpointResults || {},
+          lastOpenedAt: entry.lastOpenedAt || new Date().toISOString(),
+          updatedAt: serverTimestamp(),
+        };
+        if (entry.completedAt) {
+          cleanPayload.completedAt = entry.completedAt;
+        }
+
         return setDoc(
           doc(db, 'users', user.uid, 'learningProgress', topicId),
-          { ...entry, updatedAt: serverTimestamp() },
+          cleanPayload,
           { merge: true },
         );
       }),
@@ -161,8 +175,12 @@ export function useTopicProgress(): UseTopicProgressResult {
         ...entry,
         completedUnits,
         lastOpenedAt: new Date().toISOString(),
-        completedAt: isComplete ? (entry.completedAt ?? new Date().toISOString()) : entry.completedAt,
       };
+      if (isComplete) {
+        next.completedAt = entry.completedAt ?? new Date().toISOString();
+      } else if (entry.completedAt) {
+        next.completedAt = entry.completedAt;
+      }
 
       return { ...prev, [topic.id]: next };
     });

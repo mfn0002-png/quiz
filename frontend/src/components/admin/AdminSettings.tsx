@@ -12,11 +12,12 @@ import {
   Save,
   Sliders,
   Sparkles,
-  Info,
 } from 'lucide-react';
+
 import { User } from '../../firebase';
 import { useAdminRole } from '../../hooks/useAdminRole';
 import { AppModal, ModalState, ModalType } from './AppModal';
+import { ContentPreviewModal, ContentDraft } from './ContentPreviewModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005/api';
 
@@ -64,6 +65,7 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
   const [formSummary,     setFormSummary]     = useState('');
   const [formContentText, setFormContentText] = useState('');
   const [generatingDraft, setGeneratingDraft] = useState(false);
+  const [previewDraft,    setPreviewDraft]    = useState<ContentDraft | null>(null);
 
   // Load config
   useEffect(() => {
@@ -167,7 +169,7 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
     }
     setGeneratingDraft(true);
     try {
-      const resp = await fetch(`${API_BASE_URL}/admin/generate-content`, {
+      const resp = await fetch(`${API_BASE_URL}/admin/rag/generate-content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-email': user?.email || '' },
         body: JSON.stringify({ subject: formTitle.trim(), category: formCategory, format: formFormat }),
@@ -178,17 +180,130 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
       setFormId(draft.id || 'nouveau_sujet');
       if (draft.title)   setFormTitle(draft.title);
       if (draft.summary) setFormSummary(draft.summary);
+
       let text = '';
+
       if (Array.isArray(draft.chapters)) {
-        text = draft.chapters
-          .map((c: any) => `### ${c.title}\n\n${Array.isArray(c.paragraphs) ? c.paragraphs.join('\n\n') : c.content}`)
-          .join('\n\n---\n\n');
+        // ── Format RÉCIT enrichi ──────────────────────────────────────────
+        const lines: string[] = [];
+
+        // Note sources
+        if (draft.metadata?.sources_note) {
+          lines.push(`> **Sources** : ${draft.metadata.sources_note}\n`);
+        }
+
+        draft.chapters.forEach((c: any, idx: number) => {
+          lines.push(`### ${c.title || `Chapitre ${idx + 1}`}`);
+          lines.push('');
+
+          // Blocs (text, source, stats)
+          if (Array.isArray(c.blocks) && c.blocks.length > 0) {
+            lines.push('**Contenu du chapitre :**');
+            c.blocks.forEach((b: any) => {
+              if (b.type === 'text') {
+                lines.push(b.value);
+                lines.push('');
+              } else if (b.type === 'source') {
+                const src = b.ref?.kind === 'quran' ? `Coran ${b.ref.surah}:${b.ref.ayah}` : 'Source';
+                lines.push(`> 📖 **${src}** : ${b.note || ''}`);
+                lines.push('');
+              } else if (b.type === 'stats' && Array.isArray(b.items)) {
+                lines.push(`📊 **Chiffres clés** : ${b.items.map((it: any) => `${it.value} (${it.label})`).join(', ')}`);
+                lines.push('');
+              }
+            });
+          } else if (Array.isArray(c.paragraphs) && c.paragraphs.length > 0) {
+            lines.push('**Texte narratif :**');
+            lines.push(c.paragraphs.join('\n\n'));
+            lines.push('');
+          }
+
+          // Versets (legacy fallback)
+          if (Array.isArray(c.versets) && c.versets.length > 0) {
+            lines.push('**Versets :**');
+            c.versets.forEach((v: any) => lines.push(`- ${v.ref} — ${v.content}`));
+            lines.push('');
+          }
+
+          // Glossaire
+          const glossaryList = c.glossary || c.glossaire || [];
+          if (Array.isArray(glossaryList) && glossaryList.length > 0) {
+            lines.push('**Glossaire :**');
+            glossaryList.forEach((g: any) => {
+              const term = g.term || g.terme;
+              const arabic = (g.arabic || g.arabe) ? ` (${g.arabic || g.arabe})` : '';
+              lines.push(`- **${term}**${arabic} — ${g.definition}`);
+            });
+            lines.push('');
+          }
+
+          // Checkpoint QCM
+          if (c.checkpoint) {
+            const cp = c.checkpoint;
+            const correctIdx = typeof cp.correctIndex === 'number' ? cp.correctIndex : (typeof cp.answer === 'number' ? cp.answer : 0);
+            const explanation = cp.explanation || cp.explication || '';
+            lines.push('**Point de contrôle (QCM) :**');
+            lines.push(`- Q : « ${cp.question} »`);
+            if (Array.isArray(cp.options)) {
+              lines.push(`- Options : ${cp.options.map((o: string, oi: number) => `[${oi === correctIdx ? '✓' : ' '}] ${o}`).join(' | ')}`);
+            }
+            if (explanation) {
+              lines.push(`- Explication : ${explanation}`);
+            }
+            lines.push('');
+          }
+
+          lines.push('---');
+          lines.push('');
+        });
+
+        // Tableau récapitulatif des versets
+        const allVersets: any[] = draft.chapters.flatMap((c: any) => c.versets || []);
+        if (allVersets.length > 0) {
+          lines.push('## Récapitulatif des versets utilisés');
+          lines.push('');
+          lines.push('| Verset | Contenu |');
+          lines.push('|--------|---------|');
+          allVersets.forEach((v: any) => lines.push(`| ${v.ref} | ${v.content} |`));
+          lines.push('');
+        }
+
+        // Métadonnées techniques
+        if (draft.metadata) {
+          const m = draft.metadata;
+          lines.push('## Données techniques');
+          lines.push('');
+          if (m.nb_chapitres)  lines.push(`- **Chapitres** : ${m.nb_chapitres}`);
+          if (m.nb_versets)    lines.push(`- **Versets coraniques** : ${m.nb_versets}`);
+          if (m.duree_min)     lines.push(`- **Durée estimée** : ${m.duree_min} min`);
+          lines.push('');
+        }
+
+        text = lines.join('\n');
+
       } else if (Array.isArray(draft.sections)) {
-        text = draft.sections.map((s: any) => `### ${s.heading}\n\n${s.body}`).join('\n\n---\n\n');
+        // ── Format FICHE ──────────────────────────────────────────────────
+        text = draft.sections.map((s: any) => {
+          let block = `### ${s.heading}\n\n${s.body}`;
+          if (Array.isArray(s.versets) && s.versets.length > 0) {
+            block += '\n\n**Références :**\n' + s.versets.map((v: any) => `- ${v.ref} — ${v.content}`).join('\n');
+          }
+          return block;
+        }).join('\n\n---\n\n');
       }
+
       setFormContentText(text);
-      showModal('success', 'Brouillon IA genere !',
-        "L'Agent IA a redige un premier brouillon.\nRelisez et modifiez le texte avant de l'enregistrer dans Firestore.");
+      // Ouvrir directement le popup de previsualisation
+      setPreviewDraft({
+        id:          draft.id || 'nouveau_sujet',
+        title:       draft.title || formTitle.trim(),
+        category:    formCategory,
+        format:      formFormat,
+        summary:     draft.summary || formSummary.trim(),
+        contentText: text,
+        rawDraft:    draft,
+      });
+
     } catch (err: any) {
       showModal('error', 'Echec de la generation IA', err.message);
     } finally {
@@ -222,9 +337,178 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
   }
 
   // ── Layout principal ───────────────────────────────────────
+
+  // Ecriture dans Firestore apres validation dans le preview
+  const saveToFirestore = async (confirmed: ContentDraft) => {
+    try {
+      const { doc, setDoc } = await import('firebase/firestore');
+      const { db } = await import('../../firebase');
+
+      // Construction des chapitres ou sections structurés
+      let chapters: any[] = [];
+      let sections: any[] = [];
+
+      if (confirmed.format === 'recit') {
+        if (confirmed.rawDraft && Array.isArray(confirmed.rawDraft.chapters) && confirmed.rawDraft.chapters.length > 0) {
+          chapters = confirmed.rawDraft.chapters.map((c: any, idx: number) => {
+            const chapterId = c.id || `${confirmed.id}-ch${idx + 1}`;
+            const blocks: any[] = [];
+            if (Array.isArray(c.blocks) && c.blocks.length > 0) {
+              c.blocks.forEach((b: any) => blocks.push(b));
+            } else {
+              if (Array.isArray(c.paragraphs)) {
+                c.paragraphs.forEach((p: string) => {
+                  if (p && p.trim()) blocks.push({ type: 'text', value: p });
+                });
+              }
+              if (Array.isArray(c.versets)) {
+                c.versets.forEach((v: any) => {
+                  const match = v.ref?.match(/Coran\s+(\d+)[:\.](\d+)/i);
+                  if (match) {
+                    blocks.push({
+                      type: 'source',
+                      ref: { kind: 'quran', surah: parseInt(match[1], 10), ayah: parseInt(match[2], 10) },
+                      note: v.content,
+                    });
+                  } else if (v.ref) {
+                    blocks.push({
+                      type: 'text',
+                      value: `📖 ${v.ref} : ${v.content || ''}`,
+                    });
+                  }
+                });
+              }
+            }
+            const rawGlossary = c.glossary || c.glossaire || [];
+            const glossary = Array.isArray(rawGlossary)
+              ? rawGlossary.map((g: any) => ({
+                  term: g.term || g.terme || '',
+                  definition: g.definition || '',
+                  arabic: g.arabic || g.arabe || '',
+                })).filter((g: any) => g.term && g.definition)
+              : [];
+
+            let checkpoint = undefined;
+            if (c.checkpoint && c.checkpoint.question) {
+              checkpoint = {
+                question: c.checkpoint.question,
+                options: Array.isArray(c.checkpoint.options) ? c.checkpoint.options : [],
+                correctIndex: typeof c.checkpoint.correctIndex === 'number'
+                  ? c.checkpoint.correctIndex
+                  : (typeof c.checkpoint.answer === 'number' ? c.checkpoint.answer : 0),
+                explanation: c.checkpoint.explanation || c.checkpoint.explication || '',
+              };
+            }
+
+            return {
+              id: chapterId,
+              label: c.label || c.title?.replace(/^Chapitre\s+\d+\s*[-—:]\s*/i, '') || `Chapitre ${idx + 1}`,
+              title: c.title || `Chapitre ${idx + 1}`,
+              blocks: blocks.length > 0 ? blocks : [{ type: 'text', value: confirmed.contentText }],
+              glossary,
+              checkpoint,
+            };
+          });
+        } else {
+          // Création manuelle : découpage par sections markdown (###)
+          const parts = confirmed.contentText.split(/(?=^###\s+)/m).filter(p => p.trim());
+          if (parts.length > 1) {
+            chapters = parts.map((part, idx) => {
+              const lines = part.trim().split('\n');
+              const headingLine = lines[0].replace(/^###\s+/, '').trim();
+              const body = lines.slice(1).join('\n').trim();
+              return {
+                id: `${confirmed.id}-ch${idx + 1}`,
+                label: headingLine.replace(/^Chapitre\s+\d+\s*[-—:]\s*/i, '') || `Chapitre ${idx + 1}`,
+                title: headingLine || `Chapitre ${idx + 1}`,
+                blocks: [{ type: 'text', value: body || headingLine }],
+              };
+            });
+          } else {
+            chapters = [{
+              id: `${confirmed.id}-ch1`,
+              label: 'Récit',
+              title: confirmed.title,
+              blocks: [{ type: 'text', value: confirmed.contentText }],
+            }];
+          }
+        }
+      } else {
+        // Format Fiche
+        if (confirmed.rawDraft && Array.isArray(confirmed.rawDraft.sections) && confirmed.rawDraft.sections.length > 0) {
+          sections = confirmed.rawDraft.sections.map((s: any, idx: number) => ({
+            id: s.id || `${confirmed.id}-sec${idx + 1}`,
+            heading: s.heading || `Section ${idx + 1}`,
+            blocks: Array.isArray(s.blocks) && s.blocks.length > 0 ? s.blocks : [{ type: 'text', value: s.body || '' }],
+            glossary: s.glossary || s.glossaire || [],
+          }));
+        } else {
+          const parts = confirmed.contentText.split(/(?=^###\s+)/m).filter(p => p.trim());
+          if (parts.length > 1) {
+            sections = parts.map((part, idx) => {
+              const lines = part.trim().split('\n');
+              const headingLine = lines[0].replace(/^###\s+/, '').trim();
+              const body = lines.slice(1).join('\n').trim();
+              return {
+                id: `${confirmed.id}-sec${idx + 1}`,
+                heading: headingLine || `Section ${idx + 1}`,
+                blocks: [{ type: 'text', value: body || headingLine }],
+              };
+            });
+          } else {
+            sections = [{
+              id: `${confirmed.id}-sec1`,
+              heading: confirmed.title,
+              blocks: [{ type: 'text', value: confirmed.contentText }],
+            }];
+          }
+        }
+      }
+
+      const raw = confirmed.rawDraft || {};
+      const newTopicDoc = {
+        id: confirmed.id,
+        title: confirmed.title,
+        subtitle: raw.subtitle || (confirmed.summary ? (confirmed.summary.length > 90 ? confirmed.summary.slice(0, 90) + '...' : confirmed.summary) : ''),
+        category: confirmed.category,
+        format: confirmed.format,
+        icon: raw.icon || (confirmed.category === 'prophetes' ? '🌿' : confirmed.category === 'duas' ? '🤲' : '📖'),
+        gradient: raw.gradient || (confirmed.category === 'prophetes'
+          ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+          : confirmed.category === 'duas'
+          ? 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)'
+          : 'linear-gradient(135deg, #059669 0%, #10b981 100%)'),
+        badge: raw.badge || (confirmed.category === 'prophetes' ? 'Prophète' : 'Apprentissage'),
+        summary: confirmed.summary,
+        published: true,
+        order: raw.order ?? 999,
+        revision: raw.revision ?? 1,
+        quizCategoryTarget: raw.quizCategoryTarget || (confirmed.category === 'prophetes' ? 'Prophètes' : undefined),
+        estimatedMinutes: raw.estimatedMinutes || (confirmed.format === 'recit' ? Math.max(3, (chapters.length || 1) * 3) : undefined),
+        createdAt: new Date().toISOString(),
+        ...(confirmed.format === 'recit' ? { chapters } : { sections }),
+      };
+
+      await setDoc(doc(db, 'learningTopics', confirmed.id), newTopicDoc, { merge: true });
+      setPreviewDraft(null);
+      showModal('success', 'Contenu enregistre !',
+        `"${confirmed.title}" a ete sauvegarde dans Firestore.\n\nLancez la synchronisation RAG pour l'indexer dans Supabase.`);
+      // Reset form
+      setFormId(''); setFormTitle(''); setFormSummary(''); setFormContentText('');
+    } catch (err: any) {
+      setPreviewDraft(null);
+      showModal('error', 'Erreur lors de la creation', err.message);
+    }
+  };
+
   return (
     <>
       <AppModal modal={modal} onClose={closeModal} />
+      <ContentPreviewModal
+        draft={previewDraft}
+        onClose={() => setPreviewDraft(null)}
+        onConfirm={saveToFirestore}
+      />
 
       <div style={{ maxWidth: '960px', margin: '0 auto', padding: '1.5rem 1rem 7rem' }}>
 
@@ -286,11 +570,7 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
               </span>
             </div>
 
-            {/* Note info */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.07)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--radius-md)', marginBottom: '0.8rem', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              <Info size={13} style={{ flexShrink: 0, marginTop: '0.15rem', color: '#3b82f6' }} />
-              <span>Retirer une collection <strong>ne supprime pas les donnees Firestore</strong>. Cela arrete uniquement la synchro RAG vers Supabase.</span>
-            </div>
+
 
             {/* Badges collections */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginBottom: '0.8rem' }}>
@@ -445,44 +725,59 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
           </p>
 
           <form
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
               if (!formId.trim() || !formTitle.trim() || !formContentText.trim()) {
                 showModal('warning', 'Champs requis manquants',
                   'Veuillez renseigner les trois champs obligatoires :\n• ID Unique\n• Titre\n• Contenu principal');
                 return;
               }
-              try {
-                const { doc, setDoc } = await import('firebase/firestore');
-                const { db } = await import('../../firebase');
-                const id = formId.trim();
-                const newTopicDoc = {
-                  id, title: formTitle.trim(), category: formCategory, format: formFormat,
-                  summary: formSummary.trim(), published: true, createdAt: new Date().toISOString(),
-                  ...(formFormat === 'recit'
-                    ? { chapters: [{ title: 'Histoire principale', paragraphs: [formContentText] }] }
-                    : { sections: [{ heading: 'Explication principale', body: formContentText }] }),
-                };
-                await setDoc(doc(db, 'learningTopics', id), newTopicDoc, { merge: true });
-                showModal('success', 'Contenu cree avec succes !',
-                  `"${formTitle.trim()}" a ete enregistre dans Firestore.\n\nLancez maintenant la synchronisation RAG pour l'indexer dans Supabase.`);
-                setFormId(''); setFormTitle(''); setFormSummary(''); setFormContentText('');
-              } catch (err: any) {
-                showModal('error', 'Erreur lors de la creation', err.message);
-              }
+              // Ouvrir le popup de previsualisation avant d'ecrire dans Firestore
+              setPreviewDraft({
+                id:          formId.trim(),
+                title:       formTitle.trim(),
+                category:    formCategory,
+                format:      formFormat,
+                summary:     formSummary.trim(),
+                contentText: formContentText,
+              });
             }}
             style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}
           >
+            {/* Banniere d'information en cours de generation */}
+            {generatingDraft && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                padding: '0.9rem 1.2rem',
+                backgroundColor: 'rgba(5, 150, 105, 0.09)',
+                border: '1px solid rgba(5, 150, 105, 0.35)',
+                borderRadius: 'var(--radius-lg)',
+                color: 'var(--text-primary)',
+              }}>
+                <RefreshCw size={20} className="spin" style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-color)' }}>
+                    Génération IA en cours...
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+                    Recherche des sources authentiques (Coran &amp; Hadiths) et structuration des chapitres. Veuillez patienter quelques secondes sans relancer.
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Ligne 1 */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem' }}>
               <div>
                 <label className="form-label">ID Unique (ex: prophet_hud)</label>
-                <input className="form-input" type="text" required value={formId}
+                <input className="form-input" type="text" required value={formId} disabled={generatingDraft}
                   onChange={(e) => setFormId(e.target.value)} placeholder="prophete_hud" />
               </div>
               <div>
                 <label className="form-label">Categorie</label>
-                <select className="form-select" value={formCategory} onChange={(e) => setFormCategory(e.target.value)}>
+                <select className="form-select" value={formCategory} disabled={generatingDraft} onChange={(e) => setFormCategory(e.target.value)}>
                   <option value="prophetes">Prophetes (Histoire)</option>
                   <option value="duas">Duas et Invocations</option>
                   <option value="piliers">Piliers de l'Islam</option>
@@ -492,7 +787,7 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
               </div>
               <div>
                 <label className="form-label">Format</label>
-                <select className="form-select" value={formFormat} onChange={(e) => setFormFormat(e.target.value)}>
+                <select className="form-select" value={formFormat} disabled={generatingDraft} onChange={(e) => setFormFormat(e.target.value)}>
                   <option value="recit">Recit / Histoire</option>
                   <option value="fiche">Fiche d'apprentissage</option>
                 </select>
@@ -503,36 +798,67 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Titre</label>
-                <button type="button" onClick={handleGenerateAiDraft} disabled={generatingDraft}
+                <button
+                  type="button"
+                  onClick={handleGenerateAiDraft}
+                  disabled={generatingDraft}
                   className="btn btn-outline"
-                  style={{ padding: '0.35rem 0.85rem', borderRadius: 'var(--radius-md)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
-                  title="L'Agent IA genere un premier brouillon">
-                  <Sparkles size={13} className={generatingDraft ? 'spin' : ''} />
-                  <span>{generatingDraft ? 'Generation...' : "Generer avec l'IA"}</span>
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '0.78rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    whiteSpace: 'nowrap',
+                    opacity: generatingDraft ? 0.65 : 1,
+                    cursor: generatingDraft ? 'not-allowed' : 'pointer',
+                  }}
+                  title={generatingDraft ? "Génération déjà en cours..." : "L'Agent IA génère un premier brouillon"}
+                >
+                  {generatingDraft ? (
+                    <RefreshCw size={13} className="spin" style={{ color: 'var(--primary-color)' }} />
+                  ) : (
+                    <Sparkles size={13} />
+                  )}
+                  <span>{generatingDraft ? 'Génération en cours...' : "Générer avec l'IA"}</span>
                 </button>
               </div>
-              <input className="form-input" type="text" required value={formTitle}
+              <input className="form-input" type="text" required value={formTitle} disabled={generatingDraft}
                 onChange={(e) => setFormTitle(e.target.value)} placeholder="Prophete Hud (Alayhi s-salam)" />
             </div>
 
             {/* Ligne 3 : Resume */}
             <div>
               <label className="form-label">Resume / Synthese courte</label>
-              <input className="form-input" type="text" value={formSummary}
+              <input className="form-input" type="text" value={formSummary} disabled={generatingDraft}
                 onChange={(e) => setFormSummary(e.target.value)} placeholder="Apercu rapide en 1 ou 2 phrases..." />
             </div>
 
             {/* Ligne 4 : Contenu */}
             <div>
               <label className="form-label">Contenu Principal / Texte du recit</label>
-              <textarea className="form-textarea" value={formContentText} rows={8} required
+              <textarea className="form-textarea" value={formContentText} rows={8} required disabled={generatingDraft}
                 onChange={(e) => setFormContentText(e.target.value)}
                 placeholder="Redigez l'histoire ou l'explication complete ici..." />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary"
-                style={{ padding: '0.65rem 1.3rem', borderRadius: 'var(--radius-lg)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <button
+                type="submit"
+                disabled={generatingDraft}
+                className="btn btn-primary"
+                style={{
+                  padding: '0.65rem 1.3rem',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  opacity: generatingDraft ? 0.6 : 1,
+                  cursor: generatingDraft ? 'not-allowed' : 'pointer',
+                }}
+              >
                 <Save size={15} />
                 <span>Valider et Enregistrer dans Firestore</span>
               </button>

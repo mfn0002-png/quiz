@@ -28,7 +28,6 @@ function isValidTopic(candidate: unknown): candidate is LearningTopic {
   const t = candidate as Partial<LearningTopic>;
 
   if (typeof t.id !== 'string' || typeof t.title !== 'string') return false;
-  if (typeof t.revision !== 'number') return false;
   if (t.format !== 'fiche' && t.format !== 'recit') return false;
 
   const units = t.format === 'recit'
@@ -37,6 +36,7 @@ function isValidTopic(candidate: unknown): candidate is LearningTopic {
 
   return Array.isArray(units) && units.length > 0;
 }
+
 
 function readSummariesCache(): TopicSummary[] | null {
   try {
@@ -215,9 +215,10 @@ export function useTopicDetail(topicId: string | null): UseTopicDetailResult {
 
 /** Extrait toutes les SourceRef d'un topic, pour préchargement. */
 export function collectSourceRefs(topic: LearningTopic) {
-  const units = isRecit(topic) ? topic.chapters : topic.sections;
+  const units = isRecit(topic) ? (topic.chapters || []) : (topic.sections || []);
+  if (!Array.isArray(units)) return [];
   return units.flatMap(unit =>
-    unit.blocks.flatMap(block => {
+    (Array.isArray(unit.blocks) ? unit.blocks : []).flatMap(block => {
       if (block.type === 'source') return [block.ref];
       if (block.type === 'flip' && block.sourceRef) return [block.sourceRef];
       return [];

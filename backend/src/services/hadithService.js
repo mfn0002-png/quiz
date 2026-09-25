@@ -106,7 +106,9 @@ export function formatHadiths(hadiths) {
     .map(h => {
       const source = `${h.collection}${h.bookNumber ? ` ${h.bookNumber}` : ''}${h.hadithNumber ? `:${h.hadithNumber}` : ''}`;
       const narrator = h.narrator ? ` (Narrateur: ${h.narrator})` : '';
-      return `• [Hadith - ${source}]${narrator} : "${h.text}"`;
+      const text = (h.text || '').trim();
+      const shortText = text.length > 300 ? text.slice(0, 300) + '...' : text;
+      return `• [Hadith - ${source}]${narrator} : "${shortText}"`;
     })
     .join('\n');
 }

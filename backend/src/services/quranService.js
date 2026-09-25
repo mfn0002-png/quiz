@@ -15,24 +15,51 @@ const QURAN_TIMEOUT_MS = 4000;
  * @returns {Promise<Array>} Liste de versets trouvés
  */
 export async function searchQuranVerses(query, limit = 3) {
-  console.log(`📖 [Quran Service] Recherche de versets pour "${query}"...`);
+  if (!query || typeof query !== 'string') return [];
+  const cleanQuery = query.trim();
+  console.log(`📖 [Quran Service] Recherche de versets pour "${cleanQuery}"...`);
 
-  try {
-    const response = await fetch(
-      `${QURAN_API_BASE}/search/${encodeURIComponent(query)}/all/fr.hamidullah`,
-      { signal: AbortSignal.timeout(QURAN_TIMEOUT_MS) }
-    );
-
-    if (!response.ok) {
-      console.warn(`⚠️ [Quran Service] API a répondu ${response.status}`);
+  const trySearch = async (term) => {
+    try {
+      const response = await fetch(
+        `${QURAN_API_BASE}/search/${encodeURIComponent(term)}/all/fr.hamidullah`,
+        { signal: AbortSignal.timeout(QURAN_TIMEOUT_MS) }
+      );
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data?.data?.matches?.slice(0, limit) || [];
+    } catch {
       return [];
     }
+  };
 
-    const data = await response.json();
-    const matches = data?.data?.matches?.slice(0, limit) || [];
+  try {
+    let matches = await trySearch(cleanQuery);
 
-    console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) pour "${query}"`);
-    return matches;
+    // Si aucune correspondance (ou 404), essayer d'extraire les mots-clés essentiels sans formules honorifiques
+    if (matches.length === 0) {
+      const simplified = cleanQuery
+        .replace(/proph[èe]te|messager|aleyhi|salam|salut|paix|sur|lui|bénédiction|pbsl|saw|as/gi, '')
+        .replace(/[^\w\s\u0600-\u06FF]/gi, ' ')
+        .trim();
+
+      const words = simplified.split(/\s+/).filter(w => w.length >= 3);
+      for (const word of words) {
+        matches = await trySearch(word);
+        if (matches.length > 0) {
+          console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) via mot-clé "${word}"`);
+          break;
+        }
+      }
+    }
+
+    if (matches.length > 0) {
+      console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) pour "${cleanQuery}"`);
+      return matches;
+    }
+
+    console.log(`ℹ️ [Quran Service] Aucun verset trouvé pour "${cleanQuery}"`);
+    return [];
   } catch (err) {
     console.warn(`⚠️ [Quran Service] Erreur : ${err.message}`);
     return [];

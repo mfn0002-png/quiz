@@ -9,7 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../config/firebase.js';
+import { db } from '../config/firebase.js';          // SDK client (lecture settings)
+import { adminDb } from '../config/firebaseAdmin.js'; // Admin SDK (lecture users sans rules)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -94,9 +95,10 @@ export async function updatePlatformConfig(newConfig) {
 
 /**
  * Vérifie si un utilisateur possède le rôle 'admin' dans Firestore.
- * Recherche par `userId` (UID) ou par `email` dans la collection `users`.
- * 
- * @param {string} identifier - UID Firestore ou Adresse E-mail de l'utilisateur
+ * Utilise le Firebase Admin SDK (bypass Security Rules) pour lire
+ * le champ `role` ou `isAdmin` du document `users/{uid}` ou par email.
+ *
+ * @param {string} identifier - UID Firestore ou adresse e-mail
  * @returns {Promise<boolean>}
  */
 export async function isUserAdmin(identifier) {
@@ -104,41 +106,68 @@ export async function isUserAdmin(identifier) {
 
   const clean = identifier.trim();
 
-  // 1. Tenter par UID Firestore
-  try {
-    const userSnap = await getDoc(doc(db, 'users', clean));
-    if (userSnap.exists()) {
-      const data = userSnap.data();
-      if (data.role === 'admin' || data.isAdmin === true) {
-        return true;
-      }
-    }
-  } catch (err) {
-    console.warn(`⚠️ [Config Service] Échec vérification rôle par UID '${clean}' : ${err.message}`);
-  }
-
-  // 2. Tenter par E-mail Firestore
-  if (clean.includes('@')) {
+  // ── 1. Via Admin SDK (bypass Security Rules) ─────────────────────
+  if (adminDb) {
     try {
-      const q = query(collection(db, 'users'), where('email', '==', clean.toLowerCase()));
-      const querySnap = await getDocs(q);
-      if (!querySnap.empty) {
-        for (const userDoc of querySnap.docs) {
-          const data = userDoc.data();
-          if (data.role === 'admin' || data.isAdmin === true) {
-            return true;
-          }
+      // Par UID direct
+      const byUid = await adminDb.collection('users').doc(clean).get();
+      if (byUid.exists) {
+        const d = byUid.data();
+        if (d.role === 'admin' || d.isAdmin === true) {
+          console.log(`✅ [Admin SDK] Role admin confirme pour UID '${clean}'`);
+          return true;
         }
       }
     } catch (err) {
-      console.warn(`⚠️ [Config Service] Échec recherche rôle par email '${clean}' : ${err.message}`);
+      console.warn(`⚠️ [Admin SDK] Lecture UID '${clean}' : ${err.message}`);
+    }
+
+    if (clean.includes('@')) {
+      try {
+        // Par email
+        const snap = await adminDb.collection('users').where('email', '==', clean.toLowerCase()).limit(1).get();
+        if (!snap.empty) {
+          const d = snap.docs[0].data();
+          if (d.role === 'admin' || d.isAdmin === true) {
+            console.log(`✅ [Admin SDK] Role admin confirme pour email '${clean}'`);
+            return true;
+          }
+        }
+      } catch (err) {
+        console.warn(`⚠️ [Admin SDK] Lecture email '${clean}' : ${err.message}`);
+      }
     }
   }
 
-  // Fallback dev de sécurité : si la variable d'environnement ADMIN_EMAILS est définie
+  // ── 2. Fallback SDK client (peut echouer si Security Rules restrictives) ──
+  if (!adminDb) {
+    try {
+      const userSnap = await getDoc(doc(db, 'users', clean));
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        if (d.role === 'admin' || d.isAdmin === true) return true;
+      }
+    } catch (_) {}
+
+    if (clean.includes('@')) {
+      try {
+        const q = query(collection(db, 'users'), where('email', '==', clean.toLowerCase()));
+        const qs = await getDocs(q);
+        for (const userDoc of qs.docs) {
+          const d = userDoc.data();
+          if (d.role === 'admin' || d.isAdmin === true) return true;
+        }
+      } catch (_) {}
+    }
+  }
+
+  // ── 3. Fallback env ADMIN_EMAILS (dernier recours, a supprimer en prod) ──
   if (process.env.ADMIN_EMAILS) {
     const adminList = process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase());
-    if (adminList.includes(clean.toLowerCase())) return true;
+    if (adminList.includes(clean.toLowerCase())) {
+      console.warn(`⚠️ [Admin] Acces via ADMIN_EMAILS env pour '${clean}' — configurez le service account pour eviter ca`);
+      return true;
+    }
   }
 
   return false;
