@@ -10,6 +10,7 @@
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
+import { adminDb } from '../config/firebaseAdmin.js';
 import { getSupabaseClient } from './ragSupabaseService.js';
 import { computeEmbedding, recursiveChunkText } from './ragVectorService.js';
 
@@ -213,10 +214,12 @@ export async function syncFirebaseToSupabase({ forceReindex = false } = {}) {
   // ------------------------------------------------------------------------
   console.log(`\n📖 [1/3] Récupération de la collection 'learningTopics'...`);
   try {
-    const topicsSnap = await getDocs(collection(db, 'learningTopics'));
-    console.log(`  ✓ ${topicsSnap.size} sujet(s) trouvé(s) dans Firestore`);
+    const topicsDocs = adminDb
+      ? (await adminDb.collection('learningTopics').get()).docs
+      : (await getDocs(collection(db, 'learningTopics'))).docs;
+    console.log(`  ✓ ${topicsDocs.length} sujet(s) trouvé(s) dans Firestore`);
 
-    for (const docSnap of topicsSnap.docs) {
+    for (const docSnap of topicsDocs) {
       const topic = { id: docSnap.id, ...docSnap.data() };
 
       if (!forceReindex && indexedDocIds.has(topic.id)) {
@@ -260,10 +263,12 @@ export async function syncFirebaseToSupabase({ forceReindex = false } = {}) {
   // ------------------------------------------------------------------------
   console.log(`\n📚 [2/3] Récupération de la collection 'sources'...`);
   try {
-    const sourcesSnap = await getDocs(collection(db, 'sources'));
-    console.log(`  ✓ ${sourcesSnap.size} document(s) trouvé(s) dans 'sources'`);
+    const sourcesDocs = adminDb
+      ? (await adminDb.collection('sources').get()).docs
+      : (await getDocs(collection(db, 'sources'))).docs;
+    console.log(`  ✓ ${sourcesDocs.length} document(s) trouvé(s) dans 'sources'`);
 
-    for (const docSnap of sourcesSnap.docs) {
+    for (const docSnap of sourcesDocs) {
       const sourceData = { id: docSnap.id, ...docSnap.data() };
 
       // Ignorer les évaluations qui auraient été enregistrées en fallback dans 'sources'
@@ -305,15 +310,27 @@ export async function syncFirebaseToSupabase({ forceReindex = false } = {}) {
   console.log(`\n👍 [3/3] Récupération des évaluations certifiées (rating == 'good')...`);
   try {
     let evalDocs = [];
-    try {
-      const q = query(collection(db, 'assistant_evaluations'), where('rating', '==', 'good'));
-      const evalSnap = await getDocs(q);
-      evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch {
-      // Fallback sur collection sources
-      const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'), where('rating', '==', 'good'));
-      const evalSnap = await getDocs(q);
-      evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (adminDb) {
+      try {
+        const evalSnap = await adminDb.collection('assistant_evaluations').where('rating', '==', 'good').get();
+        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch {
+        try {
+          const evalSnap = await adminDb.collection('sources').where('type', '==', 'assistant_evaluation').where('rating', '==', 'good').get();
+          evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch {}
+      }
+    } else {
+      try {
+        const q = query(collection(db, 'assistant_evaluations'), where('rating', '==', 'good'));
+        const evalSnap = await getDocs(q);
+        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch {
+        // Fallback sur collection sources
+        const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'), where('rating', '==', 'good'));
+        const evalSnap = await getDocs(q);
+        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
     }
 
     console.log(`  ✓ ${evalDocs.length} évaluation(s) certifiée(s) trouvée(s)`);

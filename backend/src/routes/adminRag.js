@@ -13,11 +13,17 @@ import { getPlatformConfig, updatePlatformConfig, isUserAdmin } from '../service
 
 const router = express.Router();
 
-/** Middleware optionnel de contrôle admin si l'en-tête `x-user-email` ou `x-user-id` est fourni */
+/** Middleware de contrôle admin si l'en-tête `x-user-id` ou `x-user-email` est fourni */
 async function requireAdmin(req, res, next) {
-  const userId = req.headers['x-user-id'] || req.headers['x-user-email'] || req.body?.userId || req.body?.userEmail;
-  if (userId) {
-    const admin = await isUserAdmin(userId);
+  const uid = req.headers['x-user-id'] || req.body?.userId;
+  const email = req.headers['x-user-email'] || req.body?.userEmail;
+  const identifier = uid || email;
+
+  if (identifier) {
+    let admin = await isUserAdmin(identifier);
+    if (!admin && uid && email && uid !== email) {
+      admin = await isUserAdmin(email);
+    }
     if (!admin) {
       return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
     }
@@ -71,6 +77,30 @@ router.post('/sync', requireAdmin, async (req, res) => {
 });
 
 import { generateTopicDraft } from '../services/contentGeneratorAgent.js';
+import { getAllLearningTopicsAdmin, deleteLearningTopic } from '../services/learningService.js';
+
+/** GET /api/admin/topics - Liste tous les sujets d'apprentissage (Firestore & local) */
+router.get('/topics', requireAdmin, async (req, res) => {
+  try {
+    const topics = await getAllLearningTopicsAdmin();
+    return res.json({ success: true, count: topics.length, data: topics });
+  } catch (err) {
+    console.error(`❌ Erreur récupération des sujets admin :`, err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+/** DELETE /api/admin/topics/:id - Supprimer un sujet d'apprentissage */
+router.delete('/topics/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await deleteLearningTopic(id);
+    return res.json(result);
+  } catch (err) {
+    console.error(`❌ Erreur suppression du sujet '${id}' :`, err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 /** POST /api/admin/generate-content - Demande la génération IA d'un brouillon de contenu */
 router.post('/generate-content', requireAdmin, async (req, res) => {

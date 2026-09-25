@@ -116,7 +116,9 @@ export function AuthButton({ user, authLoading, compact }: AuthButtonProps) {
                     {user.displayName}
                   </span>
                   {isAdmin && (
-                    <ShieldCheck size={14} style={{ color: 'var(--primary-color)', flexShrink: 0 }} title="Compte Administrateur" />
+                    <span title="Compte Administrateur" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <ShieldCheck size={14} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+                    </span>
                   )}
                 </div>
                 <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

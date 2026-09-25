@@ -13,6 +13,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
+import { adminDb } from '../config/firebaseAdmin.js';
 import { redis } from '../config/redis.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -236,11 +237,20 @@ export async function resolveSourceRef(key) {
   // 3. Firestore collection 'sources'
   try {
     const firestoreKey = key.replace(/[:/]/g, '_');
-    const snap = await getDoc(doc(db, 'sources', firestoreKey));
-    if (snap.exists()) {
-      const data = snap.data();
-      await toCache(key, data);
-      return data;
+    if (adminDb) {
+      const snap = await adminDb.collection('sources').doc(firestoreKey).get();
+      if (snap.exists) {
+        const data = snap.data();
+        await toCache(key, data);
+        return data;
+      }
+    } else {
+      const snap = await getDoc(doc(db, 'sources', firestoreKey));
+      if (snap.exists()) {
+        const data = snap.data();
+        await toCache(key, data);
+        return data;
+      }
     }
   } catch (err) {
     console.warn(`⚠️ [Source Resolver] Échec lecture Firestore : ${err.message}`);
@@ -271,7 +281,11 @@ export async function resolveSourceRef(key) {
   await toCache(key, resolved);
   try {
     const firestoreKey = key.replace(/[:/]/g, '_');
-    await setDoc(doc(db, 'sources', firestoreKey), resolved, { merge: true });
+    if (adminDb) {
+      await adminDb.collection('sources').doc(firestoreKey).set(resolved, { merge: true });
+    } else {
+      await setDoc(doc(db, 'sources', firestoreKey), resolved, { merge: true });
+    }
   } catch (err) {
     console.warn(`⚠️ [Source Resolver] Échec écriture Firestore : ${err.message}`);
   }

@@ -1,5 +1,6 @@
 import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
+import { adminDb } from '../config/firebaseAdmin.js';
 
 /**
  * Enregistre une évaluation d'une réponse de l'assistant RAG dans Firestore.
@@ -44,8 +45,13 @@ export async function saveAssistantFeedback(feedbackData) {
     createdAt: new Date().toISOString(),
   };
 
-  const docRef = doc(db, 'sources', rawId);
-  await setDoc(docRef, evaluationDoc);
+  if (adminDb) {
+    await adminDb.collection('sources').doc(rawId).set(evaluationDoc);
+  } else {
+    const docRef = doc(db, 'sources', rawId);
+    await setDoc(docRef, evaluationDoc);
+  }
+
   console.log(`✅ [Feedback Service] Évaluation enregistrée dans Firestore (ID: ${rawId}, Note: ${rating})`);
   return { success: true, id: rawId, collection: 'sources' };
 }
@@ -56,14 +62,26 @@ export async function saveAssistantFeedback(feedbackData) {
  * @returns {Promise<{ total: number, good: number, bad: number, satisfactionRate: string }>}
  */
 export async function getFeedbackStats() {
-  const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'));
-  const snapshot = await getDocs(q);
+  let docs = [];
+
+  if (adminDb) {
+    try {
+      const snap = await adminDb.collection('sources').where('type', '==', 'assistant_evaluation').get();
+      docs = snap.docs;
+    } catch {
+      docs = [];
+    }
+  } else {
+    const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'));
+    const snapshot = await getDocs(q);
+    docs = snapshot.docs;
+  }
 
   let total = 0;
   let good = 0;
   let bad = 0;
 
-  snapshot.forEach(docSnap => {
+  docs.forEach(docSnap => {
     const data = docSnap.data();
     if (data.rating === 'good' || data.rating === 'bad') {
       total++;

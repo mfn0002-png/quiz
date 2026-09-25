@@ -1,0 +1,22 @@
+{
+  "rag": {
+    "model": "gemini-flash-lite-latest",
+    "embeddingModel": "text-embedding-004",
+    "topK": 3,
+    "minSimilarityScore": 0.45,
+    "collectionsToSync": [
+      "learningTopics",
+      "sources",
+      "assistant_evaluations"
+    ],
+    "autoSyncEnabled": true
+  },
+  "quiz": {
+    "defaultDifficulty": "Auto",
+    "defaultQuestionCount": 5,
+    "timerSeconds": 30,
+    "maxLives": 5,
+    "lifeRechargeSeconds": 180
+  },
+  "updatedAt": "2026-09-25T13:14:16.751Z"
+}

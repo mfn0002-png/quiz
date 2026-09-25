@@ -1,9 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
+import { adminDb } from '../config/firebaseAdmin.js';
 import { redis } from '../config/redis.js';
+import { getSupabaseClient } from './ragSupabaseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -99,11 +101,19 @@ export async function getLearningTopicsSummaries(category = null) {
   // 2. Interroger Firestore
   let allTopics = [];
   try {
-    const snapshot = await getDocs(collection(db, 'learningTopics'));
-    allTopics = snapshot.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(t => t.published !== false)
-      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    if (adminDb) {
+      const snapshot = await adminDb.collection('learningTopics').get();
+      allTopics = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(t => t.published !== false)
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    } else {
+      const snapshot = await getDocs(collection(db, 'learningTopics'));
+      allTopics = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(t => t.published !== false)
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    }
   } catch (err) {
     console.warn(`⚠️ [Learning Service] Échec lecture Firestore, utilisation des fichiers JSON locaux : ${err.message}`);
   }
@@ -146,17 +156,30 @@ export async function getLearningTopicById(topicId) {
   }
 
   try {
-    const docRef = doc(db, 'learningTopics', topicId);
-    const snap = await getDoc(docRef);
-
-    if (snap.exists()) {
-      const topic = { id: snap.id, ...snap.data() };
-      if (redis) {
-        try {
-          await redis.set(cacheKey, JSON.stringify(topic), { ex: CACHE_TTL_SECONDS });
-        } catch {}
+    if (adminDb) {
+      const snap = await adminDb.collection('learningTopics').doc(topicId).get();
+      if (snap.exists) {
+        const topic = { id: snap.id, ...snap.data() };
+        if (redis) {
+          try {
+            await redis.set(cacheKey, JSON.stringify(topic), { ex: CACHE_TTL_SECONDS });
+          } catch {}
+        }
+        return topic;
       }
-      return topic;
+    } else {
+      const docRef = doc(db, 'learningTopics', topicId);
+      const snap = await getDoc(docRef);
+
+      if (snap.exists()) {
+        const topic = { id: snap.id, ...snap.data() };
+        if (redis) {
+          try {
+            await redis.set(cacheKey, JSON.stringify(topic), { ex: CACHE_TTL_SECONDS });
+          } catch {}
+        }
+        return topic;
+      }
     }
   } catch (err) {
     console.warn(`⚠️ [Learning Service] Échec Firestore pour ${topicId}, fallback JSON local : ${err.message}`);
@@ -170,3 +193,119 @@ export async function getLearningTopicById(topicId) {
   err.statusCode = 404;
   throw err;
 }
+
+/**
+ * Récupère tous les sujets (Firestore et locaux) avec métadonnées d'administration.
+ */
+export async function getAllLearningTopicsAdmin() {
+  const localTopics = loadLocalTopics().map(t => ({
+    ...toTopicSummary(t),
+    source: 'local',
+    published: t.published !== false,
+  }));
+
+  let firestoreTopics = [];
+  try {
+    if (adminDb) {
+      const snapshot = await adminDb.collection('learningTopics').get();
+      firestoreTopics = snapshot.docs.map(d => {
+        const data = d.data();
+        return {
+          ...toTopicSummary({ id: d.id, ...data }),
+          source: 'firestore',
+          published: data.published !== false,
+          createdAt: data.createdAt,
+        };
+      });
+    } else {
+      const snapshot = await getDocs(collection(db, 'learningTopics'));
+      firestoreTopics = snapshot.docs.map(d => {
+        const data = d.data();
+        return {
+          ...toTopicSummary({ id: d.id, ...data }),
+          source: 'firestore',
+          published: data.published !== false,
+          createdAt: data.createdAt,
+        };
+      });
+    }
+  } catch (err) {
+    console.warn(`⚠️ [Learning Service] Erreur lecture admin Firestore : ${err.message}`);
+  }
+
+  // Fusionner en donnant priorité à Firestore si même ID
+  const map = new Map();
+  localTopics.forEach(t => map.set(t.id, t));
+  firestoreTopics.forEach(t => map.set(t.id, t)); // Ecrase local si présent dans Firestore
+
+  return Array.from(map.values()).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+/**
+ * Supprime une fiche / un sujet d'apprentissage :
+ * 1. Supprime le document dans Firestore
+ * 2. Invalide les caches Redis
+ * 3. Supprime les chunks vectorisés associés dans Supabase (RAG)
+ */
+export async function deleteLearningTopic(topicId) {
+  if (!topicId) {
+    throw new Error("L'identifiant du sujet (topicId) est obligatoire pour la suppression.");
+  }
+
+  console.log(`🗑️ [Learning Service] Suppression du sujet '${topicId}'...`);
+
+  let deletedFromFirestore = false;
+
+  // 1. Suppression Firestore
+  try {
+    if (adminDb) {
+      await adminDb.collection('learningTopics').doc(topicId).delete();
+      deletedFromFirestore = true;
+    } else {
+      await deleteDoc(doc(db, 'learningTopics', topicId));
+      deletedFromFirestore = true;
+    }
+    console.log(`✅ [Learning Service] Document '${topicId}' supprimé de Firestore.`);
+  } catch (err) {
+    console.warn(`⚠️ [Learning Service] Échec suppression Firestore '${topicId}' : ${err.message}`);
+  }
+
+  // 2. Invalidation du cache Redis
+  if (redis) {
+    try {
+      await redis.del(CACHE_SUMMARIES_KEY);
+      await redis.del(`learning:topic:${topicId}`);
+      console.log(`✅ [Learning Service] Cache Redis invalidé pour '${topicId}'.`);
+    } catch (err) {
+      console.warn(`⚠️ [Learning Service] Échec invalidation Redis : ${err.message}`);
+    }
+  }
+
+  // 3. Suppression des chunks RAG dans Supabase
+  let deletedRagChunks = 0;
+  try {
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('documents')
+        .delete()
+        .contains('metadata', { firebaseDocId: topicId });
+
+      if (error) {
+        console.warn(`⚠️ [Learning Service] Erreur nettoyage Supabase RAG : ${error.message}`);
+      } else {
+        console.log(`✅ [Learning Service] Chunks Supabase RAG nettoyés pour '${topicId}'.`);
+      }
+    }
+  } catch (err) {
+    // Non-bloquant si Supabase n'est pas initialisé
+  }
+
+  return {
+    success: true,
+    topicId,
+    deletedFromFirestore,
+    message: `Le sujet '${topicId}' a été supprimé avec succès.`,
+  };
+}
+

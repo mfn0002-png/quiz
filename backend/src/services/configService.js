@@ -9,8 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../config/firebase.js';          // SDK client (lecture settings)
-import { adminDb } from '../config/firebaseAdmin.js'; // Admin SDK (lecture users sans rules)
+import { db } from '../config/firebase.js';          // SDK client (fallback si adminDb indisponible)
+import { adminDb, adminAuth } from '../config/firebaseAdmin.js'; // Admin SDK (bypass Security Rules & Auth)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,12 +29,14 @@ const DEFAULT_CONFIG = {
     defaultDifficulty: 'Auto',
     defaultQuestionCount: 5,
     timerSeconds: 30,
+    maxLives: 5,
+    lifeRechargeSeconds: 180,
   },
 };
 
 let inMemoryConfig = { ...DEFAULT_CONFIG };
 
-// Charger la config initiale
+// Charger la config initiale depuis le fichier local
 try {
   if (fs.existsSync(localConfigPath)) {
     const raw = fs.readFileSync(localConfigPath, 'utf8');
@@ -45,16 +47,27 @@ try {
 }
 
 /**
- * Récupère la configuration actuelle de la plateforme
+ * Récupère la configuration actuelle de la plateforme (priorité Firestore via Admin SDK).
  */
 export async function getPlatformConfig() {
-  try {
-    const snap = await getDoc(doc(db, 'settings', 'platform'));
-    if (snap.exists()) {
-      inMemoryConfig = { ...DEFAULT_CONFIG, ...snap.data() };
+  if (adminDb) {
+    try {
+      const snap = await adminDb.collection('settings').doc('platform').get();
+      if (snap.exists) {
+        inMemoryConfig = { ...DEFAULT_CONFIG, ...snap.data() };
+      }
+    } catch (err) {
+      console.warn(`⚠️ [Config Service] Échec lecture Firestore Admin : ${err.message}`);
     }
-  } catch (err) {
-    console.warn(`⚠️ [Config Service] Mode hors-ligne pour la config : ${err.message}`);
+  } else {
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'platform'));
+      if (snap.exists()) {
+        inMemoryConfig = { ...DEFAULT_CONFIG, ...snap.data() };
+      }
+    } catch (err) {
+      console.warn(`⚠️ [Config Service] Mode hors-ligne pour la config : ${err.message}`);
+    }
   }
   return inMemoryConfig;
 }
@@ -74,7 +87,7 @@ export async function updatePlatformConfig(newConfig) {
 
   inMemoryConfig = merged;
 
-  // Persistance fichier local
+  // 1. Persistance fichier local
   try {
     fs.mkdirSync(path.dirname(localConfigPath), { recursive: true });
     fs.writeFileSync(localConfigPath, JSON.stringify(merged, null, 2), 'utf8');
@@ -82,12 +95,21 @@ export async function updatePlatformConfig(newConfig) {
     console.warn('⚠️ Échec écriture platformConfig.json :', err.message);
   }
 
-  // Persistance Firestore
-  try {
-    await setDoc(doc(db, 'settings', 'platform'), merged, { merge: true });
-    console.log('✅ [Config Service] Configuration plateforme enregistrée dans Firestore');
-  } catch (err) {
-    console.warn('⚠️ Échec enregistrement Firestore config :', err.message);
+  // 2. Persistance Firestore
+  if (adminDb) {
+    try {
+      await adminDb.collection('settings').doc('platform').set(merged, { merge: true });
+      console.log('✅ [Config Service] Configuration plateforme enregistrée dans Firestore (Admin SDK)');
+    } catch (err) {
+      console.warn('⚠️ Échec enregistrement Firestore config (Admin SDK) :', err.message);
+    }
+  } else {
+    try {
+      await setDoc(doc(db, 'settings', 'platform'), merged, { merge: true });
+      console.log('✅ [Config Service] Configuration plateforme enregistrée dans Firestore (Client SDK)');
+    } catch (err) {
+      console.warn('⚠️ Échec enregistrement Firestore config (Client SDK) :', err.message);
+    }
   }
 
   return merged;
@@ -95,7 +117,7 @@ export async function updatePlatformConfig(newConfig) {
 
 /**
  * Vérifie si un utilisateur possède le rôle 'admin' dans Firestore.
- * Utilise le Firebase Admin SDK (bypass Security Rules) pour lire
+ * Utilise le Firebase Admin SDK (bypass Security Rules & Auth lookup) pour lire
  * le champ `role` ou `isAdmin` du document `users/{uid}` ou par email.
  *
  * @param {string} identifier - UID Firestore ou adresse e-mail
@@ -109,12 +131,12 @@ export async function isUserAdmin(identifier) {
   // ── 1. Via Admin SDK (bypass Security Rules) ─────────────────────
   if (adminDb) {
     try {
-      // Par UID direct
+      // Cas A : Par UID direct
       const byUid = await adminDb.collection('users').doc(clean).get();
       if (byUid.exists) {
         const d = byUid.data();
         if (d.role === 'admin' || d.isAdmin === true) {
-          console.log(`✅ [Admin SDK] Role admin confirme pour UID '${clean}'`);
+          console.log(`✅ [Admin SDK] Rôle admin confirmé pour UID '${clean}'`);
           return true;
         }
       }
@@ -123,23 +145,50 @@ export async function isUserAdmin(identifier) {
     }
 
     if (clean.includes('@')) {
+      const lowerEmail = clean.toLowerCase();
       try {
-        // Par email
-        const snap = await adminDb.collection('users').where('email', '==', clean.toLowerCase()).limit(1).get();
+        // Cas B : Par champ email dans Firestore
+        const snap = await adminDb.collection('users').where('email', '==', lowerEmail).limit(1).get();
         if (!snap.empty) {
           const d = snap.docs[0].data();
           if (d.role === 'admin' || d.isAdmin === true) {
-            console.log(`✅ [Admin SDK] Role admin confirme pour email '${clean}'`);
+            console.log(`✅ [Admin SDK] Rôle admin confirmé pour email '${clean}'`);
             return true;
           }
         }
       } catch (err) {
-        console.warn(`⚠️ [Admin SDK] Lecture email '${clean}' : ${err.message}`);
+        console.warn(`⚠️ [Admin SDK] Lecture email Firestore '${clean}' : ${err.message}`);
+      }
+
+      // Cas C : Résolution email ➔ Firebase Auth UID ➔ document users/{uid}
+      if (adminAuth) {
+        try {
+          const userRecord = await adminAuth.getUserByEmail(lowerEmail);
+          if (userRecord && userRecord.uid) {
+            // Vérification claims personnalisés
+            if (userRecord.customClaims?.admin === true || userRecord.customClaims?.role === 'admin') {
+              console.log(`✅ [Admin SDK] Rôle admin confirmé via Auth Custom Claims pour '${clean}'`);
+              return true;
+            }
+
+            // Vérification doc Firestore users/{uid}
+            const authDocSnap = await adminDb.collection('users').doc(userRecord.uid).get();
+            if (authDocSnap.exists) {
+              const d = authDocSnap.data();
+              if (d.role === 'admin' || d.isAdmin === true) {
+                console.log(`✅ [Admin SDK] Rôle admin confirmé pour '${clean}' (UID: ${userRecord.uid})`);
+                return true;
+              }
+            }
+          }
+        } catch (err) {
+          // L'utilisateur n'existe peut-être pas dans Firebase Auth avec cet email
+        }
       }
     }
   }
 
-  // ── 2. Fallback SDK client (peut echouer si Security Rules restrictives) ──
+  // ── 2. Fallback SDK client (si adminDb indisponible) ─────────────
   if (!adminDb) {
     try {
       const userSnap = await getDoc(doc(db, 'users', clean));
@@ -161,11 +210,11 @@ export async function isUserAdmin(identifier) {
     }
   }
 
-  // ── 3. Fallback env ADMIN_EMAILS (dernier recours, a supprimer en prod) ──
+  // ── 3. Fallback env ADMIN_EMAILS (si configuré explicitement) ────
   if (process.env.ADMIN_EMAILS) {
     const adminList = process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase());
     if (adminList.includes(clean.toLowerCase())) {
-      console.warn(`⚠️ [Admin] Acces via ADMIN_EMAILS env pour '${clean}' — configurez le service account pour eviter ca`);
+      console.log(`ℹ️ [Admin] Accès autorisé via variable ADMIN_EMAILS pour '${clean}'`);
       return true;
     }
   }
