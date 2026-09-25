@@ -28,9 +28,17 @@ interface SidebarProps {
   livesState?: LivesState;
 }
 
-const NAV_LINKS = [
-  { path: '/', label: 'Quiz', icon: Target, badge: 'Jouer' },
-  { path: '/learn', label: 'Apprendre', icon: BookOpen, badge: 'Nouveau' },
+interface NavLinkItem {
+  path: string;
+  label: string;
+  icon: typeof Target;
+  badge?: string;
+  badgeClass?: string;
+}
+
+const NAV_LINKS: NavLinkItem[] = [
+  { path: '/', label: 'Quiz', icon: Target, badge: 'Jouer', badgeClass: 'nav-badge-emerald' },
+  { path: '/learn', label: 'Apprendre', icon: BookOpen, badge: 'Nouveau', badgeClass: 'nav-badge-amber' },
   { path: '/stats', label: 'Progression', icon: BarChart2 },
   { path: '/leaderboard', label: 'Classement', icon: Award },
   { path: '/assistant', label: 'Assistant IA', icon: MessageCircle },
@@ -235,7 +243,7 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
                 <Icon size={20} className="nav-icon" />
                 {!collapsed && <span className="nav-label">{link.label}</span>}
                 {!collapsed && link.badge && (
-                  <span className="nav-badge">{link.badge}</span>
+                  <span className={`nav-badge ${link.badgeClass || ''}`}>{link.badge}</span>
                 )}
               </NavLink>
             );
@@ -252,7 +260,7 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
             >
               <Settings size={20} className="nav-icon" style={{ color: 'var(--primary-color)' }} />
               {!collapsed && <span className="nav-label" style={{ fontWeight: 600 }}>Administration</span>}
-              {!collapsed && <span className="nav-badge" style={{ backgroundColor: 'rgba(5, 150, 105, 0.15)', color: 'var(--primary-color)' }}>RAG</span>}
+              {!collapsed && <span className="nav-badge nav-badge-emerald">RAG</span>}
             </NavLink>
           )}
         </nav>
