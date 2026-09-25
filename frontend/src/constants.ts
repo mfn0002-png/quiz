@@ -6,6 +6,7 @@ export const CATEGORIES = ['Mélange', 'Prophètes', 'Coran', "Piliers de l'Isla
 
 export const DIFFICULTIES: Difficulty[] = ['Auto', 'Débutant', 'Intermédiaire', 'Expert'];
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005/api';
 export const QUESTION_TIME = 30;
 export const DEFAULT_QUESTION_COUNT = 6;
 export const MAX_GLOBAL_LIVES = 5;

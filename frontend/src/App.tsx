@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Difficulty } from './data/questions';
 import { useAuthUser } from './hooks/useAuthUser';
@@ -13,6 +14,8 @@ import { FloatingAssistant } from './components/FloatingAssistant';
 import { ChallengePage } from './components/challenge/ChallengePage';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminSettings } from './components/admin/AdminSettings';
+import { API_BASE_URL } from './constants';
+import { setGlobalLifeConfig } from './services/livesService';
 import './App.css';
 
 function AppContent() {
@@ -20,6 +23,27 @@ function AppContent() {
   const quiz = useQuiz(user);
   const challenge = useChallenge({ user, onError: quiz.setError });
   const navigate = useNavigate();
+
+  // Synchronisation initiale de la configuration globale de la plateforme
+  useEffect(() => {
+    async function syncConfig() {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/admin/rag/settings`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.config?.quiz) {
+            setGlobalLifeConfig({
+              rechargeSeconds: data.config.quiz.lifeRechargeSeconds,
+              maxLives: data.config.quiz.maxLives,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Configuration locale utilisée (serveur injoignable) :', err);
+      }
+    }
+    syncConfig();
+  }, []);
 
   // Un défi (créé ou reçu via ?challenge=ID) prend le pas sur les onglets normaux
   if (challenge.challenge || challenge.challengeLoading) {

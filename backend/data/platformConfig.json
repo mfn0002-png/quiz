@@ -1,22 +1,22 @@
 {
   "rag": {
-    "model": "gemini-flash-lite-latest",
-    "embeddingModel": "text-embedding-004",
-    "topK": 3,
-    "minSimilarityScore": 0.45,
     "collectionsToSync": [
       "learningTopics",
       "sources",
       "assistant_evaluations"
     ],
-    "autoSyncEnabled": true
+    "topK": 3,
+    "autoSyncEnabled": true,
+    "minSimilarityScore": 0.45,
+    "model": "gemini-flash-lite-latest",
+    "embeddingModel": "text-embedding-004"
   },
   "quiz": {
     "defaultDifficulty": "Auto",
-    "defaultQuestionCount": 5,
     "timerSeconds": 30,
-    "maxLives": 5,
-    "lifeRechargeSeconds": 180
+    "defaultQuestionCount": 5,
+    "lifeRechargeSeconds": 180,
+    "maxLives": 3
   },
-  "updatedAt": "2026-09-25T13:14:16.751Z"
+  "updatedAt": "2026-09-25T15:49:51.629Z"
 }

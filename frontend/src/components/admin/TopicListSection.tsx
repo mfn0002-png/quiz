@@ -49,7 +49,9 @@ export const TopicListSection = ({
             borderRadius: 'var(--radius-full)',
             fontWeight: 700,
           }}>
-            {topics.length} {topics.length <= 1 ? 'sujet' : 'sujets'}
+            {filteredTopics.length !== topics.length
+              ? `${filteredTopics.length} / ${topics.length} sujets`
+              : `${topics.length} ${topics.length <= 1 ? 'sujet' : 'sujets'}`}
           </span>
         </div>
 

@@ -54,6 +54,20 @@ export function setGlobalLifeConfig(config: { rechargeSeconds?: number; maxLives
   }
   if (typeof config.maxLives === 'number' && config.maxLives > 0) {
     localStorage.setItem(MAX_LIVES_KEY, config.maxLives.toString());
+    
+    // Si la réserve actuelle dépasse le nouveau maximum, la plafonner immédiatement
+    const saved = localStorage.getItem(LIVES_STORAGE_KEY);
+    if (saved !== null) {
+      const current = parseInt(saved, 10);
+      if (!isNaN(current) && current > config.maxLives) {
+        localStorage.setItem(LIVES_STORAGE_KEY, config.maxLives.toString());
+      }
+    }
+  }
+
+  // Notifier immédiatement les composants React via événement personnalisé
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('quiz_lives_updated'));
   }
 }
 

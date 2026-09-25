@@ -1,4 +1,5 @@
 import { Sliders, Heart, Clock } from 'lucide-react';
+import { setGlobalLifeConfig } from '../../services/livesService';
 
 interface QuizConfigSectionProps {
   defaultQuestionCount: number;
@@ -74,7 +75,11 @@ export const QuizConfigSection = ({
           <select
             className="form-select"
             value={lifeRechargeSeconds}
-            onChange={(e) => setLifeRechargeSeconds(Number(e.target.value))}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setLifeRechargeSeconds(val);
+              setGlobalLifeConfig({ rechargeSeconds: val });
+            }}
           >
             <option value={30}>⚡ 30 secondes (Test ultra-rapide)</option>
             <option value={60}>⏱️ 1 minute (Débogage &amp; Test)</option>
@@ -97,7 +102,11 @@ export const QuizConfigSection = ({
           <select
             className="form-select"
             value={maxLives}
-            onChange={(e) => setMaxLives(Number(e.target.value))}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setMaxLives(val);
+              setGlobalLifeConfig({ maxLives: val });
+            }}
           >
             <option value={3}>3 vies (Mode Difficile)</option>
             <option value={5}>5 vies (Par défaut)</option>

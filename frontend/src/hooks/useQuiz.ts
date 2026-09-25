@@ -28,14 +28,21 @@ export function useQuiz(user: User | null) {
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
-  // Minuteur de rafraîchissement continu des Vies (1 vie / X sec).
-  // Actif uniquement pendant le quiz (démarré) : sur les autres écrans, aucune
-  // interface n'affiche les vies, donc on évite un timer global permanent.
+  // Minuteur de rafraîchissement continu des Vies et écoute des changements de configuration
   useEffect(() => {
+    const handleLivesUpdate = () => {
+      setLivesState(getGlobalLivesState());
+    };
+
+    window.addEventListener('quiz_lives_updated', handleLivesUpdate);
     const timer = setInterval(() => {
       setLivesState(getGlobalLivesState());
     }, 1000);
-    return () => clearInterval(timer);
+
+    return () => {
+      window.removeEventListener('quiz_lives_updated', handleLivesUpdate);
+      clearInterval(timer);
+    };
   }, []);
 
   const startQuiz = async (difficulty: Difficulty, categoryOverride?: string) => {
