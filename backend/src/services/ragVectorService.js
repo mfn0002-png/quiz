@@ -139,7 +139,8 @@ export function recursiveChunkText(text, chunkSize = 800, chunkOverlap = 150) {
 export async function computeEmbedding(text, isQuery = false) {
   const result = await embedModel.embedContent({
     content: { parts: [{ text }] },
-    taskType: isQuery ? TaskType.RETRIEVAL_QUERY : TaskType.RETRIEVAL_DOCUMENT
+    taskType: isQuery ? TaskType.RETRIEVAL_QUERY : TaskType.RETRIEVAL_DOCUMENT,
+    outputDimensionality: 768,
   });
   return result.embedding.values;
 }

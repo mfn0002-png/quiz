@@ -1,15 +1,15 @@
 {
   "rag": {
-    "collectionsToSync": [
-      "learningTopics",
-      "sources",
-      "assistant_evaluations"
-    ],
     "topK": 3,
     "autoSyncEnabled": true,
     "minSimilarityScore": 0.45,
     "model": "gemini-flash-lite-latest",
-    "embeddingModel": "text-embedding-004"
+    "embeddingModel": "text-embedding-004",
+    "collectionsToSync": [
+      "learningTopics",
+      "sources",
+      "assistant_evaluations"
+    ]
   },
   "quiz": {
     "defaultDifficulty": "Auto",
@@ -18,5 +18,5 @@
     "lifeRechargeSeconds": 180,
     "maxLives": 3
   },
-  "updatedAt": "2026-09-25T15:49:51.629Z"
+  "updatedAt": "2026-09-30T10:43:21.124Z"
 }

@@ -26,6 +26,13 @@ export interface SyncResult {
   skippedCount: number;
   errorsCount: number;
   elapsed: string;
+  warnings?: string[];
+  details?: Array<{
+    collection: string;
+    found: number;
+    ingested: number;
+    status: 'ok' | 'empty' | 'error';
+  }>;
 }
 
 export interface RagSettingsConfig {

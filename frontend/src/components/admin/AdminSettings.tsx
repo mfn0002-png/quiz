@@ -6,7 +6,7 @@ import { useAdminRole } from '../../hooks/useAdminRole';
 import { setGlobalLifeConfig, getRechargeIntervalSeconds, getMaxLives } from '../../services/livesService';
 import { AppModal } from './AppModal';
 import { ContentPreviewModal } from './ContentPreviewModal';
-import { RagSyncSection } from './RagSyncSection';
+import { RagSyncSection, KNOWN_COLLECTIONS } from './RagSyncSection';
 import { AiModelSection } from './AiModelSection';
 import { QuizConfigSection } from './QuizConfigSection';
 import { TopicListSection } from './TopicListSection';
@@ -105,7 +105,11 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
             setTopK(data.config.rag.topK || 3);
             setMinSimilarityScore(data.config.rag.minSimilarityScore || 0.45);
             if (Array.isArray(data.config.rag.collectionsToSync)) {
-              setCollections(data.config.rag.collectionsToSync);
+              // Filtrer pour ne conserver que les collections existantes réelles
+              const validOnly = data.config.rag.collectionsToSync.filter((c: string) =>
+                KNOWN_COLLECTIONS.some((k) => k.name === c)
+              );
+              setCollections(validOnly.length > 0 ? validOnly : ['learningTopics', 'sources', 'assistant_evaluations']);
             }
           }
           if (data.config?.quiz) {
@@ -136,7 +140,7 @@ export function AdminSettings({ user, authLoading }: AdminSettingsProps) {
   // ── Handlers Collections ──────────────────────────────────
   const handleAddCollection = () => {
     const trimmed = newCollectionInput.trim();
-    if (trimmed && !collections.includes(trimmed)) {
+    if (trimmed && KNOWN_COLLECTIONS.some((k) => k.name === trimmed) && !collections.includes(trimmed)) {
       setCollections([...collections, trimmed]);
       setNewCollectionInput('');
     }

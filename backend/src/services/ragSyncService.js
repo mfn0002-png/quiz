@@ -194,9 +194,10 @@ async function getExistingIndexedDocIds(supabase) {
  * Synchronise les données de Firestore vers Supabase pgvector
  * @param {Object} options
  * @param {boolean} [options.forceReindex=false] - Forcer la réindexation complète de tous les documents
- * @returns {Promise<{ totalIngested: number, skippedCount: number, errorsCount: number }>}
+ * @param {string[]} [options.targetCollections=null] - Liste spécifique des collections à synchroniser
+ * @returns {Promise<{ totalIngested: number, skippedCount: number, errorsCount: number, elapsed: string, warnings: string[], details: Array }>}
  */
-export async function syncFirebaseToSupabase({ forceReindex = false } = {}) {
+export async function syncFirebaseToSupabase({ forceReindex = false, targetCollections = null } = {}) {
   console.log(`\n🚀 [RAG Sync] Démarrage de la synchronisation Firebase ➔ Supabase pgvector...`);
   const startTime = Date.now();
 
@@ -208,172 +209,317 @@ export async function syncFirebaseToSupabase({ forceReindex = false } = {}) {
   let totalIngested = 0;
   let skippedCount = 0;
   let errorsCount = 0;
+  const warnings = [];
+  const details = [];
+
+  const shouldSync = (colName) => !targetCollections || targetCollections.includes(colName);
 
   // ------------------------------------------------------------------------
   // 1. SYNCHRONISATION : learningTopics (Fiches, Récits, Duas, Prophètes)
   // ------------------------------------------------------------------------
-  console.log(`\n📖 [1/3] Récupération de la collection 'learningTopics'...`);
-  try {
-    const topicsDocs = adminDb
-      ? (await adminDb.collection('learningTopics').get()).docs
-      : (await getDocs(collection(db, 'learningTopics'))).docs;
-    console.log(`  ✓ ${topicsDocs.length} sujet(s) trouvé(s) dans Firestore`);
+  if (shouldSync('learningTopics')) {
+    console.log(`\n📖 [1/3] Récupération de la collection 'learningTopics'...`);
+    let colIngested = 0;
+    try {
+      const topicsDocs = adminDb
+        ? (await adminDb.collection('learningTopics').get()).docs
+        : (await getDocs(collection(db, 'learningTopics'))).docs;
+      console.log(`  ✓ ${topicsDocs.length} sujet(s) trouvé(s) dans Firestore`);
 
-    for (const docSnap of topicsDocs) {
-      const topic = { id: docSnap.id, ...docSnap.data() };
-
-      if (!forceReindex && indexedDocIds.has(topic.id)) {
-        skippedCount++;
-        continue;
+      if (topicsDocs.length === 0 && targetCollections?.includes('learningTopics')) {
+        warnings.push(`⚠️ Collection 'learningTopics' vide ou introuvable (0 document).`);
       }
 
-      const chunks = extractChunksFromTopic(topic);
-      if (chunks.length === 0) continue;
+      for (const docSnap of topicsDocs) {
+        const topic = { id: docSnap.id, ...docSnap.data() };
 
-      console.log(`  🧠 Vectorisation de "${topic.title || topic.id}" (${chunks.length} chunk(s))...`);
+        if (!forceReindex && indexedDocIds.has(topic.id)) {
+          skippedCount++;
+          continue;
+        }
 
-      const rowsToInsert = [];
-      for (const chunk of chunks) {
-        const embedding = await computeEmbedding(chunk.content, false);
-        rowsToInsert.push({
-          content: chunk.content,
-          metadata: chunk.metadata,
-          embedding,
-        });
-        await new Promise(r => setTimeout(r, 150)); // Quota friendly
-      }
+        const chunks = extractChunksFromTopic(topic);
+        if (chunks.length === 0) continue;
 
-      if (rowsToInsert.length > 0) {
-        const { error } = await supabase.from('documents').insert(rowsToInsert);
-        if (error) {
-          console.error(`  ❌ Erreur Supabase pour '${topic.id}': ${error.message}`);
-          errorsCount++;
-        } else {
-          totalIngested += rowsToInsert.length;
-          console.log(`  ✅ ${rowsToInsert.length} chunk(s) insérés pour '${topic.id}'`);
+        console.log(`  🧠 Vectorisation de "${topic.title || topic.id}" (${chunks.length} chunk(s))...`);
+
+        const rowsToInsert = [];
+        for (const chunk of chunks) {
+          const embedding = await computeEmbedding(chunk.content, false);
+          rowsToInsert.push({
+            content: chunk.content,
+            metadata: chunk.metadata,
+            embedding,
+          });
+          await new Promise(r => setTimeout(r, 150)); // Quota friendly
+        }
+
+        if (rowsToInsert.length > 0) {
+          const { error } = await supabase.from('documents').insert(rowsToInsert);
+          if (error) {
+            console.error(`  ❌ Erreur Supabase pour '${topic.id}': ${error.message}`);
+            errorsCount++;
+          } else {
+            totalIngested += rowsToInsert.length;
+            colIngested += rowsToInsert.length;
+            console.log(`  ✅ ${rowsToInsert.length} chunk(s) insérés pour '${topic.id}'`);
+          }
         }
       }
+
+      details.push({
+        collection: 'learningTopics',
+        found: topicsDocs.length,
+        ingested: colIngested,
+        status: topicsDocs.length === 0 ? 'empty' : 'ok',
+      });
+    } catch (err) {
+      console.error(`❌ Erreur lors de la lecture de 'learningTopics' : ${err.message}`);
+      errorsCount++;
+      warnings.push(`❌ Erreur collection 'learningTopics' : ${err.message}`);
     }
-  } catch (err) {
-    console.error(`❌ Erreur lors de la lecture de 'learningTopics' : ${err.message}`);
   }
 
   // ------------------------------------------------------------------------
   // 2. SYNCHRONISATION : sources (Versets, Hadiths, Invocations)
   // ------------------------------------------------------------------------
-  console.log(`\n📚 [2/3] Récupération de la collection 'sources'...`);
-  try {
-    const sourcesDocs = adminDb
-      ? (await adminDb.collection('sources').get()).docs
-      : (await getDocs(collection(db, 'sources'))).docs;
-    console.log(`  ✓ ${sourcesDocs.length} document(s) trouvé(s) dans 'sources'`);
+  if (shouldSync('sources')) {
+    console.log(`\n📚 [2/3] Récupération de la collection 'sources'...`);
+    let colIngested = 0;
+    try {
+      const sourcesDocs = adminDb
+        ? (await adminDb.collection('sources').get()).docs
+        : (await getDocs(collection(db, 'sources'))).docs;
+      console.log(`  ✓ ${sourcesDocs.length} document(s) trouvé(s) dans 'sources'`);
 
-    for (const docSnap of sourcesDocs) {
-      const sourceData = { id: docSnap.id, ...docSnap.data() };
-
-      // Ignorer les évaluations qui auraient été enregistrées en fallback dans 'sources'
-      if (sourceData.type === 'assistant_evaluation') continue;
-
-      if (!forceReindex && indexedDocIds.has(sourceData.id)) {
-        skippedCount++;
-        continue;
+      if (sourcesDocs.length === 0 && targetCollections?.includes('sources')) {
+        warnings.push(`⚠️ Collection 'sources' vide ou introuvable (0 document).`);
       }
 
-      const chunk = extractChunkFromSource(sourceData);
-      if (!chunk) continue;
+      for (const docSnap of sourcesDocs) {
+        const sourceData = { id: docSnap.id, ...docSnap.data() };
 
-      console.log(`  🧠 Vectorisation de la source "${sourceData.id}"...`);
-      const embedding = await computeEmbedding(chunk.content, false);
+        // Ignorer les évaluations qui auraient été enregistrées en fallback dans 'sources'
+        if (sourceData.type === 'assistant_evaluation') continue;
 
-      const { error } = await supabase.from('documents').insert([{
-        content: chunk.content,
-        metadata: chunk.metadata,
-        embedding,
-      }]);
+        if (!forceReindex && indexedDocIds.has(sourceData.id)) {
+          skippedCount++;
+          continue;
+        }
 
-      if (error) {
-        console.error(`  ❌ Erreur Supabase pour source '${sourceData.id}': ${error.message}`);
-        errorsCount++;
-      } else {
-        totalIngested++;
-        console.log(`  ✅ Source '${sourceData.id}' insérée`);
+        const chunk = extractChunkFromSource(sourceData);
+        if (!chunk) continue;
+
+        console.log(`  🧠 Vectorisation de la source "${sourceData.id}"...`);
+        const embedding = await computeEmbedding(chunk.content, false);
+
+        const { error } = await supabase.from('documents').insert([{
+          content: chunk.content,
+          metadata: chunk.metadata,
+          embedding,
+        }]);
+
+        if (error) {
+          console.error(`  ❌ Erreur Supabase pour source '${sourceData.id}': ${error.message}`);
+          errorsCount++;
+        } else {
+          totalIngested++;
+          colIngested++;
+          console.log(`  ✅ Source '${sourceData.id}' insérée`);
+        }
+        await new Promise(r => setTimeout(r, 150));
       }
-      await new Promise(r => setTimeout(r, 150));
+
+      details.push({
+        collection: 'sources',
+        found: sourcesDocs.length,
+        ingested: colIngested,
+        status: sourcesDocs.length === 0 ? 'empty' : 'ok',
+      });
+    } catch (err) {
+      console.error(`❌ Erreur lors de la lecture de 'sources' : ${err.message}`);
+      errorsCount++;
+      warnings.push(`❌ Erreur collection 'sources' : ${err.message}`);
     }
-  } catch (err) {
-    console.error(`❌ Erreur lors de la lecture de 'sources' : ${err.message}`);
   }
 
   // ------------------------------------------------------------------------
   // 3. SYNCHRONISATION : assistant_evaluations (Réponses certifiées 👍)
   // ------------------------------------------------------------------------
-  console.log(`\n👍 [3/3] Récupération des évaluations certifiées (rating == 'good')...`);
-  try {
-    let evalDocs = [];
-    if (adminDb) {
-      try {
-        const evalSnap = await adminDb.collection('assistant_evaluations').where('rating', '==', 'good').get();
-        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch {
+  if (shouldSync('assistant_evaluations')) {
+    console.log(`\n👍 [3/3] Récupération des évaluations certifiées (rating == 'good')...`);
+    let colIngested = 0;
+    try {
+      let evalDocs = [];
+      if (adminDb) {
         try {
-          const evalSnap = await adminDb.collection('sources').where('type', '==', 'assistant_evaluation').where('rating', '==', 'good').get();
+          const evalSnap = await adminDb.collection('assistant_evaluations').where('rating', '==', 'good').get();
           evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        } catch {}
-      }
-    } else {
-      try {
-        const q = query(collection(db, 'assistant_evaluations'), where('rating', '==', 'good'));
-        const evalSnap = await getDocs(q);
-        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch {
-        // Fallback sur collection sources
-        const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'), where('rating', '==', 'good'));
-        const evalSnap = await getDocs(q);
-        evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      }
-    }
-
-    console.log(`  ✓ ${evalDocs.length} évaluation(s) certifiée(s) trouvée(s)`);
-
-    for (const evalData of evalDocs) {
-      if (!forceReindex && indexedDocIds.has(evalData.id)) {
-        skippedCount++;
-        continue;
-      }
-
-      const chunk = extractChunkFromEvaluation(evalData);
-      if (!chunk) continue;
-
-      console.log(`  🧠 Vectorisation de la réponse certifiée "${evalData.id}"...`);
-      const embedding = await computeEmbedding(chunk.content, false);
-
-      const { error } = await supabase.from('documents').insert([{
-        content: chunk.content,
-        metadata: chunk.metadata,
-        embedding,
-      }]);
-
-      if (error) {
-        console.error(`  ❌ Erreur Supabase pour évaluation '${evalData.id}': ${error.message}`);
-        errorsCount++;
+        } catch {
+          try {
+            const evalSnap = await adminDb.collection('sources').where('type', '==', 'assistant_evaluation').where('rating', '==', 'good').get();
+            evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          } catch {}
+        }
       } else {
-        totalIngested++;
-        console.log(`  ✅ Évaluation '${evalData.id}' insérée dans le RAG`);
+        try {
+          const q = query(collection(db, 'assistant_evaluations'), where('rating', '==', 'good'));
+          const evalSnap = await getDocs(q);
+          evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch {
+          const q = query(collection(db, 'sources'), where('type', '==', 'assistant_evaluation'), where('rating', '==', 'good'));
+          const evalSnap = await getDocs(q);
+          evalDocs = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
       }
-      await new Promise(r => setTimeout(r, 150));
+
+      console.log(`  ✓ ${evalDocs.length} évaluation(s) certifiée(s) trouvée(s)`);
+
+      for (const evalData of evalDocs) {
+        if (!forceReindex && indexedDocIds.has(evalData.id)) {
+          skippedCount++;
+          continue;
+        }
+
+        const chunk = extractChunkFromEvaluation(evalData);
+        if (!chunk) continue;
+
+        console.log(`  🧠 Vectorisation de la réponse certifiée "${evalData.id}"...`);
+        const embedding = await computeEmbedding(chunk.content, false);
+
+        const { error } = await supabase.from('documents').insert([{
+          content: chunk.content,
+          metadata: chunk.metadata,
+          embedding,
+        }]);
+
+        if (error) {
+          console.error(`  ❌ Erreur Supabase pour évaluation '${evalData.id}': ${error.message}`);
+          errorsCount++;
+        } else {
+          totalIngested++;
+          colIngested++;
+          console.log(`  ✅ Évaluation '${evalData.id}' insérée dans le RAG`);
+        }
+        await new Promise(r => setTimeout(r, 150));
+      }
+
+      details.push({
+        collection: 'assistant_evaluations',
+        found: evalDocs.length,
+        ingested: colIngested,
+        status: evalDocs.length === 0 ? 'empty' : 'ok',
+      });
+    } catch (err) {
+      console.error(`❌ Erreur lors de la lecture des évaluations : ${err.message}`);
+      errorsCount++;
+      warnings.push(`❌ Erreur collection 'assistant_evaluations' : ${err.message}`);
     }
-  } catch (err) {
-    console.error(`❌ Erreur lors de la lecture des évaluations : ${err.message}`);
+  }
+
+  // ------------------------------------------------------------------------
+  // 4. SYNCHRONISATION : Collections Personnalisées / Dynamiques
+  // ------------------------------------------------------------------------
+  if (targetCollections && Array.isArray(targetCollections)) {
+    const knownStandard = ['learningTopics', 'sources', 'assistant_evaluations'];
+    const customCols = targetCollections.filter(c => !knownStandard.includes(c));
+
+    for (const customCol of customCols) {
+      console.log(`\n📁 Synchronisation de la collection personnalisée '${customCol}'...`);
+      let colIngested = 0;
+      try {
+        let customDocs = [];
+        if (adminDb) {
+          const snap = await adminDb.collection(customCol).get().catch(() => ({ docs: [] }));
+          customDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } else {
+          const snap = await getDocs(collection(db, customCol)).catch(() => ({ docs: [] }));
+          customDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        console.log(`  ✓ ${customDocs.length} document(s) trouvé(s) dans '${customCol}'`);
+
+        if (customDocs.length === 0) {
+          warnings.push(`⚠️ Collection '${customCol}' : 0 document trouvé dans Firestore. Vérifiez l'orthographe du nom.`);
+          details.push({ collection: customCol, found: 0, ingested: 0, status: 'empty' });
+          continue;
+        }
+
+        for (const docData of customDocs) {
+          if (!forceReindex && indexedDocIds.has(docData.id)) {
+            skippedCount++;
+            continue;
+          }
+
+          const title = docData.title || docData.titre || docData.name || docData.id;
+          const text = docData.text || docData.texte || docData.content || docData.body || docData.message || docData.summary || '';
+          const arabic = docData.arabic || docData.arabe || '';
+          const reference = docData.source || docData.reference || '';
+
+          const parts = [`[COLLECTION: ${customCol}] - [TITRE: ${title}]`];
+          if (arabic) parts.push(`Texte Arabe : ${arabic}`);
+          if (text) parts.push(`Contenu : ${text}`);
+          if (reference) parts.push(`Référence : ${reference}`);
+
+          const fullText = parts.join('\n');
+          if (!fullText.trim()) continue;
+
+          const subChunks = recursiveChunkText(fullText, 800, 150);
+          for (let cIdx = 0; cIdx < subChunks.length; cIdx++) {
+            const chunkText = subChunks[cIdx];
+            const embedding = await computeEmbedding(chunkText, false);
+
+            const { error } = await supabase.from('documents').insert([{
+              content: chunkText,
+              metadata: {
+                firebaseDocId: docData.id,
+                collection: customCol,
+                title,
+                chunkIndex: cIdx + 1,
+                source: `Firebase/${customCol}/${docData.id}`,
+              },
+              embedding,
+            }]);
+
+            if (error) {
+              console.error(`  ❌ Erreur Supabase pour '${customCol}/${docData.id}': ${error.message}`);
+              errorsCount++;
+            } else {
+              totalIngested++;
+              colIngested++;
+            }
+            await new Promise(r => setTimeout(r, 150));
+          }
+        }
+
+        details.push({
+          collection: customCol,
+          found: customDocs.length,
+          ingested: colIngested,
+          status: 'ok',
+        });
+      } catch (err) {
+        console.error(`❌ Erreur sur la collection '${customCol}' : ${err.message}`);
+        warnings.push(`❌ Erreur sur '${customCol}' : ${err.message}`);
+        errorsCount++;
+      }
+    }
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`\n🎉 [RAG Sync] Synchronisation terminée en ${elapsed}s !`);
   console.log(`📊 Bilan : ${totalIngested} nouveau(x) chunk(s) inséré(s), ${skippedCount} ignoré(s) (déjà en base), ${errorsCount} erreur(s).`);
+  if (warnings.length > 0) {
+    console.log(`⚠️ Avertissements (${warnings.length}) :`);
+    warnings.forEach(w => console.log(`   ${w}`));
+  }
 
   return {
     totalIngested,
     skippedCount,
     errorsCount,
     elapsed,
+    warnings,
+    details,
   };
 }
