@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Play, LogIn, Sparkles, Moon, Clock, GraduationCap, ArrowRight, Layers, Check } from 'lucide-react';
 import { Difficulty } from '../../data/questions';
-import { CATEGORIES, DIFFICULTIES, MAX_GLOBAL_LIVES } from '../../constants';
+import { CATEGORIES, DIFFICULTIES } from '../../constants';
 import { User } from '../../firebase';
-import { LivesState } from '../../services/livesService';
+import { LivesState, getMaxLives } from '../../services/livesService';
 import { ErrorBanner } from '../ErrorBanner';
 
 interface QuizSetupProps {
@@ -19,7 +19,8 @@ interface QuizSetupProps {
 
 export function QuizSetup({ user, selectedCategory, onCategoryChange, error, onClearError, livesState, onStart }: QuizSetupProps) {
   const [showZeroLivesModal, setShowZeroLivesModal] = useState(false);
-  const currentLives = livesState?.lives ?? MAX_GLOBAL_LIVES;
+  const maxLives = livesState?.maxLives ?? getMaxLives();
+  const currentLives = livesState?.lives ?? maxLives;
   const isZeroLives = currentLives <= 0;
 
   // Format mm:ss pour le minuteur de recharge

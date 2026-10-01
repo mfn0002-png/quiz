@@ -4,8 +4,7 @@ import { Moon, Clock, Sparkles, Menu, X, BookOpen, Target, BarChart2, Award } fr
 import { AuthButton } from './AuthButton';
 import { ThemeToggle } from './ThemeToggle';
 import { User } from '../firebase';
-import { LivesState } from '../services/livesService';
-import { MAX_GLOBAL_LIVES } from '../constants';
+import { LivesState, getMaxLives } from '../services/livesService';
 
 interface HeaderProps {
   user: User | null;
@@ -23,7 +22,8 @@ const NAV_LINKS = [
 export function Header({ user, authLoading, livesState }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const currentLives = livesState?.lives ?? MAX_GLOBAL_LIVES;
+  const maxLives = livesState?.maxLives ?? getMaxLives();
+  const currentLives = livesState?.lives ?? maxLives;
   const isZeroLives = currentLives <= 0;
 
   const formatTimer = (totalSeconds: number) => {
@@ -160,7 +160,7 @@ export function Header({ user, authLoading, livesState }: HeaderProps) {
               color={currentLives > 0 ? '#d97706' : '#ef4444'}
             />
             <span style={{ fontWeight: 800, fontSize: '0.85rem', color: currentLives > 0 ? 'var(--secondary-color)' : 'var(--error-color)' }}>
-              {currentLives}/{MAX_GLOBAL_LIVES}
+              {currentLives}/{maxLives}
             </span>
 
             {livesState && !livesState.isMaxLives && (

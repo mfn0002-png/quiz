@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Trophy, Clock, CheckCircle2, XCircle, ChevronRight, X, AlertTriangle, LogOut, Sparkles, Moon, BookOpen } from 'lucide-react';
 import { Question, Difficulty } from '../../data/questions';
 import { KeywordText } from '../KeywordText';
-import { QUESTION_TIME, MAX_GLOBAL_LIVES } from '../../constants';
-import { LivesState } from '../../services/livesService';
+import { QUESTION_TIME } from '../../constants';
+import { LivesState, getMaxLives } from '../../services/livesService';
 
 interface QuizQuestionScreenProps {
   question?: Question;
@@ -27,7 +27,7 @@ export function QuizQuestionScreen({
   questionIndex,
   totalQuestions,
   score,
-  lives = MAX_GLOBAL_LIVES,
+  lives: livesProp,
   livesState,
   timeLeft,
   selectedAnswer,
@@ -38,6 +38,8 @@ export function QuizQuestionScreen({
   onQuit,
   onQuitToResults,
 }: QuizQuestionScreenProps) {
+  const maxLives = livesState?.maxLives ?? getMaxLives();
+  const lives = livesProp !== undefined ? livesProp : (livesState?.lives ?? maxLives);
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [showNoLivesModal, setShowNoLivesModal] = useState(false);
   const isAuto = selectedDifficulty === 'Auto';
@@ -87,10 +89,10 @@ export function QuizQuestionScreen({
           Question {questionIndex + 1}/{totalQuestions}
         </span>
 
-        {/* Barre des 5 Vies / Croissants de Lune Islamiques 🌙 */}
+        {/* Barre des Vies / Croissants de Lune Islamiques 🌙 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem', backgroundColor: 'rgba(217, 119, 6, 0.1)', borderRadius: '99px', border: '1px solid rgba(217, 119, 6, 0.25)' }}>
           <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--secondary-color)', marginRight: '0.25rem' }}>Vies :</span>
-          {Array.from({ length: MAX_GLOBAL_LIVES }).map((_, idx) => {
+          {Array.from({ length: maxLives }).map((_, idx) => {
             const isActive = idx < lives;
             return (
               <Moon
@@ -286,7 +288,7 @@ export function QuizQuestionScreen({
             </h3>
 
             <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-              Votre réserve de 5 Vies est vide. Vous pouvez attendre la prochaine vie pour débloquer immédiatement la suite de votre quiz !
+              Votre réserve de {maxLives} Vies est vide. Vous pouvez attendre la prochaine vie pour débloquer immédiatement la suite de votre quiz !
             </p>
 
             {livesState && (

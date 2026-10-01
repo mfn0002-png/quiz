@@ -18,8 +18,7 @@ import {
 import { AuthButton } from './AuthButton';
 import { ThemeToggle } from './ThemeToggle';
 import { User } from '../firebase';
-import { LivesState } from '../services/livesService';
-import { MAX_GLOBAL_LIVES } from '../constants';
+import { LivesState, getMaxLives } from '../services/livesService';
 import { useAdminRole } from '../hooks/useAdminRole';
 
 interface SidebarProps {
@@ -49,7 +48,8 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAdmin } = useAdminRole(user);
 
-  const currentLives = livesState?.lives ?? MAX_GLOBAL_LIVES;
+  const maxLives = livesState?.maxLives ?? getMaxLives();
+  const currentLives = livesState?.lives ?? maxLives;
   const isZeroLives = currentLives <= 0;
 
   const formatTimer = (totalSeconds: number) => {
@@ -96,7 +96,7 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
             }}
           >
             <Moon size={15} fill={currentLives > 0 ? '#f59e0b' : 'transparent'} color={currentLives > 0 ? '#d97706' : '#ef4444'} />
-            <span>{currentLives}/{livesState?.maxLives ?? MAX_GLOBAL_LIVES}</span>
+            <span>{currentLives}/{maxLives}</span>
           </div>
 
           <ThemeToggle />
@@ -198,12 +198,12 @@ export function Sidebar({ user, authLoading, livesState }: SidebarProps) {
                 🌙 Vies disponibles
               </span>
               <span style={{ fontSize: '0.85rem', fontWeight: 800, color: isZeroLives ? 'var(--error-color)' : 'var(--text-primary)' }}>
-                {currentLives}/{livesState?.maxLives ?? MAX_GLOBAL_LIVES}
+                {currentLives}/{maxLives}
               </span>
             </div>
 
             <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.4rem' }}>
-              {Array.from({ length: livesState?.maxLives ?? MAX_GLOBAL_LIVES }).map((_, idx) => {
+              {Array.from({ length: maxLives }).map((_, idx) => {
                 const isActive = idx < currentLives;
                 return (
                   <div

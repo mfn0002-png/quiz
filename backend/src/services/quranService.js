@@ -8,6 +8,8 @@
 const QURAN_API_BASE = 'https://api.alquran.cloud/v1';
 const QURAN_TIMEOUT_MS = 4000;
 
+import { getSearchAliasesForWord } from './aliasService.js';
+
 /**
  * Recherche des versets coraniques correspondant à un thème donné.
  * @param {string} query - Le thème ou mot-clé à rechercher
@@ -34,28 +36,45 @@ export async function searchQuranVerses(query, limit = 3) {
   };
 
   try {
-    let matches = await trySearch(cleanQuery);
+    // 1. Nettoyer les formules honorifiques entre parenthèses et les caractères spéciaux
+    const cleaned = cleanQuery
+      .replace(/\(.*?\)/g, ' ') // supprime (عليه السلام), (as), (pbsl)...
+      .replace(/[\u0600-\u06FF]/g, ' ') // supprime l'arabe isolé dans une requête française
+      .replace(/proph[èe]te|messager|aleyhi|salam|salut|paix|sur|lui|bénédiction|pbsl|saw|as/gi, ' ')
+      .replace(/[^\w\s\u00C0-\u017F]/gi, ' ')
+      .trim();
 
-    // Si aucune correspondance (ou 404), essayer d'extraire les mots-clés essentiels sans formules honorifiques
-    if (matches.length === 0) {
-      const simplified = cleanQuery
-        .replace(/proph[èe]te|messager|aleyhi|salam|salut|paix|sur|lui|bénédiction|pbsl|saw|as/gi, '')
-        .replace(/[^\w\s\u0600-\u06FF]/gi, ' ')
-        .trim();
+    let matches = [];
 
-      const words = simplified.split(/\s+/).filter(w => w.length >= 3);
-      for (const word of words) {
-        matches = await trySearch(word);
+    // 2. Vérifier via le service d'alias dynamique Firestore (ex: Idriss -> Idris, Moussa -> Moïse...)
+    const words = cleaned.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
+    for (const w of words) {
+      const aliases = await getSearchAliasesForWord(w);
+      for (const alias of aliases) {
+        matches = await trySearch(alias);
         if (matches.length > 0) {
-          console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) via mot-clé "${word}"`);
-          break;
+          console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) via alias "${alias}" (pour "${w}")`);
+          return matches;
         }
       }
     }
 
-    if (matches.length > 0) {
-      console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) pour "${cleanQuery}"`);
-      return matches;
+    // 3. Recherche directe avec le texte nettoyé
+    if (cleaned.length >= 3) {
+      matches = await trySearch(cleaned);
+      if (matches.length > 0) {
+        console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) pour "${cleaned}"`);
+        return matches;
+      }
+    }
+
+    // 4. Fallback mot par mot
+    for (const word of words) {
+      matches = await trySearch(word);
+      if (matches.length > 0) {
+        console.log(`✅ [Quran Service] ${matches.length} verset(s) trouvé(s) via mot-clé "${word}"`);
+        return matches;
+      }
     }
 
     console.log(`ℹ️ [Quran Service] Aucun verset trouvé pour "${cleanQuery}"`);
